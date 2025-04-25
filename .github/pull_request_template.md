@@ -1,4 +1,4 @@
-## 📦 This Pull Request Includes:
+## This Pull Request Includes:
 
 - [ ] New Feature
 - [ ] Code Refactoring
@@ -10,8 +10,9 @@
 - [ ] Related Tasks / Trello Card link
 - [ ] Screenshot (if UI change)
 - [ ] Task link
+- [ ] Deploy linl
 - [ ] Other (please specify)
 
 ---
 
-## 📝 Description:
+## Description:
