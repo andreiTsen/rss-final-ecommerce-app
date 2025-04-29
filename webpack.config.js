@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const DotenvWebpackPlugin = require('dotenv-webpack');
 
 const isProduction = 'production';
 
@@ -40,6 +41,7 @@ const config = {
         BASE_HREF: isProduction ? '/andreitsen-rss-final-ecommerce-app/' : '/',
       },
     }),
+    new DotenvWebpackPlugin(),
   ],
   devtool: isProduction ? 'source-map' : 'inline-source-map',
   devServer: {
