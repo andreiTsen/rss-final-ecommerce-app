@@ -1,0 +1,42 @@
+{
+  "name": "rss-final-ecommerce-app",
+  "version": "1.0.0",
+  "description": "RS Final command project",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack serve --open",
+    "build": "webpack --mode production",
+    "lint": "node --no-warnings=ExperimentalWarning --input-type=commonjs ./node_modules/eslint/bin/eslint.js . --ext .ts,.tsx",
+    "lint:fix": "node --no-warnings=ExperimentalWarning --input-type=commonjs ./node_modules/eslint/bin/eslint.js . --ext .ts --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky",
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@commercetools/platform-sdk": "^8.8.0",
+    "@commercetools/sdk-client": "^4.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.31.0",
+    "@typescript-eslint/parser": "^8.31.0",
+    "clean-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^13.0.0",
+    "dotenv-webpack": "^8.1.0",
+    "eslint": "^9.25.1",
+    "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-unicorn": "^59.0.0",
+    "eslint-webpack-plugin": "^5.0.1",
+    "html-webpack-plugin": "^5.6.3",
+    "husky": "^9.1.7",
+    "jest": "^29.7.0",
+    "prettier": "^3.5.3",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.3",
+    "webpack": "^5.99.7",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.1"
+  }
+}
