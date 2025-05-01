@@ -14,7 +14,7 @@ const authMiddlewareOptions: AuthMiddlewareOptions = {
     `manage_customers:${process.env.CT_PROJECT_KEY}`,
     `manage_orders:${process.env.CT_PROJECT_KEY}`,
     `manage_cart_discounts:${process.env.CT_PROJECT_KEY}`,
-    `manage_shopping_lists:${process.env.CT_PROJECT_KEY}`
+    `manage_shopping_lists:${process.env.CT_PROJECT_KEY}`,
   ],
   fetch,
 };
@@ -30,5 +30,6 @@ const client = new ClientBuilder()
   .withHttpMiddleware(httpMiddlewareOptions)
   .build();
 
-export const apiRoot = createApiBuilderFromCtpClient(client)
-  .withProjectKey({ projectKey: process.env.CT_PROJECT_KEY || '' });
+export const apiRoot = createApiBuilderFromCtpClient(client).withProjectKey({
+  projectKey: process.env.CT_PROJECT_KEY || '',
+});
