@@ -1,11 +1,12 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const DotenvWebpackPlugin = require('dotenv-webpack');
+const webpack = require('webpack');
 
-const isProduction = 'production';
+const isProduction = process.env.NODE_ENV === 'production';
 
 const config = {
-  mode: isProduction ? 'production' : 'dev',
+  mode: isProduction ? 'production' : 'development',
   entry: './src/main.ts',
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -14,6 +15,14 @@ const config = {
   },
   resolve: {
     extensions: ['.ts', '.js'],
+    fallback: {
+      path: require.resolve('path-browserify'),
+      os: require.resolve('os-browserify/browser'),
+      crypto: require.resolve('crypto-browserify'),
+      fs: false,
+      buffer: require.resolve('buffer/'),
+      stream: require.resolve('stream-browserify'),
+    },
   },
   module: {
     rules: [
@@ -42,6 +51,10 @@ const config = {
       },
     }),
     new DotenvWebpackPlugin(),
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+      process: 'process/browser',
+    }),
   ],
   devtool: isProduction ? 'source-map' : 'inline-source-map',
   devServer: {
@@ -57,10 +70,5 @@ const config = {
 };
 
 module.exports = () => {
-  if (isProduction) {
-    config.mode = 'production';
-  } else {
-    config.mode = 'development';
-  }
   return config;
 };
