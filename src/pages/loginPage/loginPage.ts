@@ -1,21 +1,48 @@
 import ElementCreator from '../../utils/ElementCreator';
+import "./../../pages/loginPage/loginPage.css"
 
-export class loginPage {
+export default class loginPage {
   private container: HTMLElement;
 
   constructor(container: HTMLElement) {
     this.container = container;
+    this.container.append(this.createFormAuthorization());
   }
 
-  public static createFormAuthorization(): ElementCreator {
+  public createFormAuthorization(): HTMLElement {
     const form = new ElementCreator({
       tagName: 'form',
       classNames: ['auth-form'],
     });
-    return form;
+    const titleForm = new ElementCreator({
+      tagName: "h2",
+      classNames: ["auth-form__title"],
+      textContent: "Login"
+    })
+    form.addInnerElement(titleForm)
+    form.addInnerElement(this.createLoginInput())
+    form.addInnerElement(this.createPasswordInput())
+    form.addInnerElement(this.createButtonsBox())
+    return form.getElement();
   }
 
-  public static createLoginInput(): ElementCreator {
+  private createButtonsBox(): ElementCreator {
+    const btnsBox = new ElementCreator({
+      tagName: "div",
+      classNames: ["auth-form__button-box"]
+    })
+    const textInfo = new ElementCreator({
+      tagName: "span",
+      classNames: ["auth-form__info"],
+      textContent: "Don't have an account?"
+    })
+    btnsBox.addInnerElement(this.createBtnLogin())
+    btnsBox.addInnerElement(textInfo)
+    btnsBox.addInnerElement(this.createBtnRegistration());
+    return btnsBox;
+  }
+
+  private createLoginInput(): ElementCreator {
     const loginInputContainer = new ElementCreator({
       tagName: 'div',
       classNames: ['auth-form__input-box'],
@@ -35,7 +62,7 @@ export class loginPage {
     return loginInputContainer;
   }
 
-  public static createPasswordInput(): ElementCreator {
+  private  createPasswordInput(): ElementCreator {
     const passwordInputContainer = new ElementCreator({
       tagName: 'div',
       classNames: ['auth-form__input-box'],
@@ -55,4 +82,27 @@ export class loginPage {
     passwordInputContainer.addInnerElement(passwordInputIcon);
     return passwordInputContainer;
   }
+
+  private createBtnLogin(): ElementCreator {
+    const buttonLogin = new ElementCreator({
+      tagName: "button",
+      classNames: ["auth-form__button-login", "auth--btn"],
+      textContent: "Login",
+      callback: (): void => console.log("Авторизация")
+    })
+    return buttonLogin;
+  }
+
+  private createBtnRegistration(): ElementCreator {
+    const buttonRegistration = new ElementCreator({
+      tagName: "button",
+      classNames: ["auth-form__button-register", "auth--btn"],
+      textContent: "Register",
+      callback: (): void => console.log("Переход на страницу регистрации")
+    })
+    return buttonRegistration;
+  }
+
+  // свг в коде создать
+
 }
