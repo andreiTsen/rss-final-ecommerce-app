@@ -104,6 +104,37 @@ select:focus {
   flex: 2;
 }
 
+.address-section {
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px solid #ddd;
+}
+
+.address-section h3 {
+  color: #4caf50;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.checkbox-group input[type='checkbox'] {
+  width: auto;
+  margin-right: 10px;
+}
+
+.address-type {
+  margin-bottom: 20px;
+}
+
+.default-address {
+  margin-top: 10px;
+}
+
 .form-actions {
   margin-top: 30px;
   text-align: center;
@@ -132,4 +163,20 @@ select:focus {
 
 .btn-register:active {
   transform: translateY(0);
+}
+
+.login-link {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 15px;
+}
+
+.login-link a {
+  color: #4caf50;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
 }
