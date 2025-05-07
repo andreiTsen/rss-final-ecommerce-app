@@ -1,5 +1,5 @@
 import ElementCreator from '../../utils/ElementCreator';
-import "./../../pages/loginPage/loginPage.css"
+import './../../pages/loginPage/loginPage.css';
 
 export default class loginPage {
   private container: HTMLElement;
@@ -15,29 +15,29 @@ export default class loginPage {
       classNames: ['auth-form'],
     });
     const titleForm = new ElementCreator({
-      tagName: "h2",
-      classNames: ["auth-form__title"],
-      textContent: "Login"
-    })
-    form.addInnerElement(titleForm)
-    form.addInnerElement(this.createLoginInput())
-    form.addInnerElement(this.createPasswordInput())
-    form.addInnerElement(this.createButtonsBox())
+      tagName: 'h2',
+      classNames: ['auth-form__title'],
+      textContent: 'Login',
+    });
+    form.addInnerElement(titleForm);
+    form.addInnerElement(this.createLoginInput());
+    form.addInnerElement(this.createPasswordInput());
+    form.addInnerElement(this.createButtonsBox());
     return form.getElement();
   }
 
   private createButtonsBox(): ElementCreator {
     const btnsBox = new ElementCreator({
-      tagName: "div",
-      classNames: ["auth-form__button-box"]
-    })
+      tagName: 'div',
+      classNames: ['auth-form__button-box'],
+    });
     const textInfo = new ElementCreator({
-      tagName: "span",
-      classNames: ["auth-form__info"],
-      textContent: "Don't have an account?"
-    })
-    btnsBox.addInnerElement(this.createBtnLogin())
-    btnsBox.addInnerElement(textInfo)
+      tagName: 'span',
+      classNames: ['auth-form__info'],
+      textContent: "Don't have an account?",
+    });
+    btnsBox.addInnerElement(this.createBtnLogin());
+    btnsBox.addInnerElement(textInfo);
     btnsBox.addInnerElement(this.createBtnRegistration());
     return btnsBox;
   }
@@ -62,7 +62,7 @@ export default class loginPage {
     return loginInputContainer;
   }
 
-  private  createPasswordInput(): ElementCreator {
+  private createPasswordInput(): ElementCreator {
     const passwordInputContainer = new ElementCreator({
       tagName: 'div',
       classNames: ['auth-form__input-box'],
@@ -85,24 +85,23 @@ export default class loginPage {
 
   private createBtnLogin(): ElementCreator {
     const buttonLogin = new ElementCreator({
-      tagName: "button",
-      classNames: ["auth-form__button-login", "auth--btn"],
-      textContent: "Login",
-      callback: (): void => console.log("Авторизация")
-    })
+      tagName: 'button',
+      classNames: ['auth-form__button-login', 'auth--btn'],
+      textContent: 'Login',
+      callback: (): void => console.log('Авторизация'),
+    });
     return buttonLogin;
   }
 
   private createBtnRegistration(): ElementCreator {
     const buttonRegistration = new ElementCreator({
-      tagName: "button",
-      classNames: ["auth-form__button-register", "auth--btn"],
-      textContent: "Register",
-      callback: (): void => console.log("Переход на страницу регистрации")
-    })
+      tagName: 'button',
+      classNames: ['auth-form__button-register', 'auth--btn'],
+      textContent: 'Register',
+      callback: (): void => console.log('Переход на страницу регистрации'),
+    });
     return buttonRegistration;
   }
 
   // свг в коде создать
-
 }

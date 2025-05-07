@@ -8,7 +8,7 @@
   background-color: #fff;
   border-radius: 20px;
   padding: 10px 5px 40px 0;
-    position: relative;
+  position: relative;
 }
 
 .auth-form__title {
@@ -68,7 +68,7 @@
 
 .auth-form__login-icon {
   position: absolute;
-  background-image: url("././../../assets/icons/login-icon.svg");
+  background-image: url('././../../assets/icons/login-icon.svg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
@@ -80,7 +80,7 @@
 
 .auth-form__password-icon {
   position: absolute;
-  background-image: url("././../../assets/icons/password-icon.svg");
+  background-image: url('././../../assets/icons/password-icon.svg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;

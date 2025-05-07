@@ -1,7 +1,7 @@
 import { apiRoot } from './api';
 import { Category, ProductProjection, Product } from '@commercetools/platform-sdk';
 import loginPage from './pages/loginPage/loginPage';
-import "././assets/style.css"
+import '././assets/style.css';
 
 export class App {
   private container;
@@ -10,16 +10,13 @@ export class App {
     this.container = document.createElement('div');
     this.container.id = 'app';
     document.body.append(this.container);
-    new loginPage(this.container)
+    new loginPage(this.container);
   }
 }
 
-
-document.addEventListener("DOMContentLoaded", () => {
-  new App()
-})
-
-
+document.addEventListener('DOMContentLoaded', () => {
+  new App();
+});
 
 //Это тестовый функціонал для проверкі работы апі. Этот модуль должен содержать только інстансы классов. Этот функціонал нужно удаліть прі разработке но прімеры функцій понадобятся в разработке для полученія данные із апі
 // function getCategoryName(category: Category): string {
