@@ -1,9 +1,143 @@
+type UserAddress = {
+  street: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  isDefault: boolean;
+};
+
+type UserData = {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  addresses: UserAddress[];
+};
+
+type FormFields = {
+  emailInput: HTMLInputElement | null;
+  passwordInput: HTMLInputElement | null;
+  firstNameInput: HTMLInputElement | null;
+  lastNameInput: HTMLInputElement | null;
+  yearInput: HTMLInputElement | null;
+  monthInput: HTMLInputElement | null;
+  dayInput: HTMLInputElement | null;
+  streetInput: HTMLInputElement | null;
+  cityInput: HTMLInputElement | null;
+  postalCodeInput: HTMLInputElement | null;
+  countrySelect: HTMLSelectElement | null;
+};
+
 export class RegistrationPage {
   private container: HTMLElement;
 
   constructor(container: HTMLElement) {
     this.container = container;
     this.render();
+  }
+
+  private static getElement<T extends HTMLElement>(selector: string): T | null {
+    return document.querySelector<T>(selector);
+  }
+
+  private static addDateValidationHandlers(dobGroup: HTMLDivElement): void {
+    const yearInput = dobGroup.querySelector<HTMLInputElement>('#birthYear');
+    const monthInput = dobGroup.querySelector<HTMLInputElement>('#birthMonth');
+    const dayInput = dobGroup.querySelector<HTMLInputElement>('#birthDay');
+    const dobError = dobGroup.querySelector<HTMLDivElement>('#dob-error');
+
+    if (!yearInput || !monthInput || !dayInput || !dobError) return;
+
+    const validateDate = (): void => {
+      RegistrationPage.validateDateOfBirth(yearInput, monthInput, dayInput, dobError);
+    };
+
+    yearInput.addEventListener('change', validateDate);
+    monthInput.addEventListener('change', validateDate);
+    dayInput.addEventListener('change', validateDate);
+  }
+
+  private static checkDateFieldsFilled(
+    yearInput: HTMLInputElement,
+    monthInput: HTMLInputElement,
+    dayInput: HTMLInputElement,
+    errorElement: HTMLElement | null
+  ): boolean {
+    if (!yearInput.value || !monthInput.value || !dayInput.value) {
+      if (errorElement) errorElement.textContent = 'Дата рождения обязательна для заполнения';
+      return false;
+    }
+    return true;
+  }
+
+  private static checkDateValidAndAge(
+    year: number,
+    month: number,
+    day: number,
+    errorElement: HTMLElement | null
+  ): boolean {
+    const date = new Date(year, month, day);
+    const now = new Date();
+    const minAge = 13;
+
+    if (date.getFullYear() !== year || date.getMonth() !== month || date.getDate() !== day) {
+      if (errorElement) errorElement.textContent = 'Указана некорректная дата';
+      return false;
+    }
+
+    if (date > now) {
+      if (errorElement) errorElement.textContent = 'Дата рождения не может быть в будущем';
+      return false;
+    }
+
+    const ageDate = new Date(now.getTime() - date.getTime());
+    const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+
+    if (age < minAge) {
+      if (errorElement) errorElement.textContent = `Минимальный возраст для регистрации: ${minAge} лет`;
+      return false;
+    }
+
+    if (errorElement) errorElement.textContent = '';
+    return true;
+  }
+
+  private static checkDateValidity(date: Date, year: number, month: number, day: number): string {
+    if (date.getFullYear() !== year || date.getMonth() !== month || date.getDate() !== day) {
+      return 'Указана некорректная дата';
+    }
+
+    const now = new Date();
+    if (date > now) {
+      return 'Дата рождения не может быть в будущем';
+    }
+
+    const minAge = 13;
+    const ageDate = new Date(now.getTime() - date.getTime());
+    const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+
+    if (age < minAge) {
+      return `Минимальный возраст для регистрации: ${minAge} лет`;
+    }
+
+    return '';
+  }
+
+  private static checkFieldsExist(fields: FormFields): boolean {
+    return !!(
+      fields.emailInput &&
+      fields.passwordInput &&
+      fields.firstNameInput &&
+      fields.lastNameInput &&
+      fields.yearInput &&
+      fields.monthInput &&
+      fields.dayInput &&
+      fields.streetInput &&
+      fields.cityInput &&
+      fields.postalCodeInput &&
+      fields.countrySelect
+    );
   }
 
   private static createAddressSection(): HTMLDivElement {
@@ -47,6 +181,19 @@ export class RegistrationPage {
     cityInput.id = 'city';
     cityInput.name = 'city';
     cityInput.required = true;
+
+    cityInput.addEventListener('input', (): void => {
+      const errorElement = RegistrationPage.getElement<HTMLDivElement>('#city-error');
+      if (errorElement) {
+        if (!cityInput.value.trim()) {
+          errorElement.textContent = 'Поле города обязательно для заполнения';
+        } else if (cityInput.value.length < 2) {
+          errorElement.textContent = 'Названіе города должно содержать минимум 2 символа';
+        } else {
+          errorElement.textContent = '';
+        }
+      }
+    });
 
     const cityError = document.createElement('div');
     cityError.className = 'error-message';
@@ -127,6 +274,8 @@ export class RegistrationPage {
     dobError.id = 'dob-error';
     dobGroup.appendChild(dobError);
 
+    RegistrationPage.addDateValidationHandlers(dobGroup);
+
     return dobGroup;
   }
 
@@ -194,6 +343,19 @@ export class RegistrationPage {
     emailInput.name = 'email';
     emailInput.required = true;
 
+    emailInput.addEventListener('input', (): void => {
+      const errorElement = RegistrationPage.getElement<HTMLDivElement>('#email-error');
+      if (errorElement) {
+        if (!emailInput.value) {
+          errorElement.textContent = 'Поле электронной почты обязательно для заполненія';
+        } else if (!RegistrationPage.isValidEmail(emailInput.value)) {
+          errorElement.textContent = 'Пожалуйста, введите корректный адрес электронной почты';
+        } else {
+          errorElement.textContent = '';
+        }
+      }
+    });
+
     const emailError = document.createElement('div');
     emailError.className = 'error-message';
     emailError.id = 'email-error';
@@ -219,6 +381,19 @@ export class RegistrationPage {
     firstNameInput.name = 'firstName';
     firstNameInput.required = true;
 
+    firstNameInput.addEventListener('input', (): void => {
+      const errorElement = RegistrationPage.getElement<HTMLDivElement>('#firstName-error');
+      if (errorElement) {
+        if (!firstNameInput.value.trim()) {
+          errorElement.textContent = 'Поле имени обязательно для заполнения';
+        } else if (firstNameInput.value.length < 2) {
+          errorElement.textContent = 'Имя должно содержать минимум 2 символа';
+        } else {
+          errorElement.textContent = '';
+        }
+      }
+    });
+
     const firstNameError = document.createElement('div');
     firstNameError.className = 'error-message';
     firstNameError.id = 'firstName-error';
@@ -228,6 +403,33 @@ export class RegistrationPage {
     firstNameGroup.appendChild(firstNameError);
 
     return firstNameGroup;
+  }
+
+  private static createForm(): HTMLFormElement {
+    const form = document.createElement('form');
+    form.className = 'registration-form';
+
+    const formTitle = document.createElement('h2');
+    formTitle.textContent = 'Регистрация';
+    form.appendChild(formTitle);
+
+    form.appendChild(RegistrationPage.createEmailField());
+    form.appendChild(RegistrationPage.createPasswordField());
+    form.appendChild(RegistrationPage.createNameFields());
+    form.appendChild(RegistrationPage.createDateOfBirthFields());
+    form.appendChild(RegistrationPage.createAddressSection());
+    form.appendChild(RegistrationPage.createFormActions());
+    form.appendChild(RegistrationPage.createLoginLink());
+
+    form.addEventListener('submit', (event: Event): void => {
+      event.preventDefault();
+
+      if (RegistrationPage.validateForm(form)) {
+        RegistrationPage.submitForm(form);
+      }
+    });
+
+    return form;
   }
 
   private static createFormActions(): HTMLDivElement {
@@ -250,13 +452,26 @@ export class RegistrationPage {
 
     const lastNameLabel = document.createElement('label');
     lastNameLabel.htmlFor = 'lastName';
-    lastNameLabel.textContent = 'Фамилия*';
+    lastNameLabel.textContent = 'Фамиілия*';
 
     const lastNameInput = document.createElement('input');
     lastNameInput.type = 'text';
     lastNameInput.id = 'lastName';
     lastNameInput.name = 'lastName';
     lastNameInput.required = true;
+
+    lastNameInput.addEventListener('input', (): void => {
+      const errorElement = RegistrationPage.getElement<HTMLDivElement>('#lastName-error');
+      if (errorElement) {
+        if (!lastNameInput.value.trim()) {
+          errorElement.textContent = 'Поле фамілии обязательно для заполнения';
+        } else if (lastNameInput.value.length < 2) {
+          errorElement.textContent = 'Фамілия должна содержать минимум 2 сімвола';
+        } else {
+          errorElement.textContent = '';
+        }
+      }
+    });
 
     const lastNameError = document.createElement('div');
     lastNameError.className = 'error-message';
@@ -347,6 +562,21 @@ export class RegistrationPage {
     passwordInput.name = 'password';
     passwordInput.required = true;
 
+    passwordInput.addEventListener('input', (): void => {
+      const errorElement = RegistrationPage.getElement<HTMLDivElement>('#password-error');
+      if (errorElement) {
+        if (!passwordInput.value) {
+          errorElement.textContent = 'Поле пароля обязательно для заполнения';
+        } else if (passwordInput.value.length < 8) {
+          errorElement.textContent = 'Пароль должен содержать минимум 8 символов';
+        } else if (!RegistrationPage.isStrongPassword(passwordInput.value)) {
+          errorElement.textContent = 'Пароль должен содержать минимум одну цифру и одну заглавную букву';
+        } else {
+          errorElement.textContent = '';
+        }
+      }
+    });
+
     const passwordError = document.createElement('div');
     passwordError.className = 'error-message';
     passwordError.id = 'password-error';
@@ -371,6 +601,19 @@ export class RegistrationPage {
     postalCodeInput.id = 'postalCode';
     postalCodeInput.name = 'postalCode';
     postalCodeInput.required = true;
+
+    postalCodeInput.addEventListener('input', (): void => {
+      const errorElement = RegistrationPage.getElement<HTMLDivElement>('#postalCode-error');
+      if (errorElement) {
+        if (!postalCodeInput.value.trim()) {
+          errorElement.textContent = 'Поле почтового индекса обязательно для заполненія';
+        } else if (!/^\d{5,6}$/.test(postalCodeInput.value)) {
+          errorElement.textContent = 'Почтовый индекс должен содержать 5-6 ціфр';
+        } else {
+          errorElement.textContent = '';
+        }
+      }
+    });
 
     const postalCodeError = document.createElement('div');
     postalCodeError.className = 'error-message';
@@ -398,7 +641,7 @@ export class RegistrationPage {
 
     const sameAddressLabel = document.createElement('label');
     sameAddressLabel.htmlFor = 'sameAddress';
-    sameAddressLabel.textContent = 'Использовать один адрес для доставки и оплаты';
+    sameAddressLabel.textContent = 'Использовать один адрес для доставкі и оплаты';
 
     sameAddressGroup.appendChild(sameAddressCheckbox);
     sameAddressGroup.appendChild(sameAddressLabel);
@@ -413,13 +656,26 @@ export class RegistrationPage {
 
     const streetLabel = document.createElement('label');
     streetLabel.htmlFor = 'street';
-    streetLabel.textContent = 'Улица*';
+    streetLabel.textContent = 'Уліца*';
 
     const streetInput = document.createElement('input');
     streetInput.type = 'text';
     streetInput.id = 'street';
     streetInput.name = 'street';
     streetInput.required = true;
+
+    streetInput.addEventListener('input', (): void => {
+      const errorElement = RegistrationPage.getElement<HTMLDivElement>('#street-error');
+      if (errorElement) {
+        if (!streetInput.value.trim()) {
+          errorElement.textContent = 'Поле улицы обязательно для заполненія';
+        } else if (streetInput.value.length < 3) {
+          errorElement.textContent = 'Названіе улицы должно содержать мінимум 3 символа';
+        } else {
+          errorElement.textContent = '';
+        }
+      }
+    });
 
     const streetError = document.createElement('div');
     streetError.className = 'error-message';
@@ -459,6 +715,22 @@ export class RegistrationPage {
     return yearContainer;
   }
 
+  private static getFormFields(form: HTMLFormElement): FormFields {
+    return {
+      emailInput: form.querySelector<HTMLInputElement>('#email'),
+      passwordInput: form.querySelector<HTMLInputElement>('#password'),
+      firstNameInput: form.querySelector<HTMLInputElement>('#firstName'),
+      lastNameInput: form.querySelector<HTMLInputElement>('#lastName'),
+      yearInput: form.querySelector<HTMLInputElement>('#birthYear'),
+      monthInput: form.querySelector<HTMLInputElement>('#birthMonth'),
+      dayInput: form.querySelector<HTMLInputElement>('#birthDay'),
+      streetInput: form.querySelector<HTMLInputElement>('#street'),
+      cityInput: form.querySelector<HTMLInputElement>('#city'),
+      postalCodeInput: form.querySelector<HTMLInputElement>('#postalCode'),
+      countrySelect: form.querySelector<HTMLSelectElement>('#country'),
+    };
+  }
+
   private static handleDayInput(event: Event): void {
     if (!(event.target instanceof HTMLInputElement)) return;
 
@@ -495,23 +767,296 @@ export class RegistrationPage {
     inputElement.value = numericValue;
   }
 
-  private static createForm(): HTMLFormElement {
-    const form = document.createElement('form');
-    form.className = 'registration-form';
+  private static isStrongPassword(password: string): boolean {
+    return /\d/.test(password) && /[A-Z]/.test(password);
+  }
 
-    const formTitle = document.createElement('h2');
-    formTitle.textContent = 'Регистрация';
-    form.appendChild(formTitle);
+  private static isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
 
-    form.appendChild(RegistrationPage.createEmailField());
-    form.appendChild(RegistrationPage.createPasswordField());
-    form.appendChild(RegistrationPage.createNameFields());
-    form.appendChild(RegistrationPage.createDateOfBirthFields());
-    form.appendChild(RegistrationPage.createAddressSection());
-    form.appendChild(RegistrationPage.createFormActions());
-    form.appendChild(RegistrationPage.createLoginLink());
+  private static parseDateValues(
+    yearInput: HTMLInputElement,
+    monthInput: HTMLInputElement,
+    dayInput: HTMLInputElement,
+    errorElement: HTMLElement | null
+  ): { year: number; month: number; day: number; isValid: boolean } {
+    const year = parseInt(yearInput.value);
+    const month = parseInt(monthInput.value) - 1;
+    const day = parseInt(dayInput.value);
 
-    return form;
+    if (isNaN(year) || isNaN(month) || isNaN(day)) {
+      if (errorElement) errorElement.textContent = 'Указана некорректная дата';
+      return { year, month, day, isValid: false };
+    }
+
+    return { year, month, day, isValid: true };
+  }
+
+  private static submitForm(form: HTMLFormElement): void {
+    const userData = RegistrationPage.collectFormData(form);
+
+    console.log('Массів пользователя:', userData);
+
+    console.warn('Регістрация успешно завершена!');
+  }
+
+  private static collectFormData(form: HTMLFormElement): UserData {
+    const formData = new FormData(form);
+
+    const getFormValue = (key: string): string => {
+      const value = formData.get(key);
+      return value instanceof File ? '' : (value || '').toString();
+    };
+
+    const isCheckboxChecked = (key: string): boolean => {
+      return getFormValue(key) === 'on';
+    };
+
+    return {
+      email: getFormValue('email'),
+      password: getFormValue('password'),
+      firstName: getFormValue('firstName'),
+      lastName: getFormValue('lastName'),
+      dateOfBirth: `${getFormValue('birthYear')}-${getFormValue('birthMonth')}-${getFormValue('birthDay')}`,
+      addresses: [
+        {
+          street: getFormValue('street'),
+          city: getFormValue('city'),
+          postalCode: getFormValue('postalCode'),
+          country: getFormValue('country'),
+          isDefault: isCheckboxChecked('defaultAddress'),
+        },
+      ],
+    };
+  }
+
+  private static validateCity(cityInput: HTMLInputElement): boolean {
+    const cityError = document.getElementById('city-error');
+    if (!cityInput.value.trim()) {
+      if (cityError) cityError.textContent = 'Поле города обязательно для заполнения';
+      return false;
+    } else if (cityInput.value.length < 2) {
+      if (cityError) cityError.textContent = 'Название города должно содержать мінимум 2 символа';
+      return false;
+    }
+
+    if (cityError) cityError.textContent = '';
+    return true;
+  }
+
+  private static validateCountry(countrySelect: HTMLSelectElement): boolean {
+    const countryError = document.getElementById('country-error');
+    if (!countrySelect.value) {
+      if (countryError) countryError.textContent = 'Пожалуйста, выберіте страну';
+      return false;
+    }
+
+    if (countryError) countryError.textContent = '';
+    return true;
+  }
+
+  private static validateCredentials(emailInput: HTMLInputElement, passwordInput: HTMLInputElement): boolean {
+    let isValid = true;
+
+    const emailError = document.getElementById('email-error');
+    if (!emailInput.value) {
+      if (emailError) emailError.textContent = 'Поле электронной почты обязательно для заполненія';
+      isValid = false;
+    } else if (!RegistrationPage.isValidEmail(emailInput.value)) {
+      if (emailError) emailError.textContent = 'Пожалуйста, введіте корректный адрес электронной почты';
+      isValid = false;
+    } else if (emailError) {
+      emailError.textContent = '';
+    }
+
+    isValid = RegistrationPage.validatePassword(passwordInput) && isValid;
+
+    return isValid;
+  }
+
+  private static validateDateFields(
+    yearInput: HTMLInputElement,
+    monthInput: HTMLInputElement,
+    dayInput: HTMLInputElement
+  ): boolean {
+    const dobError = document.getElementById('dob-error');
+
+    if (!RegistrationPage.checkDateFieldsFilled(yearInput, monthInput, dayInput, dobError)) {
+      return false;
+    }
+
+    const { year, month, day, isValid } = RegistrationPage.parseDateValues(yearInput, monthInput, dayInput, dobError);
+    if (!isValid) return false;
+
+    return RegistrationPage.checkDateValidAndAge(year, month, day, dobError);
+  }
+
+  private static validateDateOfBirth(
+    yearInput: HTMLInputElement,
+    monthInput: HTMLInputElement,
+    dayInput: HTMLInputElement,
+    errorElement: HTMLDivElement
+  ): void {
+    if (!yearInput.value || !monthInput.value || !dayInput.value) {
+      errorElement.textContent = '';
+      return;
+    }
+
+    const year = parseInt(yearInput.value);
+    const month = parseInt(monthInput.value) - 1;
+    const day = parseInt(dayInput.value);
+
+    if (isNaN(year) || isNaN(month) || isNaN(day)) {
+      errorElement.textContent = '';
+      return;
+    }
+
+    const date = new Date(year, month, day);
+
+    const validationResult = RegistrationPage.checkDateValidity(date, year, month, day);
+    errorElement.textContent = validationResult;
+  }
+
+  private static validateForm(form: HTMLFormElement): boolean {
+    const fields = RegistrationPage.getFormFields(form);
+
+    if (!RegistrationPage.checkFieldsExist(fields)) {
+      console.error('Не все поля формы');
+      return false;
+    }
+
+    return RegistrationPage.validateAllFields(fields);
+  }
+
+  private static validateAllFields(fields: FormFields): boolean {
+    let isValid = true;
+
+    if (fields.emailInput && fields.passwordInput) {
+      isValid = RegistrationPage.validateCredentials(fields.emailInput, fields.passwordInput) && isValid;
+    } else {
+      isValid = false;
+    }
+
+    if (fields.firstNameInput && fields.lastNameInput) {
+      isValid = RegistrationPage.validateNameFields(fields.firstNameInput, fields.lastNameInput) && isValid;
+    } else {
+      isValid = false;
+    }
+
+    if (fields.yearInput && fields.monthInput && fields.dayInput) {
+      isValid = RegistrationPage.validateDateFields(fields.yearInput, fields.monthInput, fields.dayInput) && isValid;
+    } else {
+      isValid = false;
+    }
+
+    if (fields.streetInput && fields.cityInput && fields.postalCodeInput && fields.countrySelect) {
+      isValid =
+        RegistrationPage.validateAddressFields(
+          fields.streetInput,
+          fields.cityInput,
+          fields.postalCodeInput,
+          fields.countrySelect
+        ) && isValid;
+    } else {
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  private static validateNameFields(firstNameInput: HTMLInputElement, lastNameInput: HTMLInputElement): boolean {
+    let isValid = true;
+
+    const firstNameError = document.getElementById('firstName-error');
+    if (!firstNameInput.value.trim()) {
+      if (firstNameError) firstNameError.textContent = 'Поле імени обязательно для заполненія';
+      isValid = false;
+    } else if (firstNameInput.value.length < 2) {
+      if (firstNameError) firstNameError.textContent = 'Имя должно содержать мінимум 2 символа';
+      isValid = false;
+    } else if (firstNameError) {
+      firstNameError.textContent = '';
+    }
+
+    const lastNameError = document.getElementById('lastName-error');
+    if (!lastNameInput.value.trim()) {
+      if (lastNameError) lastNameError.textContent = 'Поле фамилии обязательно для заполнения';
+      isValid = false;
+    } else if (lastNameInput.value.length < 2) {
+      if (lastNameError) lastNameError.textContent = 'Фамілія должна содержать минимум 2 символа';
+      isValid = false;
+    } else if (lastNameError) {
+      lastNameError.textContent = '';
+    }
+
+    return isValid;
+  }
+
+  private static validatePassword(passwordInput: HTMLInputElement): boolean {
+    const passwordError = document.getElementById('password-error');
+    if (!passwordInput.value) {
+      if (passwordError) passwordError.textContent = 'Поле пароля обязательно для заполненія';
+      return false;
+    } else if (passwordInput.value.length < 8) {
+      if (passwordError) passwordError.textContent = 'Пароль должен содержать минимум 8 сімволов';
+      return false;
+    } else if (!RegistrationPage.isStrongPassword(passwordInput.value)) {
+      if (passwordError)
+        passwordError.textContent = 'Пароль должен содержать минимум одну цифру и одну заглавную букву';
+      return false;
+    }
+
+    if (passwordError) passwordError.textContent = '';
+    return true;
+  }
+
+  private static validatePostalCode(postalCodeInput: HTMLInputElement): boolean {
+    const postalCodeError = document.getElementById('postalCode-error');
+    if (!postalCodeInput.value.trim()) {
+      if (postalCodeError) postalCodeError.textContent = 'Поле почтового индекса обязательно для заполненія';
+      return false;
+    } else if (!/^\d{5,6}$/.test(postalCodeInput.value)) {
+      if (postalCodeError) postalCodeError.textContent = 'Почтовый индекс должен содержать 5-6 ціфр';
+      return false;
+    }
+
+    if (postalCodeError) postalCodeError.textContent = '';
+    return true;
+  }
+
+  private static validateStreet(streetInput: HTMLInputElement): boolean {
+    const streetError = document.getElementById('street-error');
+    if (!streetInput.value.trim()) {
+      if (streetError) streetError.textContent = 'Поле уліцы обязательно для заполненія';
+      return false;
+    } else if (streetInput.value.length < 3) {
+      if (streetError) streetError.textContent = 'Название уліцы должно содержать мінімум 3 символа';
+      return false;
+    }
+
+    if (streetError) streetError.textContent = '';
+    return true;
+  }
+
+  private static validateAddressFields(
+    streetInput: HTMLInputElement,
+    cityInput: HTMLInputElement,
+    postalCodeInput: HTMLInputElement,
+    countrySelect: HTMLSelectElement
+  ): boolean {
+    let isValid = true;
+
+    isValid = RegistrationPage.validateStreet(streetInput) && isValid;
+
+    isValid = RegistrationPage.validateCity(cityInput) && isValid;
+
+    isValid = RegistrationPage.validatePostalCode(postalCodeInput) && isValid;
+
+    isValid = RegistrationPage.validateCountry(countrySelect) && isValid;
+
+    return isValid;
   }
 
   private render(): void {
