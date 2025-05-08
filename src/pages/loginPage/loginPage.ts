@@ -1,5 +1,7 @@
 import ElementCreator from '../../utils/ElementCreator';
 import './../../pages/loginPage/loginPage.css';
+import validateEmail from './validateEmail';
+import validatePassword from './validatePassword';
 
 export default class loginPage {
   private container: HTMLElement;
@@ -45,12 +47,11 @@ export default class loginPage {
   private createLoginInput(): ElementCreator {
     const loginInputContainer = new ElementCreator({
       tagName: 'div',
-      classNames: ['auth-form__input-box'],
+      classNames: ['auth-form__input-box', "box-input"],
     });
     const loginInput = new ElementCreator({
       tagName: 'input',
       classNames: ['auth-form__input-login'],
-      callback: (): void => console.log('Ввод в инпут логина'),
       attribute: ['placeholder=Email', 'type=text', 'autocomplete=off'],
     });
     const loginInputIcon = new ElementCreator({
@@ -59,13 +60,55 @@ export default class loginPage {
     });
     loginInputContainer.addInnerElement(loginInput);
     loginInputContainer.addInnerElement(loginInputIcon);
+    loginInput.getElement().addEventListener("change", (event: Event) => {
+      if (event.target instanceof HTMLInputElement) {
+        this.validationLogin(event.target.value)
+      }
+    })
     return loginInputContainer;
+  }
+
+  private validationLogin(value: string): void {
+    let resultValidation = validateEmail(value);
+    let container = document.querySelector(".box-input");
+
+    const error = document.querySelector(".error-message");
+    if (error) {
+      error.remove();
+    }
+
+    if (!resultValidation.isValid) {
+      let errorElement = this.createErrorMessage(resultValidation.message)
+      container?.appendChild(errorElement);
+    }
+  }
+
+  private validationPassword(value: string): void {
+    let resultValidation = validatePassword(value);
+    let container = document.querySelector(".password-box");
+
+    const error = document.querySelector(".error-message");
+    if (error) {
+      error.remove();
+    }
+
+    if (!resultValidation.isValid) {
+      let errorElement = this.createErrorMessage(resultValidation.message)
+      container?.appendChild(errorElement)
+  }
+}
+
+  private createErrorMessage(text: string): HTMLElement {
+    const error = document.createElement("span");
+    error.classList.add('error-message');
+    error.textContent = text;
+    return error;
   }
 
   private createPasswordInput(): ElementCreator {
     const passwordInputContainer = new ElementCreator({
       tagName: 'div',
-      classNames: ['auth-form__input-box'],
+      classNames: ['auth-form__input-box', "password-box"],
     });
     const passwordInput = new ElementCreator({
       tagName: 'input',
@@ -76,8 +119,13 @@ export default class loginPage {
     const passwordInputIcon = new ElementCreator({
       tagName: 'img',
       classNames: ['auth-form__password-icon'],
-      callback: (): void => console.log('Клик на иконку пароля'),
     });
+    passwordInput.getElement().addEventListener("change", (event: Event) => {
+      const target = event.target;
+      if (target instanceof HTMLInputElement) {
+        this.validationPassword(target.value);
+      }
+    })
     passwordInputContainer.addInnerElement(passwordInput);
     passwordInputContainer.addInnerElement(passwordInputIcon);
     return passwordInputContainer;
@@ -103,5 +151,4 @@ export default class loginPage {
     return buttonRegistration;
   }
 
-  // свг в коде создать
 }

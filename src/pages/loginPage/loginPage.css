@@ -1,3 +1,9 @@
+svg {
+  stroke: none !important;
+  stroke-width: 0 !important;
+  outline: none !important;
+}
+
 .auth-form {
   display: flex;
   justify-content: center;
@@ -68,25 +74,31 @@
 
 .auth-form__login-icon {
   position: absolute;
-  background-image: url('././../../assets/icons/login-icon.svg');
+  background-image: url("././../../assets/icons/login-icon.svg");
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  width: 24px;
   outline: none;
+  width: 24px;
   height: 24px;
-  right: 50px;
+  right: 40px;
+  margin-top: 9px;
 }
 
 .auth-form__password-icon {
   position: absolute;
-  background-image: url('././../../assets/icons/password-icon.svg');
+  background-image: url("././../../assets/icons/icon.svg");
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  width: 24px;
   outline: none;
-  border: none;
+  width: 24px;
   height: 24px;
-  right: 50px;
-} /*# sourceMappingURL=loginPage.css.map */
+  right: 40px;
+  margin-top: 9px;
+}
+
+.error-message {
+  font-size: 0.65rem;
+  color: red;
+}/*# sourceMappingURL=loginPage.css.map */
