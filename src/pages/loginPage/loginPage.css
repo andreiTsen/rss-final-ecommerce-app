@@ -9,12 +9,11 @@ svg {
   justify-content: center;
   flex-direction: column;
   align-items: center;
-  margin: 12.5% auto;
+  margin: 200px auto;
   max-width: 450px;
   background-color: #fff;
   border-radius: 20px;
   padding: 10px 5px 40px 0;
-  position: relative;
 }
 
 .auth-form__title {
@@ -24,7 +23,8 @@ svg {
 
 .auth-form__input-box {
   width: 100%;
-  padding: 0 1.5rem;
+  padding: 0.2rem 1.5rem;
+  position: relative;
 }
 
 .auth-form__input-login,
@@ -38,15 +38,13 @@ svg {
   font-size: 1rem;
 }
 
-.auth-form__input-login {
-  margin-bottom: 20px;
-}
-
+.auth-form__input-login,
 .auth-form__input-password {
-  margin-bottom: 3rem;
+  margin-bottom: 5px;
 }
 
 .auth-form__button-box {
+  margin-top: 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -74,31 +72,35 @@ svg {
 
 .auth-form__login-icon {
   position: absolute;
-  background-image: url("././../../assets/icons/login-icon.svg");
+  background-image: url("././../../assets/icons/email-icon.svg");
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
   outline: none;
-  width: 24px;
-  height: 24px;
-  right: 40px;
-  margin-top: 9px;
+  width: 20px;
+  height: 20px;
+  top: 13px;
+  right: 37px;
 }
 
 .auth-form__password-icon {
   position: absolute;
-  background-image: url("././../../assets/icons/icon.svg");
+  background-image: url("././../../assets/icons/lock.svg");
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
   outline: none;
-  width: 24px;
-  height: 24px;
-  right: 40px;
-  margin-top: 9px;
+  width: 20px;
+  height: 20px;
+  right: 35px;
+  top: 14px;
+  cursor: pointer;
 }
 
 .error-message {
+  display: block;
   font-size: 0.65rem;
+  width: 100%;
+  padding: 5px 15px;
   color: red;
 }/*# sourceMappingURL=loginPage.css.map */

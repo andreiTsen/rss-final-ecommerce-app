@@ -47,7 +47,7 @@ export default class loginPage {
   private createLoginInput(): ElementCreator {
     const loginInputContainer = new ElementCreator({
       tagName: 'div',
-      classNames: ['auth-form__input-box', "box-input"],
+      classNames: ['auth-form__input-box', 'box-input'],
     });
     const loginInput = new ElementCreator({
       tagName: 'input',
@@ -55,52 +55,53 @@ export default class loginPage {
       attribute: ['placeholder=Email', 'type=text', 'autocomplete=off'],
     });
     const loginInputIcon = new ElementCreator({
-      tagName: 'img',
+      tagName: 'div',
       classNames: ['auth-form__login-icon'],
     });
     loginInputContainer.addInnerElement(loginInput);
     loginInputContainer.addInnerElement(loginInputIcon);
-    loginInput.getElement().addEventListener("change", (event: Event) => {
+    loginInput.getElement().addEventListener('change', (event: Event) => {
       if (event.target instanceof HTMLInputElement) {
-        this.validationLogin(event.target.value)
+        this.validationLogin(event.target.value);
       }
-    })
+    });
     return loginInputContainer;
   }
 
+
   private validationLogin(value: string): void {
     let resultValidation = validateEmail(value);
-    let container = document.querySelector(".box-input");
+    let container = document.querySelector('.box-input');
 
-    const error = document.querySelector(".error-message");
+    const error = document.querySelector('.login-error');
     if (error) {
       error.remove();
     }
 
     if (!resultValidation.isValid) {
-      let errorElement = this.createErrorMessage(resultValidation.message)
+      let errorElement = this.createErrorMessage(resultValidation.message, "login-error");
       container?.appendChild(errorElement);
     }
   }
 
   private validationPassword(value: string): void {
     let resultValidation = validatePassword(value);
-    let container = document.querySelector(".password-box");
+    let container = document.querySelector('.password-box');
 
-    const error = document.querySelector(".error-message");
+    const error = document.querySelector('.password-error');
     if (error) {
       error.remove();
     }
 
     if (!resultValidation.isValid) {
-      let errorElement = this.createErrorMessage(resultValidation.message)
-      container?.appendChild(errorElement)
+      let errorElement = this.createErrorMessage(resultValidation.message, "password-error");
+      container?.appendChild(errorElement);
+    }
   }
-}
 
-  private createErrorMessage(text: string): HTMLElement {
-    const error = document.createElement("span");
-    error.classList.add('error-message');
+  private createErrorMessage(text: string, className: string): HTMLElement {
+    const error = document.createElement('span');
+    error.classList.add("error-message", className);
     error.textContent = text;
     return error;
   }
@@ -108,7 +109,7 @@ export default class loginPage {
   private createPasswordInput(): ElementCreator {
     const passwordInputContainer = new ElementCreator({
       tagName: 'div',
-      classNames: ['auth-form__input-box', "password-box"],
+      classNames: ['auth-form__input-box', 'password-box'],
     });
     const passwordInput = new ElementCreator({
       tagName: 'input',
@@ -117,14 +118,23 @@ export default class loginPage {
       attribute: ['placeholder=Password', 'type=password', 'autocomplete=off'],
     });
     const passwordInputIcon = new ElementCreator({
-      tagName: 'img',
+      tagName: 'div',
       classNames: ['auth-form__password-icon'],
     });
-    passwordInput.getElement().addEventListener("change", (event: Event) => {
+    passwordInput.getElement().addEventListener('change', (event: Event) => {
       const target = event.target;
       if (target instanceof HTMLInputElement) {
         this.validationPassword(target.value);
       }
+    });
+    passwordInputIcon.getElement().addEventListener("click", () => {
+      let attributeValue = passwordInput.getElement().getAttribute("type")
+      if (attributeValue === "password") {
+        passwordInput.setAttributes(["type=text"])
+      } else {
+        passwordInput.setAttributes(["type=password"])
+      }
+
     })
     passwordInputContainer.addInnerElement(passwordInput);
     passwordInputContainer.addInnerElement(passwordInputIcon);
@@ -150,5 +160,4 @@ export default class loginPage {
     });
     return buttonRegistration;
   }
-
 }
