@@ -168,6 +168,12 @@ export class RegistrationPage {
     addressSection.appendChild(RegistrationPage.createStreetField());
     addressSection.appendChild(RegistrationPage.createCityAndPostalFields());
     addressSection.appendChild(RegistrationPage.createCountryField());
+
+    const addressError = document.createElement('div');
+    addressError.className = 'error-message';
+    addressError.id = 'address-error';
+    addressSection.appendChild(addressError);
+
     addressSection.appendChild(RegistrationPage.createDefaultAddressCheckbox());
 
     return addressSection;
@@ -332,14 +338,21 @@ export class RegistrationPage {
     defaultAddressCheckbox.type = 'checkbox';
     defaultAddressCheckbox.id = 'defaultAddress';
     defaultAddressCheckbox.name = 'defaultAddress';
+    defaultAddressCheckbox.checked = true;
 
     const defaultAddressLabel = document.createElement('label');
     defaultAddressLabel.htmlFor = 'defaultAddress';
-    defaultAddressLabel.textContent = 'Установить как адрес по умолчанию';
+    defaultAddressLabel.textContent = 'Установить как адрес по умолчанию для заказов';
+    defaultAddressLabel.className = 'default-address-label';
+
+    const defaultAddressHint = document.createElement('p');
+    defaultAddressHint.className = 'default-address-hint';
+    defaultAddressHint.textContent = 'Этот адрес будет использоваться по умолчанію';
 
     defaultCheckboxGroup.appendChild(defaultAddressCheckbox);
     defaultCheckboxGroup.appendChild(defaultAddressLabel);
     defaultAddressGroup.appendChild(defaultCheckboxGroup);
+    defaultAddressGroup.appendChild(defaultAddressHint);
 
     return defaultAddressGroup;
   }
@@ -1169,17 +1182,30 @@ export class RegistrationPage {
     let isValid = true;
 
     isValid = RegistrationPage.validateStreet(streetInput) && isValid;
-
     isValid = RegistrationPage.validateCity(cityInput) && isValid;
-
     isValid = RegistrationPage.validatePostalCode(postalCodeInput) && isValid;
-
     isValid = RegistrationPage.validateCountry(countrySelect) && isValid;
+
+    const defaultAddressCheckbox = document.getElementById('defaultAddress');
+    const addressErrorContainer = document.getElementById('address-error');
+
+    if (
+      defaultAddressCheckbox instanceof HTMLInputElement &&
+      defaultAddressCheckbox.checked &&
+      !isValid &&
+      addressErrorContainer
+    ) {
+      addressErrorContainer.textContent = 'Для установкі адреса по умолчанию нужно правильно заполніть все поля';
+    } else if (addressErrorContainer) {
+      addressErrorContainer.textContent = '';
+    }
 
     return isValid;
   }
 
   private static createCustomerDraft(userData: UserData): CustomerDraft {
+    const defaultAddressIndex = userData.addresses.findIndex((addr) => addr.isDefault);
+
     return {
       email: userData.email,
       password: userData.password,
@@ -1192,14 +1218,8 @@ export class RegistrationPage {
         postalCode: address.postalCode,
         country: address.country,
       })),
-      defaultShippingAddress:
-        userData.addresses.findIndex((addr) => addr.isDefault) >= 0
-          ? userData.addresses.findIndex((addr) => addr.isDefault)
-          : undefined,
-      defaultBillingAddress:
-        userData.addresses.findIndex((addr) => addr.isDefault) >= 0
-          ? userData.addresses.findIndex((addr) => addr.isDefault)
-          : undefined,
+      defaultShippingAddress: defaultAddressIndex >= 0 ? defaultAddressIndex : undefined,
+      defaultBillingAddress: defaultAddressIndex >= 0 ? defaultAddressIndex : undefined,
     };
   }
 
@@ -1255,14 +1275,14 @@ export class RegistrationPage {
       if (hasDuplicateEmail) {
         return {
           success: false,
-          message: 'Юзер с этім email уже существует. Пожалуйста, используйте другой email или войдіте в сістему.',
+          message: 'Юзер с этім email уже существует. Используйте другой email',
         };
       }
     }
 
     return {
       success: false,
-      message: 'Проверьте правільность введенных данных и попробуйте снова.',
+      message: 'Проверьте правільность введенных данных',
     };
   }
 
@@ -1279,21 +1299,34 @@ export class RegistrationPage {
 
       console.log('Юзер зарегістрирован:', response);
 
-      const loginSuccess = await AuthService.login(userData.email, userData.password);
-
-      if (loginSuccess) {
-        return {
-          success: true,
-          message: 'Регістрация завершена! Входім в систему...',
-        };
-      } else {
-        return {
-          success: true,
-          message: 'Регістрация завершена! Войдите в систему.',
-        };
-      }
+      return RegistrationPage.handleSuccessfulRegistration(userData);
     } catch (error: unknown) {
       return RegistrationPage.handleRegistrationError(error);
+    }
+  }
+
+  private static async handleSuccessfulRegistration(
+    userData: UserData
+  ): Promise<{ success: boolean; message: string }> {
+    const hasDefaultAddress = userData.addresses.some((addr) => addr.isDefault);
+    let successMessage = 'Регістрация завершена!';
+
+    if (hasDefaultAddress) {
+      successMessage += ' Ваш адрес по умолчанию сохранен.';
+    }
+
+    const loginSuccess = await AuthService.login(userData.email, userData.password);
+
+    if (loginSuccess) {
+      return {
+        success: true,
+        message: `${successMessage} Входим в магазін...`,
+      };
+    } else {
+      return {
+        success: true,
+        message: `${successMessage} Войти в магазин`,
+      };
     }
   }
 

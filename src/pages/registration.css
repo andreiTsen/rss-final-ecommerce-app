@@ -259,3 +259,35 @@ select:focus {
 .close-button:hover {
   color: #666;
 }
+
+.default-address {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #4caf50;
+  padding-right: 0;
+}
+
+.default-address-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.default-address-hint {
+  margin-top: 5px;
+  font-size: 0.9rem;
+  color: #666;
+  margin-left: 25px;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-group input[type='checkbox'] {
+  width: auto;
+  margin-right: 10px;
+  transform: scale(1.2);
+}
