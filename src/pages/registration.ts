@@ -1,5 +1,6 @@
-import { CustomerDraft } from '@commercetools/platform-sdk';
 import { apiRoot } from '../api';
+import { AuthService } from '../services/authService';
+import { CustomerDraft } from '@commercetools/platform-sdk';
 
 type UserAddress = {
   street: string;
@@ -809,29 +810,54 @@ export class RegistrationPage {
   }
 
   private static async submitForm(form: HTMLFormElement): Promise<void> {
-    const submitButton = form.querySelector<HTMLButtonElement>('.btn-register');
-    if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.textContent = 'Регистрация...';
-    }
+    const submitButton = RegistrationPage.prepareFormSubmission(form);
 
     const userData = RegistrationPage.collectFormData(form);
 
     const result = await RegistrationPage.registerUser(userData);
 
+    RegistrationPage.resetSubmitButton(submitButton);
+
+    RegistrationPage.handleRegistrationResult(result);
+  }
+
+  private static prepareFormSubmission(form: HTMLFormElement): HTMLButtonElement | null {
+    const submitButton = form.querySelector<HTMLButtonElement>('.btn-register');
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Регистрация...';
+    }
+    return submitButton;
+  }
+
+  private static resetSubmitButton(submitButton: HTMLButtonElement | null): void {
     if (submitButton) {
       submitButton.disabled = false;
       submitButton.textContent = 'Зарегистрироваться';
     }
+  }
 
+  private static handleRegistrationResult(result: { success: boolean; message: string }): void {
     if (result.success) {
       RegistrationPage.showSuccessMessage(result.message);
 
+      RegistrationPage.redirectAfterRegistration();
+    } else {
+      RegistrationPage.showErrorMessage(result.message);
+    }
+  }
+
+  private static redirectAfterRegistration(): void {
+    if (AuthService.isAuthenticated()) {
+      window.history.pushState({ page: 'store' }, 'Store page', '/store');
+
+      setTimeout(() => {
+        window.location.href = '/store';
+      }, 2000);
+    } else {
       setTimeout(() => {
         window.location.href = '/login';
       }, 3000);
-    } else {
-      RegistrationPage.showErrorMessage(result.message);
     }
   }
 
@@ -1195,7 +1221,7 @@ export class RegistrationPage {
   }
 
   private static handleRegistrationError(error: unknown): { success: boolean; message: string } {
-    console.error('Ошибка при регистрации пользователя:', error);
+    console.error('Ошібка регистрации юзера:', error);
 
     const statusCode = RegistrationPage.getStatusCode(error);
 
@@ -1207,14 +1233,14 @@ export class RegistrationPage {
       if (statusCode >= 500) {
         return {
           success: false,
-          message: 'Произошла ошибка на сервере. Пожалуйста, попробуйте позже.',
+          message: 'Ошібка на сервере. Попробуйте позже.',
         };
       }
     }
 
     return {
       success: false,
-      message: 'Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.',
+      message: 'Ошібка регистрации. Попробуйте позже.',
     };
   }
 
@@ -1229,15 +1255,14 @@ export class RegistrationPage {
       if (hasDuplicateEmail) {
         return {
           success: false,
-          message:
-            'Пользователь с таким email уже существует. Пожалуйста, используйте другой email или войдите в систему.',
+          message: 'Юзер с этім email уже существует. Пожалуйста, используйте другой email или войдіте в сістему.',
         };
       }
     }
 
     return {
       success: false,
-      message: 'Проверьте правильность введенных данных и попробуйте снова.',
+      message: 'Проверьте правільность введенных данных и попробуйте снова.',
     };
   }
 
@@ -1252,11 +1277,21 @@ export class RegistrationPage {
         })
         .execute();
 
-      console.log('Пользователь успешно зарегистрирован:', response);
-      return {
-        success: true,
-        message: 'Регистрация успешно завершена! Теперь вы можете войти в систему.',
-      };
+      console.log('Юзер зарегістрирован:', response);
+
+      const loginSuccess = await AuthService.login(userData.email, userData.password);
+
+      if (loginSuccess) {
+        return {
+          success: true,
+          message: 'Регістрация завершена! Входім в систему...',
+        };
+      } else {
+        return {
+          success: true,
+          message: 'Регістрация завершена! Войдите в систему.',
+        };
+      }
     } catch (error: unknown) {
       return RegistrationPage.handleRegistrationError(error);
     }
