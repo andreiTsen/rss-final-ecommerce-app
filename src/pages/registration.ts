@@ -1,3 +1,6 @@
+import { CustomerDraft } from '@commercetools/platform-sdk';
+import { apiRoot } from '../api';
+
 type UserAddress = {
   street: string;
   city: string;
@@ -27,6 +30,17 @@ type FormFields = {
   cityInput: HTMLInputElement | null;
   postalCodeInput: HTMLInputElement | null;
   countrySelect: HTMLSelectElement | null;
+};
+
+type ErrorResponse = {
+  statusCode: number;
+  body?: {
+    errors?: Array<{
+      code?: string;
+      field?: string;
+      message?: string;
+    }>;
+  };
 };
 
 export class RegistrationPage {
@@ -421,11 +435,11 @@ export class RegistrationPage {
     form.appendChild(RegistrationPage.createFormActions());
     form.appendChild(RegistrationPage.createLoginLink());
 
-    form.addEventListener('submit', (event: Event): void => {
+    form.addEventListener('submit', async (event: Event): Promise<void> => {
       event.preventDefault();
 
       if (RegistrationPage.validateForm(form)) {
-        RegistrationPage.submitForm(form);
+        await RegistrationPage.submitForm(form);
       }
     });
 
@@ -491,7 +505,7 @@ export class RegistrationPage {
     const loginText = document.createTextNode('Уже есть аккаунт? ');
     const loginAnchor = document.createElement('a');
     loginAnchor.href = '/login';
-    loginAnchor.textContent = 'Войти здесь';
+    loginAnchor.textContent = 'Вход тут';
 
     loginLink.appendChild(loginText);
     loginLink.appendChild(loginAnchor);
@@ -794,12 +808,92 @@ export class RegistrationPage {
     return { year, month, day, isValid: true };
   }
 
-  private static submitForm(form: HTMLFormElement): void {
+  private static async submitForm(form: HTMLFormElement): Promise<void> {
+    const submitButton = form.querySelector<HTMLButtonElement>('.btn-register');
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Регистрация...';
+    }
+
     const userData = RegistrationPage.collectFormData(form);
 
-    console.log('Массів пользователя:', userData);
+    const result = await RegistrationPage.registerUser(userData);
 
-    console.warn('Регістрация успешно завершена!');
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = 'Зарегистрироваться';
+    }
+
+    if (result.success) {
+      RegistrationPage.showSuccessMessage(result.message);
+
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 3000);
+    } else {
+      RegistrationPage.showErrorMessage(result.message);
+    }
+  }
+
+  private static createMessageElement(type: 'success' | 'error', message: string): HTMLDivElement {
+    const messageElement = document.createElement('div');
+    messageElement.className = `message-container ${type}-message`;
+
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+
+    const messageIcon = document.createElement('span');
+    messageIcon.className = 'message-icon';
+    messageIcon.textContent = type === 'success' ? '✓' : '!';
+    messageContent.appendChild(messageIcon);
+
+    const messageText = document.createElement('p');
+    messageText.textContent = message;
+    messageContent.appendChild(messageText);
+
+    messageElement.appendChild(messageContent);
+
+    const closeButton = document.createElement('button');
+    closeButton.className = 'close-button';
+    closeButton.textContent = '×';
+    closeButton.addEventListener('click', () => {
+      messageElement.remove();
+    });
+
+    messageElement.appendChild(closeButton);
+
+    return messageElement;
+  }
+
+  private static showSuccessMessage(message: string): void {
+    RegistrationPage.removeMessages();
+
+    const messageElement = RegistrationPage.createMessageElement('success', message);
+    document.body.appendChild(messageElement);
+
+    setTimeout(() => {
+      if (document.body.contains(messageElement)) {
+        messageElement.remove();
+      }
+    }, 5000);
+  }
+
+  private static showErrorMessage(message: string): void {
+    RegistrationPage.removeMessages();
+
+    const messageElement = RegistrationPage.createMessageElement('error', message);
+    document.body.appendChild(messageElement);
+
+    setTimeout(() => {
+      if (document.body.contains(messageElement)) {
+        messageElement.remove();
+      }
+    }, 5000);
+  }
+
+  private static removeMessages(): void {
+    const messages = document.querySelectorAll('.message-container');
+    messages.forEach((message) => message.remove());
   }
 
   private static collectFormData(form: HTMLFormElement): UserData {
@@ -1057,6 +1151,115 @@ export class RegistrationPage {
     isValid = RegistrationPage.validateCountry(countrySelect) && isValid;
 
     return isValid;
+  }
+
+  private static createCustomerDraft(userData: UserData): CustomerDraft {
+    return {
+      email: userData.email,
+      password: userData.password,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      dateOfBirth: userData.dateOfBirth,
+      addresses: userData.addresses.map((address) => ({
+        streetName: address.street,
+        city: address.city,
+        postalCode: address.postalCode,
+        country: address.country,
+      })),
+      defaultShippingAddress:
+        userData.addresses.findIndex((addr) => addr.isDefault) >= 0
+          ? userData.addresses.findIndex((addr) => addr.isDefault)
+          : undefined,
+      defaultBillingAddress:
+        userData.addresses.findIndex((addr) => addr.isDefault) >= 0
+          ? userData.addresses.findIndex((addr) => addr.isDefault)
+          : undefined,
+    };
+  }
+
+  private static getStatusCode(error: unknown): number | null {
+    if (typeof error === 'object' && error !== null && 'statusCode' in error) {
+      const statusCode = error.statusCode;
+      if (typeof statusCode === 'number') {
+        return statusCode;
+      }
+    }
+    return null;
+  }
+
+  private static getErrorBody(error: unknown): ErrorResponse['body'] | null {
+    if (typeof error === 'object' && error !== null && 'body' in error) {
+      return error.body || null;
+    }
+    return null;
+  }
+
+  private static handleRegistrationError(error: unknown): { success: boolean; message: string } {
+    console.error('Ошибка при регистрации пользователя:', error);
+
+    const statusCode = RegistrationPage.getStatusCode(error);
+
+    if (statusCode !== null) {
+      if (statusCode === 400) {
+        return RegistrationPage.handleBadRequestError(error);
+      }
+
+      if (statusCode >= 500) {
+        return {
+          success: false,
+          message: 'Произошла ошибка на сервере. Пожалуйста, попробуйте позже.',
+        };
+      }
+    }
+
+    return {
+      success: false,
+      message: 'Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.',
+    };
+  }
+
+  private static handleBadRequestError(error: unknown): { success: boolean; message: string } {
+    const body = RegistrationPage.getErrorBody(error);
+
+    if (body && body.errors && Array.isArray(body.errors)) {
+      const hasDuplicateEmail = body.errors.some(
+        (errorItem) => errorItem.code === 'DuplicateField' && errorItem.field === 'email'
+      );
+
+      if (hasDuplicateEmail) {
+        return {
+          success: false,
+          message:
+            'Пользователь с таким email уже существует. Пожалуйста, используйте другой email или войдите в систему.',
+        };
+      }
+    }
+
+    return {
+      success: false,
+      message: 'Проверьте правильность введенных данных и попробуйте снова.',
+    };
+  }
+
+  private static async registerUser(userData: UserData): Promise<{ success: boolean; message: string }> {
+    try {
+      const customerDraft = RegistrationPage.createCustomerDraft(userData);
+
+      const response = await apiRoot
+        .customers()
+        .post({
+          body: customerDraft,
+        })
+        .execute();
+
+      console.log('Пользователь успешно зарегистрирован:', response);
+      return {
+        success: true,
+        message: 'Регистрация успешно завершена! Теперь вы можете войти в систему.',
+      };
+    } catch (error: unknown) {
+      return RegistrationPage.handleRegistrationError(error);
+    }
   }
 
   private render(): void {
