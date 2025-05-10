@@ -592,7 +592,7 @@ export class RegistrationPage {
     const loginText = document.createTextNode('Уже есть аккаунт? ');
     const loginAnchor = document.createElement('a');
     loginAnchor.href = '/login';
-    loginAnchor.textContent = 'Вход тут';
+    loginAnchor.textContent = 'Вход тут, если уже естть учетная запись';
 
     loginLink.appendChild(loginText);
     loginLink.appendChild(loginAnchor);
