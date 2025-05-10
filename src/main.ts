@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
   switch (path) {
     case '/registration':
     case '/register':
-    case '/':
       if (!isAuthenticated) {
         new RegistrationPage(appContainer);
       } else {
@@ -28,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       break;
     case '/store':
+    case '/':
       renderPlaceholderPage(appContainer, 'Страница магазина', isAuthenticated);
       break;
     default:

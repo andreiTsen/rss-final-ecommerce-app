@@ -291,3 +291,46 @@ select:focus {
   margin-right: 10px;
   transform: scale(1.2);
 }
+
+.address-subsection {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #4caf50;
+}
+
+.address-subsection-title {
+  color: #4caf50;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.same-address-hint {
+  margin-top: 5px;
+  font-size: 0.9rem;
+  color: #666;
+  margin-left: 25px;
+}
+
+.same-address-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.shipping-address {
+  border-left-color: #2196f3;
+}
+
+.shipping-address .address-subsection-title {
+  color: #2196f3;
+}
+
+.billing-address {
+  border-left-color: #ff9800;
+}
+
+.billing-address .address-subsection-title {
+  color: #ff9800;
+}

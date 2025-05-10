@@ -8,6 +8,7 @@ type UserAddress = {
   postalCode: string;
   country: string;
   isDefault: boolean;
+  type: 'shipping' | 'billing' | 'both';
 };
 
 type UserData = {
@@ -17,6 +18,7 @@ type UserData = {
   lastName: string;
   dateOfBirth: string;
   addresses: UserAddress[];
+  useSameAddress: boolean;
 };
 
 type FormFields = {
@@ -27,6 +29,17 @@ type FormFields = {
   yearInput: HTMLInputElement | null;
   monthInput: HTMLInputElement | null;
   dayInput: HTMLInputElement | null;
+  shippingStreetInput: HTMLInputElement | null;
+  shippingCityInput: HTMLInputElement | null;
+  shippingPostalCodeInput: HTMLInputElement | null;
+  shippingCountrySelect: HTMLSelectElement | null;
+  billingStreetInput: HTMLInputElement | null;
+  billingCityInput: HTMLInputElement | null;
+  billingPostalCodeInput: HTMLInputElement | null;
+  billingCountrySelect: HTMLSelectElement | null;
+  sameAddressCheckbox: HTMLInputElement | null;
+  defaultShippingAddressCheckbox: HTMLInputElement | null;
+  defaultBillingAddressCheckbox: HTMLInputElement | null;
   streetInput: HTMLInputElement | null;
   cityInput: HTMLInputElement | null;
   postalCodeInput: HTMLInputElement | null;
@@ -163,51 +176,105 @@ export class RegistrationPage {
     addressTitle.textContent = 'Информация об адресе';
     addressSection.appendChild(addressTitle);
 
-    addressSection.appendChild(RegistrationPage.createSameAddressCheckbox());
+    const sameAddressCheckbox = RegistrationPage.createSameAddressCheckbox();
+    addressSection.appendChild(sameAddressCheckbox);
 
-    addressSection.appendChild(RegistrationPage.createStreetField());
-    addressSection.appendChild(RegistrationPage.createCityAndPostalFields());
-    addressSection.appendChild(RegistrationPage.createCountryField());
+    const shippingAddressSection = RegistrationPage.createShippingAddressSection();
+    addressSection.appendChild(shippingAddressSection);
 
-    const addressError = document.createElement('div');
-    addressError.className = 'error-message';
-    addressError.id = 'address-error';
-    addressSection.appendChild(addressError);
+    const billingAddressSection = RegistrationPage.createBillingAddressSection();
+    billingAddressSection.id = 'billing-address-section';
+    billingAddressSection.style.display = 'none';
+    addressSection.appendChild(billingAddressSection);
 
-    addressSection.appendChild(RegistrationPage.createDefaultAddressCheckbox());
+    const checkbox = sameAddressCheckbox.querySelector('#sameAddress');
+    if (checkbox instanceof HTMLInputElement) {
+      checkbox.addEventListener('change', () => {
+        const billingSection = document.getElementById('billing-address-section');
+        if (billingSection) {
+          billingSection.style.display = checkbox.checked ? 'none' : 'block';
+        }
+      });
+    }
 
     return addressSection;
   }
 
-  private static createCityAndPostalFields(): HTMLDivElement {
+  private static createShippingAddressSection(): HTMLDivElement {
+    const shippingSection = document.createElement('div');
+    shippingSection.className = 'address-subsection shipping-address';
+
+    const sectionTitle = document.createElement('h4');
+    sectionTitle.textContent = 'Адрес доставки';
+    sectionTitle.className = 'address-subsection-title';
+    shippingSection.appendChild(sectionTitle);
+
+    shippingSection.appendChild(RegistrationPage.createStreetField('shipping'));
+    shippingSection.appendChild(RegistrationPage.createCityAndPostalFields('shipping'));
+    shippingSection.appendChild(RegistrationPage.createCountryField('shipping'));
+
+    const shippingAddressError = document.createElement('div');
+    shippingAddressError.className = 'error-message';
+    shippingAddressError.id = 'shipping-address-error';
+    shippingSection.appendChild(shippingAddressError);
+
+    shippingSection.appendChild(RegistrationPage.createDefaultAddressCheckbox('shipping'));
+
+    return shippingSection;
+  }
+
+  private static createBillingAddressSection(): HTMLDivElement {
+    const billingSection = document.createElement('div');
+    billingSection.className = 'address-subsection billing-address';
+
+    const sectionTitle = document.createElement('h4');
+    sectionTitle.textContent = 'Адрес выставленія счета';
+    sectionTitle.className = 'address-subsection-title';
+    billingSection.appendChild(sectionTitle);
+
+    billingSection.appendChild(RegistrationPage.createStreetField('billing'));
+    billingSection.appendChild(RegistrationPage.createCityAndPostalFields('billing'));
+    billingSection.appendChild(RegistrationPage.createCountryField('billing'));
+
+    const billingAddressError = document.createElement('div');
+    billingAddressError.className = 'error-message';
+    billingAddressError.id = 'billing-address-error';
+    billingSection.appendChild(billingAddressError);
+
+    billingSection.appendChild(RegistrationPage.createDefaultAddressCheckbox('billing'));
+
+    return billingSection;
+  }
+
+  private static createCityAndPostalFields(type: 'shipping' | 'billing'): HTMLDivElement {
     const cityRow = document.createElement('div');
     cityRow.className = 'form-row';
 
-    cityRow.appendChild(RegistrationPage.createCityField());
-    cityRow.appendChild(RegistrationPage.createPostalCodeField());
+    cityRow.appendChild(RegistrationPage.createCityField(type));
+    cityRow.appendChild(RegistrationPage.createPostalCodeField(type));
 
     return cityRow;
   }
 
-  private static createCityField(): HTMLDivElement {
+  private static createCityField(type: 'shipping' | 'billing'): HTMLDivElement {
     const cityGroup = document.createElement('div');
     cityGroup.className = 'form-group';
 
     const cityLabel = document.createElement('label');
-    cityLabel.htmlFor = 'city';
+    cityLabel.htmlFor = `${type}-city`;
     cityLabel.textContent = 'Город*';
 
     const cityInput = document.createElement('input');
     cityInput.type = 'text';
-    cityInput.id = 'city';
-    cityInput.name = 'city';
+    cityInput.id = `${type}-city`;
+    cityInput.name = `${type}-city`;
     cityInput.required = true;
 
     cityInput.addEventListener('input', (): void => {
-      const errorElement = RegistrationPage.getElement<HTMLDivElement>('#city-error');
+      const errorElement = RegistrationPage.getElement<HTMLDivElement>(`#${type}-city-error`);
       if (errorElement) {
         if (!cityInput.value.trim()) {
-          errorElement.textContent = 'Поле города обязательно для заполнения';
+          errorElement.textContent = 'Поле города обязательно для заполненія';
         } else if (cityInput.value.length < 2) {
           errorElement.textContent = 'Названіе города должно содержать минимум 2 символа';
         } else {
@@ -218,7 +285,7 @@ export class RegistrationPage {
 
     const cityError = document.createElement('div');
     cityError.className = 'error-message';
-    cityError.id = 'city-error';
+    cityError.id = `${type}-city-error`;
 
     cityGroup.appendChild(cityLabel);
     cityGroup.appendChild(cityInput);
@@ -227,29 +294,29 @@ export class RegistrationPage {
     return cityGroup;
   }
 
-  private static createCountryField(): HTMLDivElement {
+  private static createCountryField(type: 'shipping' | 'billing'): HTMLDivElement {
     const countryGroup = document.createElement('div');
     countryGroup.className = 'form-group';
 
     const countryLabel = document.createElement('label');
-    countryLabel.htmlFor = 'country';
+    countryLabel.htmlFor = `${type}-country`;
     countryLabel.textContent = 'Страна*';
     countryGroup.appendChild(countryLabel);
 
-    countryGroup.appendChild(RegistrationPage.createCountrySelect());
+    countryGroup.appendChild(RegistrationPage.createCountrySelect(type));
 
     const countryError = document.createElement('div');
     countryError.className = 'error-message';
-    countryError.id = 'country-error';
+    countryError.id = `${type}-country-error`;
     countryGroup.appendChild(countryError);
 
     return countryGroup;
   }
 
-  private static createCountrySelect(): HTMLSelectElement {
+  private static createCountrySelect(type: 'shipping' | 'billing'): HTMLSelectElement {
     const countrySelect = document.createElement('select');
-    countrySelect.id = 'country';
-    countrySelect.name = 'country';
+    countrySelect.id = `${type}-country`;
+    countrySelect.name = `${type}-country`;
     countrySelect.required = true;
 
     const countries = [
@@ -327,7 +394,7 @@ export class RegistrationPage {
     return dayContainer;
   }
 
-  private static createDefaultAddressCheckbox(): HTMLDivElement {
+  private static createDefaultAddressCheckbox(type: 'shipping' | 'billing'): HTMLDivElement {
     const defaultAddressGroup = document.createElement('div');
     defaultAddressGroup.className = 'form-group default-address';
 
@@ -336,18 +403,24 @@ export class RegistrationPage {
 
     const defaultAddressCheckbox = document.createElement('input');
     defaultAddressCheckbox.type = 'checkbox';
-    defaultAddressCheckbox.id = 'defaultAddress';
-    defaultAddressCheckbox.name = 'defaultAddress';
-    defaultAddressCheckbox.checked = true;
+    defaultAddressCheckbox.id = `default-${type}-address`;
+    defaultAddressCheckbox.name = `default-${type}-address`;
+    defaultAddressCheckbox.checked = type === 'shipping';
 
     const defaultAddressLabel = document.createElement('label');
-    defaultAddressLabel.htmlFor = 'defaultAddress';
-    defaultAddressLabel.textContent = 'Установить как адрес по умолчанию для заказов';
+    defaultAddressLabel.htmlFor = `default-${type}-address`;
+    defaultAddressLabel.textContent =
+      type === 'shipping'
+        ? 'Установить как адрес доставки по умолчанию'
+        : 'Установить как адрес выставления счета по умолчанию';
     defaultAddressLabel.className = 'default-address-label';
 
     const defaultAddressHint = document.createElement('p');
     defaultAddressHint.className = 'default-address-hint';
-    defaultAddressHint.textContent = 'Этот адрес будет использоваться по умолчанію';
+    defaultAddressHint.textContent =
+      type === 'shipping'
+        ? 'Этот адрес будет іспользоваться для доставки вашіх заказов'
+        : 'Этот адрес будет использоваться для выставленія счетов';
 
     defaultCheckboxGroup.appendChild(defaultAddressCheckbox);
     defaultCheckboxGroup.appendChild(defaultAddressLabel);
@@ -616,27 +689,27 @@ export class RegistrationPage {
     return passwordGroup;
   }
 
-  private static createPostalCodeField(): HTMLDivElement {
+  private static createPostalCodeField(type: 'shipping' | 'billing'): HTMLDivElement {
     const postalCodeGroup = document.createElement('div');
     postalCodeGroup.className = 'form-group';
 
     const postalCodeLabel = document.createElement('label');
-    postalCodeLabel.htmlFor = 'postalCode';
+    postalCodeLabel.htmlFor = `${type}-postalCode`;
     postalCodeLabel.textContent = 'Почтовый индекс*';
 
     const postalCodeInput = document.createElement('input');
     postalCodeInput.type = 'text';
-    postalCodeInput.id = 'postalCode';
-    postalCodeInput.name = 'postalCode';
+    postalCodeInput.id = `${type}-postalCode`;
+    postalCodeInput.name = `${type}-postalCode`;
     postalCodeInput.required = true;
 
     postalCodeInput.addEventListener('input', (): void => {
-      const errorElement = RegistrationPage.getElement<HTMLDivElement>('#postalCode-error');
+      const errorElement = RegistrationPage.getElement<HTMLDivElement>(`#${type}-postalCode-error`);
       if (errorElement) {
         if (!postalCodeInput.value.trim()) {
-          errorElement.textContent = 'Поле почтового индекса обязательно для заполненія';
+          errorElement.textContent = 'Поле почтового индекса обязательно для заполнения';
         } else if (!/^\d{5,6}$/.test(postalCodeInput.value)) {
-          errorElement.textContent = 'Почтовый индекс должен содержать 5-6 ціфр';
+          errorElement.textContent = 'Почтовый индекс должен содержать 5-6 цифр';
         } else {
           errorElement.textContent = '';
         }
@@ -645,7 +718,7 @@ export class RegistrationPage {
 
     const postalCodeError = document.createElement('div');
     postalCodeError.className = 'error-message';
-    postalCodeError.id = 'postalCode-error';
+    postalCodeError.id = `${type}-postalCode-error`;
 
     postalCodeGroup.appendChild(postalCodeLabel);
     postalCodeGroup.appendChild(postalCodeInput);
@@ -669,36 +742,42 @@ export class RegistrationPage {
 
     const sameAddressLabel = document.createElement('label');
     sameAddressLabel.htmlFor = 'sameAddress';
-    sameAddressLabel.textContent = 'Использовать один адрес для доставкі и оплаты';
+    sameAddressLabel.textContent = 'Использовать один адрес для доставки і выставления счета';
+    sameAddressLabel.className = 'same-address-label';
+
+    const sameAddressHint = document.createElement('p');
+    sameAddressHint.className = 'same-address-hint';
+    sameAddressHint.textContent = 'Снимите чекбокс, если хотите указать разные адреса для доставкі и выставления счета';
 
     sameAddressGroup.appendChild(sameAddressCheckbox);
     sameAddressGroup.appendChild(sameAddressLabel);
     addressType.appendChild(sameAddressGroup);
+    addressType.appendChild(sameAddressHint);
 
     return addressType;
   }
 
-  private static createStreetField(): HTMLDivElement {
+  private static createStreetField(type: 'shipping' | 'billing'): HTMLDivElement {
     const streetGroup = document.createElement('div');
     streetGroup.className = 'form-group';
 
     const streetLabel = document.createElement('label');
-    streetLabel.htmlFor = 'street';
-    streetLabel.textContent = 'Уліца*';
+    streetLabel.htmlFor = `${type}-street`;
+    streetLabel.textContent = 'Улица*';
 
     const streetInput = document.createElement('input');
     streetInput.type = 'text';
-    streetInput.id = 'street';
-    streetInput.name = 'street';
+    streetInput.id = `${type}-street`;
+    streetInput.name = `${type}-street`;
     streetInput.required = true;
 
     streetInput.addEventListener('input', (): void => {
-      const errorElement = RegistrationPage.getElement<HTMLDivElement>('#street-error');
+      const errorElement = RegistrationPage.getElement<HTMLDivElement>(`#${type}-street-error`);
       if (errorElement) {
         if (!streetInput.value.trim()) {
-          errorElement.textContent = 'Поле улицы обязательно для заполненія';
+          errorElement.textContent = 'Поле улицы обязательно для заполнения';
         } else if (streetInput.value.length < 3) {
-          errorElement.textContent = 'Названіе улицы должно содержать мінимум 3 символа';
+          errorElement.textContent = 'Название улицы должно содержать минимум 3 символа';
         } else {
           errorElement.textContent = '';
         }
@@ -707,7 +786,7 @@ export class RegistrationPage {
 
     const streetError = document.createElement('div');
     streetError.className = 'error-message';
-    streetError.id = 'street-error';
+    streetError.id = `${type}-street-error`;
 
     streetGroup.appendChild(streetLabel);
     streetGroup.appendChild(streetInput);
@@ -744,6 +823,11 @@ export class RegistrationPage {
   }
 
   private static getFormFields(form: HTMLFormElement): FormFields {
+    const shippingStreetInput = form.querySelector<HTMLInputElement>('#shipping-street');
+    const shippingCityInput = form.querySelector<HTMLInputElement>('#shipping-city');
+    const shippingPostalCodeInput = form.querySelector<HTMLInputElement>('#shipping-postalCode');
+    const shippingCountrySelect = form.querySelector<HTMLSelectElement>('#shipping-country');
+
     return {
       emailInput: form.querySelector<HTMLInputElement>('#email'),
       passwordInput: form.querySelector<HTMLInputElement>('#password'),
@@ -752,11 +836,69 @@ export class RegistrationPage {
       yearInput: form.querySelector<HTMLInputElement>('#birthYear'),
       monthInput: form.querySelector<HTMLInputElement>('#birthMonth'),
       dayInput: form.querySelector<HTMLInputElement>('#birthDay'),
-      streetInput: form.querySelector<HTMLInputElement>('#street'),
-      cityInput: form.querySelector<HTMLInputElement>('#city'),
-      postalCodeInput: form.querySelector<HTMLInputElement>('#postalCode'),
-      countrySelect: form.querySelector<HTMLSelectElement>('#country'),
+      shippingStreetInput,
+      shippingCityInput,
+      shippingPostalCodeInput,
+      shippingCountrySelect,
+      billingStreetInput: form.querySelector<HTMLInputElement>('#billing-street'),
+      billingCityInput: form.querySelector<HTMLInputElement>('#billing-city'),
+      billingPostalCodeInput: form.querySelector<HTMLInputElement>('#billing-postalCode'),
+      billingCountrySelect: form.querySelector<HTMLSelectElement>('#billing-country'),
+      sameAddressCheckbox: form.querySelector<HTMLInputElement>('#sameAddress'),
+      defaultShippingAddressCheckbox: form.querySelector<HTMLInputElement>('#default-shipping-address'),
+      defaultBillingAddressCheckbox: form.querySelector<HTMLInputElement>('#default-billing-address'),
+      streetInput: shippingStreetInput,
+      cityInput: shippingCityInput,
+      postalCodeInput: shippingPostalCodeInput,
+      countrySelect: shippingCountrySelect,
     };
+  }
+
+  private static setupAddressSyncHandler(): void {
+    const sameAddressCheckbox = document.getElementById('sameAddress');
+    if (!(sameAddressCheckbox instanceof HTMLInputElement)) return;
+
+    const billingFields = RegistrationPage.getBillingFields();
+
+    sameAddressCheckbox.addEventListener('change', () => {
+      RegistrationPage.updateBillingFieldsVisibility(sameAddressCheckbox, billingFields);
+    });
+
+    RegistrationPage.updateBillingFieldsVisibility(sameAddressCheckbox, billingFields);
+  }
+
+  private static getBillingFields(): HTMLElement[] {
+    return [
+      document.getElementById('billing-street'),
+      document.getElementById('billing-city'),
+      document.getElementById('billing-postalCode'),
+      document.getElementById('billing-country'),
+    ].filter((field): field is HTMLElement => field !== null);
+  }
+
+  private static updateBillingFieldsVisibility(
+    sameAddressCheckbox: HTMLInputElement,
+    billingFields: HTMLElement[]
+  ): void {
+    const billingSection = document.getElementById('billing-address-section');
+
+    if (sameAddressCheckbox.checked) {
+      if (billingSection) {
+        billingSection.style.display = 'none';
+      }
+
+      billingFields.forEach((field) => {
+        field.removeAttribute('required');
+      });
+    } else {
+      if (billingSection) {
+        billingSection.style.display = 'block';
+      }
+
+      billingFields.forEach((field) => {
+        field.setAttribute('required', 'true');
+      });
+    }
   }
 
   private static handleDayInput(event: Event): void {
@@ -937,41 +1079,67 @@ export class RegistrationPage {
 
   private static collectFormData(form: HTMLFormElement): UserData {
     const formData = new FormData(form);
+    const useSameAddress = this.isCheckboxChecked(formData, 'sameAddress');
 
-    const getFormValue = (key: string): string => {
-      const value = formData.get(key);
-      return value instanceof File ? '' : (value || '').toString();
-    };
-
-    const isCheckboxChecked = (key: string): boolean => {
-      return getFormValue(key) === 'on';
-    };
+    const addresses: UserAddress[] = this.collectAddresses(formData, useSameAddress);
 
     return {
-      email: getFormValue('email'),
-      password: getFormValue('password'),
-      firstName: getFormValue('firstName'),
-      lastName: getFormValue('lastName'),
-      dateOfBirth: `${getFormValue('birthYear')}-${getFormValue('birthMonth')}-${getFormValue('birthDay')}`,
-      addresses: [
-        {
-          street: getFormValue('street'),
-          city: getFormValue('city'),
-          postalCode: getFormValue('postalCode'),
-          country: getFormValue('country'),
-          isDefault: isCheckboxChecked('defaultAddress'),
-        },
-      ],
+      email: this.getFormValue(formData, 'email'),
+      password: this.getFormValue(formData, 'password'),
+      firstName: this.getFormValue(formData, 'firstName'),
+      lastName: this.getFormValue(formData, 'lastName'),
+      dateOfBirth: this.formatDateOfBirth(formData),
+      addresses,
+      useSameAddress,
     };
   }
 
-  private static validateCity(cityInput: HTMLInputElement): boolean {
-    const cityError = document.getElementById('city-error');
+  private static getFormValue(formData: FormData, key: string): string {
+    const value = formData.get(key);
+    return value instanceof File ? '' : (value || '').toString();
+  }
+
+  private static isCheckboxChecked(formData: FormData, key: string): boolean {
+    return this.getFormValue(formData, key) === 'on';
+  }
+
+  private static formatDateOfBirth(formData: FormData): string {
+    return `${this.getFormValue(formData, 'birthYear')}-${this.getFormValue(formData, 'birthMonth')}-${this.getFormValue(formData, 'birthDay')}`;
+  }
+
+  private static collectAddresses(formData: FormData, useSameAddress: boolean): UserAddress[] {
+    const addresses: UserAddress[] = [];
+
+    addresses.push({
+      street: this.getFormValue(formData, 'shipping-street'),
+      city: this.getFormValue(formData, 'shipping-city'),
+      postalCode: this.getFormValue(formData, 'shipping-postalCode'),
+      country: this.getFormValue(formData, 'shipping-country'),
+      isDefault: this.isCheckboxChecked(formData, 'default-shipping-address'),
+      type: useSameAddress ? 'both' : 'shipping',
+    });
+
+    if (!useSameAddress) {
+      addresses.push({
+        street: this.getFormValue(formData, 'billing-street'),
+        city: this.getFormValue(formData, 'billing-city'),
+        postalCode: this.getFormValue(formData, 'billing-postalCode'),
+        country: this.getFormValue(formData, 'billing-country'),
+        isDefault: this.isCheckboxChecked(formData, 'default-billing-address'),
+        type: 'billing',
+      });
+    }
+
+    return addresses;
+  }
+
+  private static validateCity(cityInput: HTMLInputElement, type: 'shipping' | 'billing'): boolean {
+    const cityError = document.getElementById(`${type}-city-error`);
     if (!cityInput.value.trim()) {
       if (cityError) cityError.textContent = 'Поле города обязательно для заполнения';
       return false;
     } else if (cityInput.value.length < 2) {
-      if (cityError) cityError.textContent = 'Название города должно содержать мінимум 2 символа';
+      if (cityError) cityError.textContent = 'Название города должно содержать минимум 2 символа';
       return false;
     }
 
@@ -979,10 +1147,10 @@ export class RegistrationPage {
     return true;
   }
 
-  private static validateCountry(countrySelect: HTMLSelectElement): boolean {
-    const countryError = document.getElementById('country-error');
+  private static validateCountry(countrySelect: HTMLSelectElement, type: 'shipping' | 'billing'): boolean {
+    const countryError = document.getElementById(`${type}-country-error`);
     if (!countrySelect.value) {
-      if (countryError) countryError.textContent = 'Пожалуйста, выберіте страну';
+      if (countryError) countryError.textContent = 'Пожалуйста, выберите страну';
       return false;
     }
 
@@ -1056,7 +1224,7 @@ export class RegistrationPage {
     const fields = RegistrationPage.getFormFields(form);
 
     if (!RegistrationPage.checkFieldsExist(fields)) {
-      console.error('Не все поля формы');
+      console.error('Не все поля формы найдены');
       return false;
     }
 
@@ -1090,7 +1258,8 @@ export class RegistrationPage {
           fields.streetInput,
           fields.cityInput,
           fields.postalCodeInput,
-          fields.countrySelect
+          fields.countrySelect,
+          'shipping'
         ) && isValid;
     } else {
       isValid = false;
@@ -1145,13 +1314,13 @@ export class RegistrationPage {
     return true;
   }
 
-  private static validatePostalCode(postalCodeInput: HTMLInputElement): boolean {
-    const postalCodeError = document.getElementById('postalCode-error');
+  private static validatePostalCode(postalCodeInput: HTMLInputElement, type: 'shipping' | 'billing'): boolean {
+    const postalCodeError = document.getElementById(`${type}-postalCode-error`);
     if (!postalCodeInput.value.trim()) {
-      if (postalCodeError) postalCodeError.textContent = 'Поле почтового индекса обязательно для заполненія';
+      if (postalCodeError) postalCodeError.textContent = 'Поле почтового индекса обязательно для заполнения';
       return false;
     } else if (!/^\d{5,6}$/.test(postalCodeInput.value)) {
-      if (postalCodeError) postalCodeError.textContent = 'Почтовый индекс должен содержать 5-6 ціфр';
+      if (postalCodeError) postalCodeError.textContent = 'Почтовый индекс должен содержать 5-6 цифр';
       return false;
     }
 
@@ -1159,13 +1328,13 @@ export class RegistrationPage {
     return true;
   }
 
-  private static validateStreet(streetInput: HTMLInputElement): boolean {
-    const streetError = document.getElementById('street-error');
+  private static validateStreet(streetInput: HTMLInputElement, type: 'shipping' | 'billing'): boolean {
+    const streetError = document.getElementById(`${type}-street-error`);
     if (!streetInput.value.trim()) {
-      if (streetError) streetError.textContent = 'Поле уліцы обязательно для заполненія';
+      if (streetError) streetError.textContent = 'Поле улицы обязательно для заполнения';
       return false;
     } else if (streetInput.value.length < 3) {
-      if (streetError) streetError.textContent = 'Название уліцы должно содержать мінімум 3 символа';
+      if (streetError) streetError.textContent = 'Название улицы должно содержать минимум 3 символа';
       return false;
     }
 
@@ -1177,17 +1346,18 @@ export class RegistrationPage {
     streetInput: HTMLInputElement,
     cityInput: HTMLInputElement,
     postalCodeInput: HTMLInputElement,
-    countrySelect: HTMLSelectElement
+    countrySelect: HTMLSelectElement,
+    type: 'shipping' | 'billing'
   ): boolean {
     let isValid = true;
 
-    isValid = RegistrationPage.validateStreet(streetInput) && isValid;
-    isValid = RegistrationPage.validateCity(cityInput) && isValid;
-    isValid = RegistrationPage.validatePostalCode(postalCodeInput) && isValid;
-    isValid = RegistrationPage.validateCountry(countrySelect) && isValid;
+    isValid = RegistrationPage.validateStreet(streetInput, type) && isValid;
+    isValid = RegistrationPage.validateCity(cityInput, type) && isValid;
+    isValid = RegistrationPage.validatePostalCode(postalCodeInput, type) && isValid;
+    isValid = RegistrationPage.validateCountry(countrySelect, type) && isValid;
 
-    const defaultAddressCheckbox = document.getElementById('defaultAddress');
-    const addressErrorContainer = document.getElementById('address-error');
+    const defaultAddressCheckbox = document.getElementById(`default-${type}-address`);
+    const addressErrorContainer = document.getElementById(`${type}-address-error`);
 
     if (
       defaultAddressCheckbox instanceof HTMLInputElement &&
@@ -1195,7 +1365,7 @@ export class RegistrationPage {
       !isValid &&
       addressErrorContainer
     ) {
-      addressErrorContainer.textContent = 'Для установкі адреса по умолчанию нужно правильно заполніть все поля';
+      addressErrorContainer.textContent = `Для установки адреса ${type === 'shipping' ? 'доставки' : 'выставления счета'} по умолчанію необходимо правільно заполнить все поля`;
     } else if (addressErrorContainer) {
       addressErrorContainer.textContent = '';
     }
@@ -1204,7 +1374,26 @@ export class RegistrationPage {
   }
 
   private static createCustomerDraft(userData: UserData): CustomerDraft {
-    const defaultAddressIndex = userData.addresses.findIndex((addr) => addr.isDefault);
+    const addresses = userData.addresses.map((address) => ({
+      streetName: address.street,
+      city: address.city,
+      postalCode: address.postalCode,
+      country: address.country,
+    }));
+
+    let defaultShippingAddressIndex: number | undefined;
+    let defaultBillingAddressIndex: number | undefined;
+
+    userData.addresses.forEach((address, index) => {
+      if (address.isDefault) {
+        if (address.type === 'shipping' || address.type === 'both') {
+          defaultShippingAddressIndex = index;
+        }
+        if (address.type === 'billing' || address.type === 'both') {
+          defaultBillingAddressIndex = index;
+        }
+      }
+    });
 
     return {
       email: userData.email,
@@ -1212,14 +1401,9 @@ export class RegistrationPage {
       firstName: userData.firstName,
       lastName: userData.lastName,
       dateOfBirth: userData.dateOfBirth,
-      addresses: userData.addresses.map((address) => ({
-        streetName: address.street,
-        city: address.city,
-        postalCode: address.postalCode,
-        country: address.country,
-      })),
-      defaultShippingAddress: defaultAddressIndex >= 0 ? defaultAddressIndex : undefined,
-      defaultBillingAddress: defaultAddressIndex >= 0 ? defaultAddressIndex : undefined,
+      addresses,
+      defaultShippingAddress: defaultShippingAddressIndex,
+      defaultBillingAddress: defaultBillingAddressIndex,
     };
   }
 
@@ -1308,24 +1492,62 @@ export class RegistrationPage {
   private static async handleSuccessfulRegistration(
     userData: UserData
   ): Promise<{ success: boolean; message: string }> {
-    const hasDefaultAddress = userData.addresses.some((addr) => addr.isDefault);
-    let successMessage = 'Регістрация завершена!';
-
-    if (hasDefaultAddress) {
-      successMessage += ' Ваш адрес по умолчанию сохранен.';
-    }
+    const successMessage = this.createSuccessMessage(userData);
 
     const loginSuccess = await AuthService.login(userData.email, userData.password);
 
+    return this.createRegistrationResult(successMessage, loginSuccess);
+  }
+
+  private static createSuccessMessage(userData: UserData): string {
+    let successMessage = 'Регистрация завершена!';
+
+    if (userData.useSameAddress) {
+      successMessage += this.createSingleAddressMessage(userData.addresses);
+    } else {
+      successMessage += this.createMultipleAddressesMessage(userData.addresses);
+    }
+
+    return successMessage;
+  }
+
+  private static createSingleAddressMessage(addresses: UserAddress[]): string {
+    const defaultAddress = addresses.find((addr) => addr.isDefault);
+    if (defaultAddress) {
+      return ' Ваш адрес сохранен как адрес по умолчанию для доставки и выставления счета.';
+    } else {
+      return ' Ваш адрес сохранен для доставки и выставления счета.';
+    }
+  }
+
+  private static createMultipleAddressesMessage(addresses: UserAddress[]): string {
+    const defaultShippingAddress = addresses.find((addr) => addr.type === 'shipping' && addr.isDefault);
+    const defaultBillingAddress = addresses.find((addr) => addr.type === 'billing' && addr.isDefault);
+
+    if (defaultShippingAddress && defaultBillingAddress) {
+      return ' Ваши адреса сохранены как адреса по умолчанию для доставки и выставления счета.';
+    } else if (defaultShippingAddress) {
+      return ' Ваш адрес доставки сохранен как адрес по умолчанию.';
+    } else if (defaultBillingAddress) {
+      return ' Ваш адрес выставления счета сохранен как адрес по умолчанию.';
+    } else {
+      return ' Ваши адреса доставки и выставления счета сохранены.';
+    }
+  }
+
+  private static createRegistrationResult(
+    successMessage: string,
+    loginSuccess: boolean
+  ): { success: boolean; message: string } {
     if (loginSuccess) {
       return {
         success: true,
-        message: `${successMessage} Входим в магазін...`,
+        message: `${successMessage} Входим в систему...`,
       };
     } else {
       return {
         success: true,
-        message: `${successMessage} Войти в магазин`,
+        message: `${successMessage} Войдите в систему.`,
       };
     }
   }
@@ -1338,6 +1560,8 @@ export class RegistrationPage {
 
     registrationContainer.appendChild(form);
     this.container.appendChild(registrationContainer);
+
+    RegistrationPage.setupAddressSyncHandler();
   }
 }
 
