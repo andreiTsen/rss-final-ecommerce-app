@@ -1,5 +1,9 @@
 import { apiRoot } from './api';
 import { Category, ProductProjection, Product } from '@commercetools/platform-sdk';
+import { Navigation } from './components/navigation';
+
+const appRoot = document.body
+const navigation = new Navigation(appRoot);
 
 //Это тестовый функціонал для проверкі работы апі. Этот модуль должен содержать только інстансы классов. Этот функціонал нужно удаліть прі разработке но прімеры функцій понадобятся в разработке для полученія данные із апі
 function getCategoryName(category: Category): string {
