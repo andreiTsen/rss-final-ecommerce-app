@@ -1,10 +1,19 @@
+import { AuthorizationService } from '../../services/authentication';
 import ElementCreator from '../../utils/ElementCreator';
 import './../../pages/loginPage/loginPage.css';
 import validateEmail from './validateEmail';
 import validatePassword from './validatePassword';
 
+type AuthorizationData = {
+  login: string;
+  password: string;
+}
+
 export default class loginPage {
   private container: HTMLElement;
+    private loginInput: HTMLInputElement | null = null;
+  private passwordInput: HTMLInputElement | null = null;
+  private loginButton: HTMLButtonElement | null = null;
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -25,7 +34,44 @@ export default class loginPage {
     form.addInnerElement(this.createLoginInput());
     form.addInnerElement(this.createPasswordInput());
     form.addInnerElement(this.createButtonsBox());
+    form.getElement().addEventListener("submit", async (event: Event): Promise<void> => {
+      event.preventDefault()
+      await this.handleLogin();
+   const isAuthenticated = AuthorizationService.isAuthenticated();
+console.log('Пользователь авторизован:', isAuthenticated);
+    const currentUser = AuthorizationService.getCurrentUser();
+    console.log(currentUser)
+if (currentUser) {
+  console.log('Данные пользователя:', {
+    id: currentUser.id,
+    email: currentUser.email,
+    firstName: currentUser.firstName,
+    lastName: currentUser.lastName
+  });
+} else {
+  console.log('Пользователь не авторизован');
+}
+    })
     return form.getElement();
+  }
+
+  
+    private getFormElements(): void {
+    const loginInputElement = this.container.querySelector('.auth-form__input-login');
+    const passwordInputElement = this.container.querySelector('.auth-form__input-password');
+    const loginButtonElement = this.container.querySelector('.auth-form__button-login');
+
+    if (loginInputElement instanceof HTMLInputElement) {
+      this.loginInput = loginInputElement;
+    }
+
+    if (passwordInputElement instanceof HTMLInputElement) {
+      this.passwordInput = passwordInputElement;
+    }
+
+    if (loginButtonElement instanceof HTMLButtonElement) {
+      this.loginButton = loginButtonElement;
+    }
   }
 
   private createButtonsBox(): ElementCreator {
@@ -68,7 +114,6 @@ export default class loginPage {
     return loginInputContainer;
   }
 
-
   private validationLogin(value: string): void {
     let resultValidation = validateEmail(value);
     let container = document.querySelector('.box-input');
@@ -79,7 +124,7 @@ export default class loginPage {
     }
 
     if (!resultValidation.isValid) {
-      let errorElement = this.createErrorMessage(resultValidation.message, "login-error");
+      let errorElement = this.createErrorMessage(resultValidation.message, 'login-error');
       container?.appendChild(errorElement);
     }
   }
@@ -94,14 +139,14 @@ export default class loginPage {
     }
 
     if (!resultValidation.isValid) {
-      let errorElement = this.createErrorMessage(resultValidation.message, "password-error");
+      let errorElement = this.createErrorMessage(resultValidation.message, 'password-error');
       container?.appendChild(errorElement);
     }
   }
 
   private createErrorMessage(text: string, className: string): HTMLElement {
     const error = document.createElement('span');
-    error.classList.add("error-message", className);
+    error.classList.add('error-message', className);
     error.textContent = text;
     return error;
   }
@@ -127,15 +172,14 @@ export default class loginPage {
         this.validationPassword(target.value);
       }
     });
-    passwordInputIcon.getElement().addEventListener("click", () => {
-      let attributeValue = passwordInput.getElement().getAttribute("type")
-      if (attributeValue === "password") {
-        passwordInput.setAttributes(["type=text"])
+    passwordInputIcon.getElement().addEventListener('click', () => {
+      let attributeValue = passwordInput.getElement().getAttribute('type');
+      if (attributeValue === 'password') {
+        passwordInput.setAttributes(['type=text']);
       } else {
-        passwordInput.setAttributes(["type=password"])
+        passwordInput.setAttributes(['type=password']);
       }
-
-    })
+    });
     passwordInputContainer.addInnerElement(passwordInput);
     passwordInputContainer.addInnerElement(passwordInputIcon);
     return passwordInputContainer;
@@ -160,4 +204,50 @@ export default class loginPage {
     });
     return buttonRegistration;
   }
+
+  private authUser(data: AuthorizationData): void {
+    const response = AuthorizationService.login(data.login, data.password)
+  }
+
+   private async handleLogin(): Promise<void> {
+    this.getFormElements();
+    if (!this.loginInput || !this.passwordInput || !this.loginButton) {
+      console.error("Elements forms is not found!")
+      return;
+    }
+    const loginValue = this.loginInput.value;
+    const passwordValue = this.passwordInput.value;
+
+    const emailValidation = validateEmail(String(loginValue));
+    const passwordValidation = validatePassword(passwordValue);
+
+    if (!emailValidation.isValid || !passwordValidation.isValid) {
+      if (!emailValidation.isValid) {
+        this.validationLogin(loginValue);
+      }
+      if (!passwordValidation.isValid) {
+        this.validationPassword(passwordValue);
+      }
+      return;
+    }
+    // this.loginButton.getElement().setAttribute('disabled', 'true');
+    try {
+      const isLoggedIn = await AuthorizationService.login(loginValue, passwordValue);
+      
+      if (isLoggedIn) {
+        console.log("Вход успешно произошел");
+        // Перенаправление после успешного входа
+        // window.location.href = '/';
+      } else {
+        // this.showAuthError('Invalid email or password');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      // this.showAuthError('Login failed. Please try again.');
+    } finally {
+      // this.loginButton.getElement().textContent = 'Login';
+      // this.loginButton.getElement().removeAttribute('disabled');
+    }
+  }
+
 }

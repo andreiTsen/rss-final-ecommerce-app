@@ -72,7 +72,7 @@ svg {
 
 .auth-form__login-icon {
   position: absolute;
-  background-image: url("././../../assets/icons/email-icon.svg");
+  background-image: url('././../../assets/icons/email-icon.svg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
@@ -85,7 +85,7 @@ svg {
 
 .auth-form__password-icon {
   position: absolute;
-  background-image: url("././../../assets/icons/lock.svg");
+  background-image: url('././../../assets/icons/lock.svg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
@@ -103,4 +103,4 @@ svg {
   width: 100%;
   padding: 5px 15px;
   color: red;
-}/*# sourceMappingURL=loginPage.css.map */
+} /*# sourceMappingURL=loginPage.css.map */
