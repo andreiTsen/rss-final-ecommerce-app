@@ -70,6 +70,4 @@ npm run test
 
 ## Folder structure
 
-
 ## Screenshots
-
