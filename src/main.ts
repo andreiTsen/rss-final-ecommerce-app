@@ -1,5 +1,3 @@
-import { apiRoot } from './api';
-import { Category, ProductProjection, Product } from '@commercetools/platform-sdk';
 import loginPage from './pages/loginPage/loginPage';
 import '././assets/style.css';
 
@@ -17,4 +15,3 @@ export class App {
 document.addEventListener('DOMContentLoaded', () => {
   new App();
 });
-

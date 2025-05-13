@@ -7,11 +7,11 @@ import validatePassword from './validatePassword';
 type AuthorizationData = {
   login: string;
   password: string;
-}
+};
 
 export default class loginPage {
   private container: HTMLElement;
-    private loginInput: HTMLInputElement | null = null;
+  private loginInput: HTMLInputElement | null = null;
   private passwordInput: HTMLInputElement | null = null;
   private loginButton: HTMLButtonElement | null = null;
 
@@ -34,29 +34,15 @@ export default class loginPage {
     form.addInnerElement(this.createLoginInput());
     form.addInnerElement(this.createPasswordInput());
     form.addInnerElement(this.createButtonsBox());
-    form.getElement().addEventListener("submit", async (event: Event): Promise<void> => {
-      event.preventDefault()
+    form.getElement().addEventListener('submit', async (event: Event): Promise<void> => {
+      event.preventDefault();
       await this.handleLogin();
-   const isAuthenticated = AuthorizationService.isAuthenticated();
-console.log('Пользователь авторизован:', isAuthenticated);
-    const currentUser = AuthorizationService.getCurrentUser();
-    console.log(currentUser)
-if (currentUser) {
-  console.log('Данные пользователя:', {
-    id: currentUser.id,
-    email: currentUser.email,
-    firstName: currentUser.firstName,
-    lastName: currentUser.lastName
-  });
-} else {
-  console.log('Пользователь не авторизован');
-}
-    })
+
+    });
     return form.getElement();
   }
 
-  
-    private getFormElements(): void {
+  private getFormElements(): void {
     const loginInputElement = this.container.querySelector('.auth-form__input-login');
     const passwordInputElement = this.container.querySelector('.auth-form__input-password');
     const loginButtonElement = this.container.querySelector('.auth-form__button-login');
@@ -205,14 +191,10 @@ if (currentUser) {
     return buttonRegistration;
   }
 
-  private authUser(data: AuthorizationData): void {
-    const response = AuthorizationService.login(data.login, data.password)
-  }
-
-   private async handleLogin(): Promise<void> {
+  private async handleLogin(): Promise<void> {
     this.getFormElements();
     if (!this.loginInput || !this.passwordInput || !this.loginButton) {
-      console.error("Elements forms is not found!")
+      console.error('Elements forms is not found!');
       return;
     }
     const loginValue = this.loginInput.value;
@@ -233,9 +215,9 @@ if (currentUser) {
     // this.loginButton.getElement().setAttribute('disabled', 'true');
     try {
       const isLoggedIn = await AuthorizationService.login(loginValue, passwordValue);
-      
+
       if (isLoggedIn) {
-        console.log("Вход успешно произошел");
+        console.log('Вход успешно произошел');
         // Перенаправление после успешного входа
         // window.location.href = '/';
       } else {
@@ -249,5 +231,4 @@ if (currentUser) {
       // this.loginButton.getElement().removeAttribute('disabled');
     }
   }
-
 }
