@@ -18,6 +18,10 @@ export default class loginPage {
   }
 
   public createFormAuthorization(): HTMLElement {
+    const container = new ElementCreator({
+      tagName: 'div',
+      classNames: ["auth-container"]
+    })
     const form = new ElementCreator({
       tagName: 'form',
       classNames: ['auth-form'],
@@ -27,6 +31,8 @@ export default class loginPage {
       classNames: ['auth-form__title'],
       textContent: 'Login',
     });
+    container.addInnerElement(this.createTitleForm().getElement());
+    container.addInnerElement(form);
     form.addInnerElement(titleForm);
     form.addInnerElement(this.createLoginInput());
     form.addInnerElement(this.createPasswordInput());
@@ -35,7 +41,7 @@ export default class loginPage {
       event.preventDefault();
       await this.handleLogin();
     });
-    return form.getElement();
+    return container.getElement();
   }
 
   private getFormElements(): void {
@@ -54,6 +60,15 @@ export default class loginPage {
     if (loginButtonElement instanceof HTMLButtonElement) {
       this.loginButton = loginButtonElement;
     }
+  }
+
+  private createTitleForm(): ElementCreator {
+    const title = new ElementCreator({
+      tagName: "h1",
+      classNames: ["auth-form__page-title"],
+      textContent: "Crazy Bookstore"
+    })
+    return title;
   }
 
   private createButtonsBox(): ElementCreator {
@@ -187,7 +202,6 @@ export default class loginPage {
       tagName: 'button',
       classNames: ['auth-form__button-login', 'auth--btn'],
       textContent: 'Login',
-      callback: (): void => console.log('Авторизация'),
     });
     return buttonLogin;
   }
@@ -197,7 +211,9 @@ export default class loginPage {
       tagName: 'button',
       classNames: ['auth-form__button-register', 'auth--btn'],
       textContent: 'Register',
-      callback: (): void => console.log('Переход на страницу регистрации'),
+      callback: (): void => {
+        window.location.href = "/register"
+      },
     });
     return buttonRegistration;
   }
