@@ -1004,14 +1004,14 @@ export class RegistrationPage {
 
   private static redirectAfterRegistration(): void {
     if (AuthService.isAuthenticated()) {
-      window.history.pushState({ page: 'store' }, 'Store page', '/store');
-
       setTimeout(() => {
-        window.location.href = '/store';
+        window.history.pushState({}, '', '/store');
+        window.dispatchEvent(new PopStateEvent('popstate'));
       }, 2000);
     } else {
       setTimeout(() => {
-        window.location.href = '/login';
+        window.history.pushState({}, '', '/login');
+        window.dispatchEvent(new PopStateEvent('popstate'));
       }, 3000);
     }
   }
