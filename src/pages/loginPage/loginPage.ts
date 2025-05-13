@@ -1,13 +1,9 @@
 import { AuthorizationService } from '../../services/authentication';
 import ElementCreator from '../../utils/ElementCreator';
 import './../../pages/loginPage/loginPage.css';
+import createErrorMessage from './errorMessage';
 import validateEmail from './validateEmail';
 import validatePassword from './validatePassword';
-
-type AuthorizationData = {
-  login: string;
-  password: string;
-};
 
 export default class loginPage {
   private container: HTMLElement;
@@ -18,6 +14,7 @@ export default class loginPage {
   constructor(container: HTMLElement) {
     this.container = container;
     this.container.append(this.createFormAuthorization());
+    this.getFormElements();
   }
 
   public createFormAuthorization(): HTMLElement {
@@ -37,7 +34,6 @@ export default class loginPage {
     form.getElement().addEventListener('submit', async (event: Event): Promise<void> => {
       event.preventDefault();
       await this.handleLogin();
-
     });
     return form.getElement();
   }
@@ -92,7 +88,7 @@ export default class loginPage {
     });
     loginInputContainer.addInnerElement(loginInput);
     loginInputContainer.addInnerElement(loginInputIcon);
-    loginInput.getElement().addEventListener('change', (event: Event) => {
+    loginInput.getElement().addEventListener('input', (event: Event) => {
       if (event.target instanceof HTMLInputElement) {
         this.validationLogin(event.target.value);
       }
@@ -110,9 +106,10 @@ export default class loginPage {
     }
 
     if (!resultValidation.isValid) {
-      let errorElement = this.createErrorMessage(resultValidation.message, 'login-error');
+      let errorElement = createErrorMessage(resultValidation.message, 'login-error');
       container?.appendChild(errorElement);
     }
+    this.updateBtnLoginState();
   }
 
   private validationPassword(value: string): void {
@@ -125,16 +122,30 @@ export default class loginPage {
     }
 
     if (!resultValidation.isValid) {
-      let errorElement = this.createErrorMessage(resultValidation.message, 'password-error');
+      let errorElement = createErrorMessage(resultValidation.message, 'password-error');
       container?.appendChild(errorElement);
     }
+    this.updateBtnLoginState();
   }
 
-  private createErrorMessage(text: string, className: string): HTMLElement {
-    const error = document.createElement('span');
-    error.classList.add('error-message', className);
-    error.textContent = text;
-    return error;
+  private checkFormValid(): boolean {
+    if (!this.loginInput || !this.passwordInput) return false;
+
+    const emailValidation = validateEmail(String(this.loginInput?.value));
+    const passwordValidation = validatePassword(String(this.passwordInput?.value));
+    return emailValidation.isValid && passwordValidation.isValid;
+  }
+
+  private updateBtnLoginState(): void {
+    if (!this.loginButton) return;
+    const valid = this.checkFormValid();
+    if (valid) {
+      this.loginButton.classList.remove('no-valid');
+      this.loginButton.removeAttribute('disabled');
+    } else {
+      this.loginButton.setAttribute('disabled', 'true');
+      this.loginButton.classList.add('no-valid');
+    }
   }
 
   private createPasswordInput(): ElementCreator {
@@ -152,7 +163,7 @@ export default class loginPage {
       tagName: 'div',
       classNames: ['auth-form__password-icon'],
     });
-    passwordInput.getElement().addEventListener('change', (event: Event) => {
+    passwordInput.getElement().addEventListener('input', (event: Event) => {
       const target = event.target;
       if (target instanceof HTMLInputElement) {
         this.validationPassword(target.value);
@@ -212,23 +223,17 @@ export default class loginPage {
       }
       return;
     }
-    // this.loginButton.getElement().setAttribute('disabled', 'true');
+
     try {
       const isLoggedIn = await AuthorizationService.login(loginValue, passwordValue);
 
       if (isLoggedIn) {
-        console.log('Вход успешно произошел');
         // Перенаправление после успешного входа
-        // window.location.href = '/';
+        window.location.href = '/store';
       } else {
-        // this.showAuthError('Invalid email or password');
       }
     } catch (error) {
       console.error('Login error:', error);
-      // this.showAuthError('Login failed. Please try again.');
-    } finally {
-      // this.loginButton.getElement().textContent = 'Login';
-      // this.loginButton.getElement().removeAttribute('disabled');
     }
   }
 }

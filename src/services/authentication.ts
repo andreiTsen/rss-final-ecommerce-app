@@ -1,12 +1,13 @@
-import { ClientBuilder, createAuthForPasswordFlow, TokenCache } from '@commercetools/sdk-client-v2';
-import { apiRoot, authMiddlewareOptions } from '../api';
-import { CustomerSignInResult, Customer, createApiBuilderFromCtpClient } from '@commercetools/platform-sdk';
+import { apiRoot } from '../api';
+import createErrorMessage from '../pages/loginPage/errorMessage';
 
 export class AuthorizationService {
-
+  private static authErrorElement: HTMLElement | null = null;
   public static async login(email: string, password: string): Promise<boolean> {
     try {
-      const response = await apiRoot.me()
+      this.removeAuthError();
+      const response = await apiRoot
+        .me()
         .login()
         .post({
           body: {
@@ -36,8 +37,36 @@ export class AuthorizationService {
       return true;
     } catch (error) {
       console.error('Ошибка при входе:', error);
+      this.handleAuthorizationError(error);
       return false;
     }
   }
+  private static handleAuthorizationError(error: unknown): void {
+    let code;
+    if (typeof error === 'object' && error !== null && 'statusCode' in error) {
+      code = error.statusCode;
+    }
+    let buttonLogin = document.querySelector('.auth-form__button-login');
 
+    this.removeAuthError();
+    let errorMessage;
+    switch (code) {
+      case 400:
+        errorMessage = createErrorMessage('This email address or password was not found. Try again!', '.auth-error');
+        break;
+      case 500:
+        errorMessage = createErrorMessage('The server is not available. Try again later.', '.auth-error');
+        break;
+    }
+    if (errorMessage) {
+      buttonLogin?.before(errorMessage);
+      this.authErrorElement = errorMessage;
+    }
+  }
+  private static removeAuthError(): void {
+    if (this.authErrorElement) {
+      this.authErrorElement.remove();
+      this.authErrorElement = null;
+    }
+  }
 }

@@ -25,6 +25,9 @@ export default function validatePassword(value: string): passwordValidationResul
     if (value.length < 8) {
       return { isValid: false, message: "Password must be at least 8 characters long'" };
     }
+    if (!value) {
+      return { isValid: false, message: 'Please write password!' };
+    }
     return { isValid: false, message: 'Incorrect password format!' };
   }
 

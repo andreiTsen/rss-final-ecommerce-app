@@ -16,7 +16,7 @@ export const authMiddlewareOptions: AuthMiddlewareOptions = {
     // `manage_cart_discounts:${process.env.CT_PROJECT_KEY}`,
     // `manage_shopping_lists:${process.env.CT_PROJECT_KEY}`,
     // `manage_my_profile:${process.env.CT_PROJECT_KEY}`,
-    `manage_project:${process.env.CT_PROJECT_KEY}`
+    `manage_project:${process.env.CT_PROJECT_KEY}`,
   ],
   fetch,
 };
