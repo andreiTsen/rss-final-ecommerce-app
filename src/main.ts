@@ -2,11 +2,32 @@ import './pages/registration.css';
 import { RegistrationPage } from './pages/registration';
 import { AuthService } from './services/authService';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const appContainer = document.getElementById('app') || document.body;
-  const path = window.location.pathname;
+let appContainer: HTMLElement;
 
+document.addEventListener('DOMContentLoaded', () => {
+  const existingContainer = document.getElementById('app');
+
+  if (existingContainer instanceof HTMLElement) {
+    appContainer = existingContainer;
+  } else {
+    appContainer = document.createElement('main');
+    appContainer.id = 'app';
+    document.body.appendChild(appContainer);
+  }
+
+  setupRouting();
+});
+
+function setupRouting(): void {
+  handleRouting();
+  window.addEventListener('popstate', handleRouting);
+}
+
+function handleRouting(): void {
+  const path = window.location.pathname;
   const isAuthenticated = AuthService.isAuthenticated();
+
+  appContainer.innerHTML = '';
 
   switch (path) {
     case '/registration':
@@ -14,27 +35,33 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!isAuthenticated) {
         new RegistrationPage(appContainer);
       } else {
-        window.history.pushState({ page: 'store' }, 'Store page', '/store');
-        renderPlaceholderPage(appContainer, 'Страница магазина', isAuthenticated);
+        navigateTo('/store');
       }
       break;
+
     case '/login':
       if (!isAuthenticated) {
-        renderPlaceholderPage(appContainer, 'Страница входа', isAuthenticated);
+        renderPlaceholderPage('Страница входа', isAuthenticated);
       } else {
-        window.history.pushState({ page: 'store' }, 'Store page', '/store');
-        renderPlaceholderPage(appContainer, 'Страница магазина', isAuthenticated);
+        navigateTo('/store');
       }
       break;
+
     case '/store':
     case '/':
-      renderPlaceholderPage(appContainer, 'Страница магазина', isAuthenticated);
+      renderPlaceholderPage('Страница магазина', isAuthenticated);
       break;
+
     default:
-      renderPlaceholderPage(appContainer, 'Страница не найдена', isAuthenticated);
+      renderPlaceholderPage('Страница не найдена', isAuthenticated);
       break;
   }
-});
+}
+
+function navigateTo(path: string): void {
+  window.history.pushState({}, '', path);
+  handleRouting();
+}
 
 function createPlaceholderContainer(pageName: string): HTMLDivElement {
   const pageContainer = document.createElement('div');
@@ -53,7 +80,7 @@ function createPlaceholderContainer(pageName: string): HTMLDivElement {
   return pageContainer;
 }
 
-function createAuthenticatedContent(pageContainer: HTMLDivElement, pageName: string): void {
+function createAuthenticatedContent(container: HTMLDivElement, pageName: string): void {
   if (pageName !== 'Страница магазина') return;
 
   const user = AuthService.getCurrentUser();
@@ -61,19 +88,20 @@ function createAuthenticatedContent(pageContainer: HTMLDivElement, pageName: str
   const welcomeMessage = document.createElement('p');
   welcomeMessage.className = 'welcome-message';
   welcomeMessage.textContent = `Добро пожаловать, ${user?.firstName || 'пользователь'}! Вы вошли в систему.`;
-  pageContainer.appendChild(welcomeMessage);
+  container.appendChild(welcomeMessage);
 
   const logoutButton = document.createElement('button');
   logoutButton.className = 'logout-button';
   logoutButton.textContent = 'Выйти из учетной записи';
   logoutButton.addEventListener('click', () => {
     AuthService.logout();
-    window.location.reload();
+    navigateTo('/login');
   });
-  pageContainer.appendChild(logoutButton);
+
+  container.appendChild(logoutButton);
 }
 
-function createUnauthenticatedContent(pageContainer: HTMLDivElement): void {
+function createUnauthenticatedContent(container: HTMLDivElement): void {
   const authLinks = document.createElement('div');
   authLinks.className = 'auth-links';
 
@@ -81,6 +109,10 @@ function createUnauthenticatedContent(pageContainer: HTMLDivElement): void {
   registerLink.href = '/registration';
   registerLink.textContent = 'Регистрация';
   registerLink.className = 'auth-link';
+  registerLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    navigateTo('/registration');
+  });
 
   const separator = document.createTextNode(' | ');
 
@@ -88,24 +120,27 @@ function createUnauthenticatedContent(pageContainer: HTMLDivElement): void {
   loginLink.href = '/login';
   loginLink.textContent = 'Вход';
   loginLink.className = 'auth-link';
+  loginLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    navigateTo('/login');
+  });
 
   authLinks.appendChild(registerLink);
   authLinks.appendChild(separator);
   authLinks.appendChild(loginLink);
 
-  pageContainer.appendChild(authLinks);
+  container.appendChild(authLinks);
 }
 
-function renderPlaceholderPage(container: HTMLElement, pageName: string, isAuthenticated: boolean): void {
-  container.textContent = '';
-
-  const pageContainer = createPlaceholderContainer(pageName);
+function renderPlaceholderPage(pageName: string, isAuthenticated: boolean): void {
+  appContainer.textContent = '';
+  const container = createPlaceholderContainer(pageName);
 
   if (isAuthenticated) {
-    createAuthenticatedContent(pageContainer, pageName);
+    createAuthenticatedContent(container, pageName);
   } else {
-    createUnauthenticatedContent(pageContainer);
+    createUnauthenticatedContent(container);
   }
 
-  container.appendChild(pageContainer);
+  appContainer.appendChild(container);
 }
