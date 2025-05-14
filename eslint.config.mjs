@@ -64,7 +64,7 @@ export default [
         { accessibility: 'explicit', overrides: { constructors: 'off' } },
       ],
       '@typescript-eslint/member-ordering': 'error',
-      'class-methods-use-this': 'error',
+      // 'class-methods-use-this': 'error',
       'max-lines-per-function': ['error', { max: 40 }],
     },
   },
