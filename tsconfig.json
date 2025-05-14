@@ -17,6 +17,6 @@
     "noUnusedParameters": true,
     "alwaysStrict": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/tests/.tests.ts"],
   "exclude": ["node_modules", "dist"]
 }

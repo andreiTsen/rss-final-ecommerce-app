@@ -1,8 +1,11 @@
+import { Customer, CustomerSignInResult } from '@commercetools/platform-sdk';
 import { apiRoot } from '../api';
 import createErrorMessage from '../pages/loginPage/errorMessage';
 
 export class AuthorizationService {
   private static authErrorElement: HTMLElement | null = null;
+  private static readonly TOKEN_KEY = 'auth_token';
+  private static readonly USER_KEY = 'current_user';
   public static async login(email: string, password: string): Promise<boolean> {
     try {
       this.removeAuthError();
@@ -17,7 +20,7 @@ export class AuthorizationService {
           },
         })
         .execute();
-
+     this.saveAuthData(response.body);
       const authHeader = btoa(`${process.env.CT_CLIENT_ID}:${process.env.CT_CLIENT_SECRET}`);
       const token = await fetch(
         `${process.env.CT_AUTH_URL}oauth/${process.env.CT_PROJECT_KEY}/customers/token?grant_type=password&username=${email}&password=${password}&scope=manage_customers:${process.env.CT_PROJECT_KEY} manage_orders:${process.env.CT_PROJECT_KEY}`,
@@ -40,6 +43,28 @@ export class AuthorizationService {
       this.handleAuthorizationError(error);
       return false;
     }
+  }
+   public static logout(): void {
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
+    window.location.href = '/login';
+  }
+
+  public static isAuthenticated(): boolean {
+    return !!localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  public static getCurrentUser(): Customer | null {
+    const userData = localStorage.getItem(this.USER_KEY);
+    return userData ? JSON.parse(userData) : null;
+  }
+
+  private static saveAuthData(data: CustomerSignInResult): void {
+    if (data.customer) {
+      localStorage.setItem(this.USER_KEY, JSON.stringify(data.customer));
+    }
+
+    localStorage.setItem(this.TOKEN_KEY, 'authenticated');
   }
   private static handleAuthorizationError(error: unknown): void {
     let code;

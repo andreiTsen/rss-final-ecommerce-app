@@ -71,7 +71,9 @@ svg {
   border-radius: 25px;
   font-weight: 400;
   background-color: #ffd700;
-  transition: background-color 0.3s, transform 0.2s;
+  transition:
+    background-color 0.3s,
+    transform 0.2s;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -95,7 +97,7 @@ svg {
 
 .auth-form__login-icon {
   position: absolute;
-  background-image: url("././../../assets/icons/email-icon.svg");
+  background-image: url('././../../assets/icons/email-icon.svg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
@@ -108,7 +110,7 @@ svg {
 
 .auth-form__password-icon {
   position: absolute;
-  background-image: url("././../../assets/icons/lock.svg");
+  background-image: url('././../../assets/icons/lock.svg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
@@ -139,4 +141,4 @@ svg {
   margin-bottom: 30px;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
   text-align: center;
-}/*# sourceMappingURL=loginPage.css.map */
+} /*# sourceMappingURL=loginPage.css.map */

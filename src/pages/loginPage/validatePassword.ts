@@ -23,7 +23,7 @@ export default function validatePassword(value: string): passwordValidationResul
       return { isValid: false, message: 'Please delete trims!' };
     }
     if (value.length < 8) {
-      return { isValid: false, message: "Password must be at least 8 characters long'" };
+      return { isValid: false, message: "Password must be at least 8 characters long" };
     }
     if (!value) {
       return { isValid: false, message: 'Please write password!' };

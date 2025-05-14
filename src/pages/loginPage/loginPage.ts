@@ -20,8 +20,8 @@ export default class loginPage {
   public createFormAuthorization(): HTMLElement {
     const container = new ElementCreator({
       tagName: 'div',
-      classNames: ["auth-container"]
-    })
+      classNames: ['auth-container'],
+    });
     const form = new ElementCreator({
       tagName: 'form',
       classNames: ['auth-form'],
@@ -64,10 +64,10 @@ export default class loginPage {
 
   private createTitleForm(): ElementCreator {
     const title = new ElementCreator({
-      tagName: "h1",
-      classNames: ["auth-form__page-title"],
-      textContent: "Crazy Bookstore"
-    })
+      tagName: 'h1',
+      classNames: ['auth-form__page-title'],
+      textContent: 'Crazy Bookstore',
+    });
     return title;
   }
 
@@ -212,7 +212,7 @@ export default class loginPage {
       classNames: ['auth-form__button-register', 'auth--btn'],
       textContent: 'Register',
       callback: (): void => {
-        window.location.href = "/register"
+        window.location.href = '/register';
       },
     });
     return buttonRegistration;
@@ -245,7 +245,9 @@ export default class loginPage {
 
       if (isLoggedIn) {
         // Перенаправление после успешного входа
-        window.location.href = '/store';
+        window.history.pushState({}, '', '/store');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+
       } else {
       }
     } catch (error) {
