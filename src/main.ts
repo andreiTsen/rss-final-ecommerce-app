@@ -1,3 +1,4 @@
+
 import './pages/registration.css';
 import { RegistrationPage } from './pages/registration';
 import { AuthService } from './services/authService';
@@ -144,3 +145,9 @@ function renderPlaceholderPage(pageName: string, isAuthenticated: boolean): void
 
   appContainer.appendChild(container);
 }
+
+import './main.css';
+
+import { Navigation } from './components/navigation';
+const appRoot = document.body;
+const navigation = new Navigation(appRoot);
