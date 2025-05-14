@@ -247,7 +247,6 @@ export default class loginPage {
         // Перенаправление после успешного входа
         window.history.pushState({}, '', '/store');
         window.dispatchEvent(new PopStateEvent('popstate'));
-
       } else {
       }
     } catch (error) {

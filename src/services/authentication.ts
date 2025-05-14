@@ -20,7 +20,7 @@ export class AuthorizationService {
           },
         })
         .execute();
-     this.saveAuthData(response.body);
+      this.saveAuthData(response.body);
       const authHeader = btoa(`${process.env.CT_CLIENT_ID}:${process.env.CT_CLIENT_SECRET}`);
       const token = await fetch(
         `${process.env.CT_AUTH_URL}oauth/${process.env.CT_PROJECT_KEY}/customers/token?grant_type=password&username=${email}&password=${password}&scope=manage_customers:${process.env.CT_PROJECT_KEY} manage_orders:${process.env.CT_PROJECT_KEY}`,
@@ -44,7 +44,7 @@ export class AuthorizationService {
       return false;
     }
   }
-   public static logout(): void {
+  public static logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     window.location.href = '/login';
