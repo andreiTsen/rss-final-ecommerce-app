@@ -1,7 +1,7 @@
 import { createApiBuilderFromCtpClient } from '@commercetools/platform-sdk';
 import { ClientBuilder, type AuthMiddlewareOptions, type HttpMiddlewareOptions } from '@commercetools/sdk-client-v2';
 
-const authMiddlewareOptions: AuthMiddlewareOptions = {
+export const authMiddlewareOptions: AuthMiddlewareOptions = {
   host: process.env.CT_AUTH_URL || '',
   projectKey: process.env.CT_PROJECT_KEY || '',
   credentials: {
@@ -15,11 +15,13 @@ const authMiddlewareOptions: AuthMiddlewareOptions = {
     `manage_orders:${process.env.CT_PROJECT_KEY}`,
     `manage_cart_discounts:${process.env.CT_PROJECT_KEY}`,
     `manage_shopping_lists:${process.env.CT_PROJECT_KEY}`,
+    `manage_my_profile:${process.env.CT_PROJECT_KEY}`,
+    `manage_project:${process.env.CT_PROJECT_KEY}`,
   ],
   fetch,
 };
 
-const httpMiddlewareOptions: HttpMiddlewareOptions = {
+export const httpMiddlewareOptions: HttpMiddlewareOptions = {
   host: process.env.CT_API_URL || '',
   fetch,
 };

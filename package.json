@@ -11,13 +11,17 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "test": "jest"
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@babel/preset-env": "^7.27.2",
+    "@babel/preset-typescript": "^7.27.1",
     "@commercetools/platform-sdk": "^8.8.0",
     "@commercetools/sdk-client": "^4.0.1",
+    "@types/jest": "^29.5.14",
     "@typescript-eslint/eslint-plugin": "^8.31.0",
     "@typescript-eslint/parser": "^8.31.0",
     "clean-webpack-plugin": "^4.0.0",
@@ -33,14 +37,38 @@
     "html-webpack-plugin": "^5.6.3",
     "husky": "^9.1.7",
     "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "prettier": "^3.5.3",
     "style-loader": "^4.0.0",
+    "ts-jest": "^29.3.3",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "webpack": "^5.99.7",
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.1"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "coverageReporters": [
+      "text",
+      "html"
+    ],
+    "coverageDirectory": "coverage",
+    "preset": "ts-jest",
+    "testEnvironment": "jsdom",
+    "moduleFileExtensions": [
+      "ts",
+      "js",
+      "json"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(ts|tsx|js)$",
+    "moduleNameMapper": {
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
+    }
   },
   "dependencies": {
     "@commercetools/sdk-client-v2": "^3.0.0",
