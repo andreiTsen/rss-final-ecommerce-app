@@ -11,19 +11,19 @@ export default function validateEmail(value: string): emailValidationResult {
 
   if (!emailRegex.test(String(value))) {
     if (domainName.test(String(value))) {
-      return { isValid: false, message: 'Adress email must contains domain name after @' };
+      return { isValid: false, message: 'Адрес почты должен содержаать перед доменным именем @' };
     }
 
     if (charAt.test(String(value))) {
-      return { isValid: false, message: "Please enter '@' between part and domain name" };
+      return { isValid: false, message: "Пожалуйста вставьте '@' между именем почты и доменным именем" };
     }
     if (whitespace.test(String(value))) {
-      return { isValid: false, message: 'Please delete trims!' };
+      return { isValid: false, message: 'Пожалуйста удалите пробел!' };
     }
     if (!value) {
-      return { isValid: false, message: 'Please write email!' };
+      return { isValid: false, message: 'Пожалуйста введите почту!' };
     }
-    return { isValid: false, message: 'Incorrect format email!' };
+    return { isValid: false, message: 'Неверный формат почты!' };
   }
 
   return { isValid: true, message: '' };

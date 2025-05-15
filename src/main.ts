@@ -2,7 +2,7 @@ import './pages/registration.css';
 import { RegistrationPage } from './pages/registration';
 import { AuthService } from './services/authService';
 import { Navigation } from './components/navigation';
-import  loginPage  from './pages/loginPage/loginPage';
+import loginPage from './pages/loginPage/loginPage';
 
 import './main.css';
 

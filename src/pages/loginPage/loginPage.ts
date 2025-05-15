@@ -29,7 +29,7 @@ export default class loginPage {
     const titleForm = new ElementCreator({
       tagName: 'h2',
       classNames: ['auth-form__title'],
-      textContent: 'Login',
+      textContent: 'Авторизация',
     });
     container.addInnerElement(this.createTitleForm().getElement());
     container.addInnerElement(form);
@@ -79,7 +79,7 @@ export default class loginPage {
     const textInfo = new ElementCreator({
       tagName: 'span',
       classNames: ['auth-form__info'],
-      textContent: "Don't have an account?",
+      textContent: "У вас нет аккаунта?",
     });
     btnsBox.addInnerElement(this.createBtnLogin());
     btnsBox.addInnerElement(textInfo);
@@ -201,7 +201,7 @@ export default class loginPage {
     const buttonLogin = new ElementCreator({
       tagName: 'button',
       classNames: ['auth-form__button-login', 'auth--btn'],
-      textContent: 'Login',
+      textContent: 'Вход',
     });
     return buttonLogin;
   }
@@ -210,9 +210,9 @@ export default class loginPage {
     const buttonRegistration = new ElementCreator({
       tagName: 'button',
       classNames: ['auth-form__button-register', 'auth--btn'],
-      textContent: 'Register',
+      textContent: 'Регистрация',
       callback: (): void => {
-        window.location.href = '/register';
+        window.location.href = '/registration';
       },
     });
     return buttonRegistration;
@@ -244,7 +244,6 @@ export default class loginPage {
       const isLoggedIn = await AuthorizationService.login(loginValue, passwordValue);
 
       if (isLoggedIn) {
-        // Перенаправление после успешного входа
         window.history.pushState({}, '', '/store');
         window.dispatchEvent(new PopStateEvent('popstate'));
       } else {
