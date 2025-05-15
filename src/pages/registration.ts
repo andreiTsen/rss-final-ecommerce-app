@@ -228,7 +228,7 @@ export class RegistrationPage {
     billingSection.className = 'address-subsection billing-address';
 
     const sectionTitle = document.createElement('h4');
-    sectionTitle.textContent = 'Адрес выставленія счета';
+    sectionTitle.textContent = 'Адрес выставления счета';
     sectionTitle.className = 'address-subsection-title';
     billingSection.appendChild(sectionTitle);
 
@@ -274,9 +274,9 @@ export class RegistrationPage {
       const errorElement = RegistrationPage.getElement<HTMLDivElement>(`#${type}-city-error`);
       if (errorElement) {
         if (!cityInput.value.trim()) {
-          errorElement.textContent = 'Поле города обязательно для заполненія';
+          errorElement.textContent = 'Поле города обязательно для заполнения';
         } else if (cityInput.value.length < 2) {
-          errorElement.textContent = 'Названіе города должно содержать минимум 2 символа';
+          errorElement.textContent = 'Название города должно содержать минимум 2 символа';
         } else {
           errorElement.textContent = '';
         }
@@ -419,8 +419,8 @@ export class RegistrationPage {
     defaultAddressHint.className = 'default-address-hint';
     defaultAddressHint.textContent =
       type === 'shipping'
-        ? 'Этот адрес будет іспользоваться для доставки вашіх заказов'
-        : 'Этот адрес будет использоваться для выставленія счетов';
+        ? 'Этот адрес будет использоваться для доставки ваших заказов'
+        : 'Этот адрес будет использоваться для выставления счетов';
 
     defaultCheckboxGroup.appendChild(defaultAddressCheckbox);
     defaultCheckboxGroup.appendChild(defaultAddressLabel);
@@ -448,7 +448,7 @@ export class RegistrationPage {
       const errorElement = RegistrationPage.getElement<HTMLDivElement>('#email-error');
       if (errorElement) {
         if (!emailInput.value) {
-          errorElement.textContent = 'Поле электронной почты обязательно для заполненія';
+          errorElement.textContent = 'Поле электронной почты обязательно для заполнения';
         } else if (!RegistrationPage.isValidEmail(emailInput.value)) {
           errorElement.textContent = 'Пожалуйста, введите корректный адрес электронной почты';
         } else {
@@ -553,7 +553,7 @@ export class RegistrationPage {
 
     const lastNameLabel = document.createElement('label');
     lastNameLabel.htmlFor = 'lastName';
-    lastNameLabel.textContent = 'Фамиілия*';
+    lastNameLabel.textContent = 'Фамилия*';
 
     const lastNameInput = document.createElement('input');
     lastNameInput.type = 'text';
@@ -565,9 +565,9 @@ export class RegistrationPage {
       const errorElement = RegistrationPage.getElement<HTMLDivElement>('#lastName-error');
       if (errorElement) {
         if (!lastNameInput.value.trim()) {
-          errorElement.textContent = 'Поле фамілии обязательно для заполнения';
+          errorElement.textContent = 'Поле фамилии обязательно для заполнения';
         } else if (lastNameInput.value.length < 2) {
-          errorElement.textContent = 'Фамілия должна содержать минимум 2 сімвола';
+          errorElement.textContent = 'Фамилия должна содержать минимум 2 символа';
         } else {
           errorElement.textContent = '';
         }
@@ -742,12 +742,12 @@ export class RegistrationPage {
 
     const sameAddressLabel = document.createElement('label');
     sameAddressLabel.htmlFor = 'sameAddress';
-    sameAddressLabel.textContent = 'Использовать один адрес для доставки і выставления счета';
+    sameAddressLabel.textContent = 'Использовать один адрес для доставки и выставления счета';
     sameAddressLabel.className = 'same-address-label';
 
     const sameAddressHint = document.createElement('p');
     sameAddressHint.className = 'same-address-hint';
-    sameAddressHint.textContent = 'Снимите чекбокс, если хотите указать разные адреса для доставкі и выставления счета';
+    sameAddressHint.textContent = 'Снимите чекбокс, если хотите указать разные адреса для доставки и выставления счета';
 
     sameAddressGroup.appendChild(sameAddressCheckbox);
     sameAddressGroup.appendChild(sameAddressLabel);
@@ -1163,10 +1163,10 @@ export class RegistrationPage {
 
     const emailError = document.getElementById('email-error');
     if (!emailInput.value) {
-      if (emailError) emailError.textContent = 'Поле электронной почты обязательно для заполненія';
+      if (emailError) emailError.textContent = 'Поле электронной почты обязательно для заполнения';
       isValid = false;
     } else if (!RegistrationPage.isValidEmail(emailInput.value)) {
-      if (emailError) emailError.textContent = 'Пожалуйста, введіте корректный адрес электронной почты';
+      if (emailError) emailError.textContent = 'Пожалуйста, введите корректный адрес электронной почты';
       isValid = false;
     } else if (emailError) {
       emailError.textContent = '';
@@ -1273,10 +1273,10 @@ export class RegistrationPage {
 
     const firstNameError = document.getElementById('firstName-error');
     if (!firstNameInput.value.trim()) {
-      if (firstNameError) firstNameError.textContent = 'Поле імени обязательно для заполненія';
+      if (firstNameError) firstNameError.textContent = 'Поле имени обязательно для заполнения';
       isValid = false;
     } else if (firstNameInput.value.length < 2) {
-      if (firstNameError) firstNameError.textContent = 'Имя должно содержать мінимум 2 символа';
+      if (firstNameError) firstNameError.textContent = 'Имя должно содержать минимум 2 символа';
       isValid = false;
     } else if (firstNameError) {
       firstNameError.textContent = '';
@@ -1287,7 +1287,7 @@ export class RegistrationPage {
       if (lastNameError) lastNameError.textContent = 'Поле фамилии обязательно для заполнения';
       isValid = false;
     } else if (lastNameInput.value.length < 2) {
-      if (lastNameError) lastNameError.textContent = 'Фамілія должна содержать минимум 2 символа';
+      if (lastNameError) lastNameError.textContent = 'Фамилия должна содержать минимум 2 символа';
       isValid = false;
     } else if (lastNameError) {
       lastNameError.textContent = '';
@@ -1299,7 +1299,7 @@ export class RegistrationPage {
   private static validatePassword(passwordInput: HTMLInputElement): boolean {
     const passwordError = document.getElementById('password-error');
     if (!passwordInput.value) {
-      if (passwordError) passwordError.textContent = 'Поле пароля обязательно для заполненія';
+      if (passwordError) passwordError.textContent = 'Поле пароля обязательно для заполнения';
       return false;
     } else if (passwordInput.value.length < 8) {
       if (passwordError) passwordError.textContent = 'Пароль должен содержать минимум 8 сімволов';
@@ -1437,14 +1437,14 @@ export class RegistrationPage {
       if (statusCode >= 500) {
         return {
           success: false,
-          message: 'Ошібка на сервере. Попробуйте позже.',
+          message: 'Ошибка на сервере. Попробуйте позже.',
         };
       }
     }
 
     return {
       success: false,
-      message: 'Ошібка регистрации. Попробуйте позже.',
+      message: 'Ошибка регистрации. Попробуйте позже.',
     };
   }
 
@@ -1459,14 +1459,14 @@ export class RegistrationPage {
       if (hasDuplicateEmail) {
         return {
           success: false,
-          message: 'Юзер с этім email уже существует. Используйте другой email',
+          message: 'Юзер с этим email уже существует. Используйте другой email',
         };
       }
     }
 
     return {
       success: false,
-      message: 'Проверьте правільность введенных данных',
+      message: 'Проверьте правильность введенных данных',
     };
   }
 
@@ -1481,7 +1481,7 @@ export class RegistrationPage {
         })
         .execute();
 
-      console.log('Юзер зарегістрирован:', response);
+      console.log('Юзер зарегистрирован:', response);
 
       return RegistrationPage.handleSuccessfulRegistration(userData);
     } catch (error: unknown) {
