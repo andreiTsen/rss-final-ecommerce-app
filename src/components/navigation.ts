@@ -1,3 +1,6 @@
+import { navigateTo } from "../main";
+
+
 type Page = {
   name: string;
   path: string;
@@ -11,14 +14,22 @@ export class Navigation {
     this.root = root;
     this.pages = [
       { name: 'Home', path: '/' },
-      { name: 'Catalog', path: '/catalog' },
-      { name: 'Cart', path: '/cart' },
-      { name: 'Profile', path: '/profile' },
       { name: 'Login', path: '/login' },
       { name: 'Registration', path: '/registration' },
     ];
     this.render();
     this.addEventListeners();
+  }
+
+  public setActiveLink(targetPath: string): void {
+    const links = this.root.querySelectorAll('.nav-link');
+    links.forEach((link) => {
+      if (link.getAttribute('href') === targetPath) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
   }
 
   private render(): void {
@@ -45,35 +56,15 @@ export class Navigation {
         if (target instanceof HTMLAnchorElement) {
           const targetPath = target.getAttribute('href');
           if (targetPath) {
-            this.navigateTo(targetPath);
+            navigateTo(targetPath);
           }
         }
       });
     });
   }
 
-  private navigateTo(targetPath: string): void {
-    history.pushState(null, '', targetPath);
-    this.setActiveLink(targetPath);
-    renderPage(targetPath);
-  }
 
-  private setActiveLink(targetPath: string): void {
-    const links = this.root.querySelectorAll('.nav-link');
-    links.forEach((link) => {
-      if (link.getAttribute('href') === targetPath) {
-        link.classList.add('active');
-      } else {
-        link.classList.remove('active');
-      }
-    });
-  }
+
 }
 
-function renderPage(targetPath: string): void {
-  const pageContent = document.getElementById('page-content');
-  if (pageContent) {
-    const pageName = targetPath === '/' ? 'Home' : targetPath.replace('/', '');
-    pageContent.innerHTML = `<h1>${pageName}</h1>`;
-  }
-}
+

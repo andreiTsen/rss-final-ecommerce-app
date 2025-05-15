@@ -1,12 +1,22 @@
+
 import './pages/registration.css';
 import { RegistrationPage } from './pages/registration';
 import { AuthService } from './services/authService';
+import { Navigation } from './components/navigation';
+
+import './main.css';
+
+
+const appRoot = document.body;
+
 
 let appContainer: HTMLElement;
+let navigation: Navigation;
 
 document.addEventListener('DOMContentLoaded', () => {
   const existingContainer = document.getElementById('app');
-
+  navigation = new Navigation(appRoot);
+  
   if (existingContainer instanceof HTMLElement) {
     appContainer = existingContainer;
   } else {
@@ -14,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     appContainer.id = 'app';
     document.body.appendChild(appContainer);
   }
-
+  
   setupRouting();
 });
 
@@ -56,9 +66,10 @@ function handleRouting(): void {
       renderPlaceholderPage('Страница не найдена', isAuthenticated);
       break;
   }
+  navigation.setActiveLink(path);
 }
 
-function navigateTo(path: string): void {
+export function navigateTo(path: string): void {
   window.history.pushState({}, '', path);
   handleRouting();
 }
@@ -145,8 +156,3 @@ function renderPlaceholderPage(pageName: string, isAuthenticated: boolean): void
   appContainer.appendChild(container);
 }
 
-import './main.css';
-
-import { Navigation } from './components/navigation';
-const appRoot = document.body;
-const navigation = new Navigation(appRoot);
