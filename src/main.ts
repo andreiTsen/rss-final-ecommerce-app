@@ -1,4 +1,3 @@
-
 import './pages/registration.css';
 import { RegistrationPage } from './pages/registration';
 import { AuthService } from './services/authService';
@@ -6,9 +5,7 @@ import { Navigation } from './components/navigation';
 
 import './main.css';
 
-
 const appRoot = document.body;
-
 
 let appContainer: HTMLElement;
 let navigation: Navigation;
@@ -16,7 +13,7 @@ let navigation: Navigation;
 document.addEventListener('DOMContentLoaded', () => {
   const existingContainer = document.getElementById('app');
   navigation = new Navigation(appRoot);
-  
+
   if (existingContainer instanceof HTMLElement) {
     appContainer = existingContainer;
   } else {
@@ -24,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     appContainer.id = 'app';
     document.body.appendChild(appContainer);
   }
-  
+
   setupRouting();
 });
 
@@ -155,4 +152,3 @@ function renderPlaceholderPage(pageName: string, isAuthenticated: boolean): void
 
   appContainer.appendChild(container);
 }
-

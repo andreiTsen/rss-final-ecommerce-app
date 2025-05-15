@@ -1,5 +1,4 @@
-import { navigateTo } from "../main";
-
+import { navigateTo } from '../main';
 
 type Page = {
   name: string;
@@ -13,9 +12,9 @@ export class Navigation {
   constructor(root: HTMLElement) {
     this.root = root;
     this.pages = [
-      { name: 'Home', path: '/' },
-      { name: 'Login', path: '/login' },
-      { name: 'Registration', path: '/registration' },
+      { name: 'Главная', path: '/' },
+      { name: 'Вход', path: '/login' },
+      { name: 'Регистрация', path: '/registration' },
     ];
     this.render();
     this.addEventListeners();
@@ -62,9 +61,4 @@ export class Navigation {
       });
     });
   }
-
-
-
 }
-
-
