@@ -13,7 +13,13 @@ let navigation: Navigation;
 
 document.addEventListener('DOMContentLoaded', () => {
   const existingContainer = document.getElementById('app');
-  navigation = new Navigation(appRoot);
+  let navContainer = document.getElementById('nav');
+  if (!navContainer) {
+    navContainer = document.createElement('header');
+    navContainer.id = 'nav';
+    document.body.appendChild(navContainer);
+  }
+  navigation = new Navigation(navContainer);
 
   if (existingContainer instanceof HTMLElement) {
     appContainer = existingContainer;
@@ -70,6 +76,7 @@ function handleRouting(): void {
 export function navigateTo(path: string): void {
   window.history.pushState({}, '', path);
   handleRouting();
+  navigation.render();
 }
 
 function createPlaceholderContainer(pageName: string): HTMLDivElement {
@@ -147,6 +154,7 @@ function renderPlaceholderPage(pageName: string, isAuthenticated: boolean): void
 
   if (isAuthenticated) {
     createAuthenticatedContent(container, pageName);
+    navigation.render()
   } else {
     createUnauthenticatedContent(container);
   }
