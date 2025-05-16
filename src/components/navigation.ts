@@ -1,7 +1,6 @@
 import { navigateTo } from '../main';
 import { AuthService } from '../services/authService';
 
-
 type Page = {
   name: string;
   path: string;
@@ -11,7 +10,7 @@ export class Navigation {
   private root: HTMLElement;
 
   constructor(root: HTMLElement) {
-    this.root = root;  
+    this.root = root;
     this.render();
   }
 
@@ -58,7 +57,7 @@ export class Navigation {
     link.textContent = name;
     link.classList.add('nav-link');
     link.addEventListener('click', (error) => {
-      e.preventDefault();
+      error.preventDefault();
       navigateTo(path);
     });
     return link;

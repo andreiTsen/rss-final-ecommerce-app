@@ -60,7 +60,8 @@ body {
   font-weight: 500;
 }
 
-.nav-btn, .logout-button{
+.nav-btn,
+.logout-button {
   background-color: #ffd700;
   color: #333;
   border: none;
@@ -74,7 +75,8 @@ body {
     transform 0.2s;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-.nav-btn:hover, .logout-button:hover{
+.nav-btn:hover,
+.logout-button:hover {
   background-color: #e6c300;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);

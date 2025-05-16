@@ -154,7 +154,7 @@ function renderPlaceholderPage(pageName: string, isAuthenticated: boolean): void
 
   if (isAuthenticated) {
     createAuthenticatedContent(container, pageName);
-    navigation.render()
+    navigation.render();
   } else {
     createUnauthenticatedContent(container);
   }
