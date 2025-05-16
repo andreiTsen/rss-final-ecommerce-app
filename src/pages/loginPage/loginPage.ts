@@ -79,7 +79,7 @@ export default class loginPage {
     const textInfo = new ElementCreator({
       tagName: 'span',
       classNames: ['auth-form__info'],
-      textContent: "У вас нет аккаунта?",
+      textContent: 'У вас нет аккаунта?',
     });
     btnsBox.addInnerElement(this.createBtnLogin());
     btnsBox.addInnerElement(textInfo);
