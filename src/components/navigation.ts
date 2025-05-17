@@ -26,7 +26,7 @@ export class Navigation {
   }
 
   public render(): void {
-    this.root.innerHTML = ''; // очищаем старое меню
+    this.root.innerHTML = '';
 
     const nav = document.createElement('nav');
     nav.classList.add('navbar');
@@ -56,8 +56,10 @@ export class Navigation {
     link.href = path;
     link.textContent = name;
     link.classList.add('nav-link');
-    link.addEventListener('click', (error) => {
-      error.preventDefault();
+
+
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
       navigateTo(path);
     });
     return link;
@@ -70,8 +72,8 @@ export class Navigation {
     button.addEventListener('click', () => {
       AuthService.logout();
       this.render();
-      navigateTo('/');
     });
     return button;
   }
+
 }

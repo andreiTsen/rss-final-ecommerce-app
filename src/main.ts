@@ -75,8 +75,8 @@ function handleRouting(): void {
 
 export function navigateTo(path: string): void {
   window.history.pushState({}, '', path);
+  console.log('Navigating to:', path);
   handleRouting();
-  navigation.render();
 }
 
 function createPlaceholderContainer(pageName: string): HTMLDivElement {
@@ -111,7 +111,7 @@ function createAuthenticatedContent(container: HTMLDivElement, pageName: string)
   logoutButton.textContent = 'Выйти из учетной записи';
   logoutButton.addEventListener('click', () => {
     AuthService.logout();
-    navigateTo('/login');
+    navigateTo('/');
   });
 
   container.appendChild(logoutButton);
@@ -154,7 +154,7 @@ function renderPlaceholderPage(pageName: string, isAuthenticated: boolean): void
 
   if (isAuthenticated) {
     createAuthenticatedContent(container, pageName);
-    navigation.render();
+    navigation.render()
   } else {
     createUnauthenticatedContent(container);
   }

@@ -4,6 +4,7 @@ import './../../pages/loginPage/loginPage.css';
 import createErrorMessage from './errorMessage';
 import validateEmail from './validateEmail';
 import validatePassword from './validatePassword';
+import { navigateTo } from '../../main';
 
 export default class loginPage {
   private container: HTMLElement;
@@ -31,16 +32,21 @@ export default class loginPage {
       classNames: ['auth-form__title'],
       textContent: 'Авторизация',
     });
-    container.addInnerElement(this.createTitleForm().getElement());
-    container.addInnerElement(form);
     form.addInnerElement(titleForm);
     form.addInnerElement(this.createLoginInput());
     form.addInnerElement(this.createPasswordInput());
     form.addInnerElement(this.createButtonsBox());
+
+    
+
     form.getElement().addEventListener('submit', async (event: Event): Promise<void> => {
       event.preventDefault();
       await this.handleLogin();
     });
+
+    container.addInnerElement(this.createTitleForm().getElement());
+    container.addInnerElement(form);
+
     return container.getElement();
   }
 
@@ -202,6 +208,7 @@ export default class loginPage {
       tagName: 'button',
       classNames: ['auth-form__button-login', 'auth--btn'],
       textContent: 'Вход',
+      attribute: ['type=submit'],
     });
     return buttonLogin;
   }
@@ -212,7 +219,7 @@ export default class loginPage {
       classNames: ['auth-form__button-register', 'auth--btn'],
       textContent: 'Регистрация',
       callback: (): void => {
-        window.location.href = '/registration';
+        navigateTo('/registration');
       },
     });
     return buttonRegistration;
@@ -242,11 +249,8 @@ export default class loginPage {
 
     try {
       const isLoggedIn = await AuthorizationService.login(loginValue, passwordValue);
-
       if (isLoggedIn) {
-        window.history.pushState({}, '', '/store');
-        window.dispatchEvent(new PopStateEvent('popstate'));
-      } else {
+        setTimeout(() => navigateTo('/store'), 0);
       }
     } catch (error) {
       console.error('Login error:', error);
