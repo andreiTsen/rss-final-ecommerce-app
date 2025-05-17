@@ -67,7 +67,7 @@ function handleRouting(): void {
       break;
 
     default:
-      renderPlaceholderPage('Страница не найдена', isAuthenticated);
+      renderPlaceholderPage('Oшибка 404. Страница не найдена', isAuthenticated);
       break;
   }
   navigation.setActiveLink(path);

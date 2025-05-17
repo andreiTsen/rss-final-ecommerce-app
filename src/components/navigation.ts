@@ -32,7 +32,14 @@ export class Navigation {
     nav.classList.add('navbar');
 
     const homeLink = this.createLink('Главная', '/');
+    const loginLink = this.createLink('Вход', '/login');
+    const registerLink = this.createLink('Регистрация', '/registration');
+
     nav.appendChild(homeLink);
+    nav.appendChild(loginLink);
+    nav.appendChild(registerLink);
+
+
 
     if (AuthService.isAuthenticated()) {
       const profileLink = this.createLink('👤 Профиль', '/profile');

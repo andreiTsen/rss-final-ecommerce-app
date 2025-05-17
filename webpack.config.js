@@ -54,7 +54,8 @@ const config = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: '_redirects', to: '',
+          from: '_redirects',
+          to: '',
         },
       ],
     }),
