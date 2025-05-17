@@ -57,7 +57,6 @@ export class Navigation {
     link.textContent = name;
     link.classList.add('nav-link');
 
-
     link.addEventListener('click', (event) => {
       event.preventDefault();
       navigateTo(path);
@@ -72,8 +71,8 @@ export class Navigation {
     button.addEventListener('click', () => {
       AuthService.logout();
       this.render();
+      navigateTo('/');
     });
     return button;
   }
-
 }

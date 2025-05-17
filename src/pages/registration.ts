@@ -596,8 +596,8 @@ export class RegistrationPage {
     loginAnchor.textContent = 'Вход тут, если уже естть учетная запись';
 
     loginAnchor.addEventListener('click', (event) => {
-    event.preventDefault(); 
-    navigateTo('/login'); 
+      event.preventDefault();
+      navigateTo('/login');
     });
 
     loginLink.appendChild(loginText);
@@ -1429,7 +1429,7 @@ export class RegistrationPage {
     }
     return null;
   }
- 
+
   private static handleRegistrationError(error: unknown): { success: boolean; message: string } {
     console.error('Ошібка регистрации юзера:', error);
 

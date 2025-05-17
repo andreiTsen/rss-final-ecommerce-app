@@ -111,6 +111,7 @@ function createAuthenticatedContent(container: HTMLDivElement, pageName: string)
   logoutButton.textContent = 'Выйти из учетной записи';
   logoutButton.addEventListener('click', () => {
     AuthService.logout();
+    navigation.render();
     navigateTo('/');
   });
 
@@ -154,7 +155,7 @@ function renderPlaceholderPage(pageName: string, isAuthenticated: boolean): void
 
   if (isAuthenticated) {
     createAuthenticatedContent(container, pageName);
-    navigation.render()
+    navigation.render();
   } else {
     createUnauthenticatedContent(container);
   }

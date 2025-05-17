@@ -28,7 +28,6 @@ export class AuthService {
   public static logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
-    window.location.href = '/login';
   }
 
   public static isAuthenticated(): boolean {

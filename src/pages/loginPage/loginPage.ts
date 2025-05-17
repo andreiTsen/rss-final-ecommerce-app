@@ -37,8 +37,6 @@ export default class loginPage {
     form.addInnerElement(this.createPasswordInput());
     form.addInnerElement(this.createButtonsBox());
 
-    
-
     form.getElement().addEventListener('submit', async (event: Event): Promise<void> => {
       event.preventDefault();
       await this.handleLogin();
