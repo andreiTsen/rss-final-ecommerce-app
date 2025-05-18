@@ -1,10 +1,6 @@
 import { navigateTo } from '../main';
 import { AuthService } from '../services/authService';
-
-type Page = {
-  name: string;
-  path: string;
-};
+import '../components/navigation.css';
 
 export class Navigation {
   private root: HTMLElement;
@@ -39,8 +35,6 @@ export class Navigation {
     nav.appendChild(loginLink);
     nav.appendChild(registerLink);
 
-
-
     if (AuthService.isAuthenticated()) {
       const profileLink = this.createLink('👤 Профиль', '/profile');
       nav.appendChild(profileLink);
@@ -61,5 +55,4 @@ export class Navigation {
     });
     return link;
   }
-
 }

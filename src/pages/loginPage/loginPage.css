@@ -147,7 +147,7 @@ svg {
   margin-bottom: 30px;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
   text-align: center;
-} 
+}
 
 .auth-error {
   margin-bottom: 7px;
@@ -163,9 +163,9 @@ svg {
 
 @media screen and (max-width: 600px) {
   .auth-form__input-box {
-      width: 95%;
-      padding: 0.2rem 1rem;
-      position: relative;
+    width: 95%;
+    padding: 0.2rem 1rem;
+    position: relative;
   }
 }
 

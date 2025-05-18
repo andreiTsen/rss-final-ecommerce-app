@@ -77,7 +77,10 @@ export class AuthorizationService {
     let errorMessage;
     switch (code) {
       case 400:
-        errorMessage = createErrorMessage('Данная учётная запись не найдена. Проверьте введённые данные!', 'auth-error');
+        errorMessage = createErrorMessage(
+          'Данная учётная запись не найдена. Проверьте введённые данные!',
+          'auth-error'
+        );
         break;
       case 500:
         errorMessage = createErrorMessage('Сервер не доступен. Попробуйте позднее!', 'auth-error');

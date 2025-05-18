@@ -6,7 +6,7 @@ import loginPage from './pages/loginPage/loginPage';
 
 import './main.css';
 
-const appRoot = document.body;
+// const appRoot = document.body;
 
 let appContainer: HTMLElement;
 let navigation: Navigation;

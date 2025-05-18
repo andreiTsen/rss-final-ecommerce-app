@@ -44,13 +44,6 @@
   margin-bottom: 20px;
 }
 
-@media (max-width: 600px) {
-  .form-row {
-    flex-direction: column;
-    gap: 0;
-  }
-}
-
 label {
   display: block;
   margin-bottom: 5px;
@@ -334,11 +327,4 @@ select:focus {
 
 .billing-address .address-subsection-title {
   color: #ff9800;
-}
-
-@media (max-width: 600px) {
-  .form-row {
-    flex-direction: column;
-    gap: 0;
-  }
 }
