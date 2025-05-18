@@ -1,6 +1,7 @@
 import { apiRoot } from '../api';
 import { AuthService } from '../services/authService';
 import { CustomerDraft } from '@commercetools/platform-sdk';
+import { navigateTo } from '../main';
 
 type UserAddress = {
   street: string;
@@ -593,6 +594,11 @@ export class RegistrationPage {
     const loginAnchor = document.createElement('a');
     loginAnchor.href = '/login';
     loginAnchor.textContent = 'Вход тут, если уже естть учетная запись';
+
+    loginAnchor.addEventListener('click', (event) => {
+      event.preventDefault();
+      navigateTo('/login');
+    });
 
     loginLink.appendChild(loginText);
     loginLink.appendChild(loginAnchor);

@@ -11,24 +11,24 @@ export default function validatePassword(value: string): passwordValidationResul
   const whitespace = /\s+/;
   if (!validFormat.test(value)) {
     if (!uppercase.test(value)) {
-      return { isValid: false, message: 'Password can be contains uppercase letter' };
+      return { isValid: false, message: 'Пароль должен содержать буквы в верхнем регистре' };
     }
     if (!lowercase.test(value)) {
-      return { isValid: false, message: 'Password can be contains lowercase letter' };
+      return { isValid: false, message: 'Пароль должен содержать буквы в нижнем регистре' };
     }
     if (!digit.test(value)) {
-      return { isValid: false, message: 'Password can be contains one digit' };
+      return { isValid: false, message: 'Пароль должен содержать один символ' };
     }
     if (whitespace.test(value)) {
-      return { isValid: false, message: 'Please delete trims!' };
+      return { isValid: false, message: 'Удалите отступ!' };
     }
     if (value.length < 8) {
-      return { isValid: false, message: 'Password must be at least 8 characters long' };
+      return { isValid: false, message: 'Пароль должен содержать не менее 8 знаков' };
     }
     if (!value) {
-      return { isValid: false, message: 'Please write password!' };
+      return { isValid: false, message: 'Введите пароль!' };
     }
-    return { isValid: false, message: 'Incorrect password format!' };
+    return { isValid: false, message: 'Неверный формат пароля!' };
   }
 
   return { isValid: true, message: '' };

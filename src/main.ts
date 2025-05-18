@@ -2,6 +2,7 @@ import './pages/registration.css';
 import { RegistrationPage } from './pages/registration';
 import { AuthService } from './services/authService';
 import { Navigation } from './components/navigation';
+import loginPage from './pages/loginPage/loginPage';
 
 import './main.css';
 
@@ -12,7 +13,13 @@ let navigation: Navigation;
 
 document.addEventListener('DOMContentLoaded', () => {
   const existingContainer = document.getElementById('app');
-  navigation = new Navigation(appRoot);
+  let navContainer = document.getElementById('nav');
+  if (!navContainer) {
+    navContainer = document.createElement('header');
+    navContainer.id = 'nav';
+    document.body.appendChild(navContainer);
+  }
+  navigation = new Navigation(navContainer);
 
   if (existingContainer instanceof HTMLElement) {
     appContainer = existingContainer;
@@ -48,7 +55,7 @@ function handleRouting(): void {
 
     case '/login':
       if (!isAuthenticated) {
-        renderPlaceholderPage('Страница входа', isAuthenticated);
+        new loginPage(appContainer);
       } else {
         navigateTo('/store');
       }
@@ -60,7 +67,7 @@ function handleRouting(): void {
       break;
 
     default:
-      renderPlaceholderPage('Страница не найдена', isAuthenticated);
+      renderPlaceholderPage('Oшибка 404. Страница не найдена', isAuthenticated);
       break;
   }
   navigation.setActiveLink(path);
@@ -68,6 +75,7 @@ function handleRouting(): void {
 
 export function navigateTo(path: string): void {
   window.history.pushState({}, '', path);
+  console.log('Navigating to:', path);
   handleRouting();
 }
 
@@ -103,7 +111,8 @@ function createAuthenticatedContent(container: HTMLDivElement, pageName: string)
   logoutButton.textContent = 'Выйти из учетной записи';
   logoutButton.addEventListener('click', () => {
     AuthService.logout();
-    navigateTo('/login');
+    navigation.render();
+    navigateTo('/');
   });
 
   container.appendChild(logoutButton);
@@ -146,15 +155,10 @@ function renderPlaceholderPage(pageName: string, isAuthenticated: boolean): void
 
   if (isAuthenticated) {
     createAuthenticatedContent(container, pageName);
+    navigation.render();
   } else {
     createUnauthenticatedContent(container);
   }
 
   appContainer.appendChild(container);
 }
-import './main.css';
-
-import { Navigation } from './components/navigation';
-const appRoot = document.body;
-const navigation = new Navigation(appRoot);
-

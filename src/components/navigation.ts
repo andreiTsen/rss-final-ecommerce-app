@@ -1,4 +1,5 @@
 import { navigateTo } from '../main';
+import { AuthService } from '../services/authService';
 
 type Page = {
   name: string;
@@ -7,17 +8,10 @@ type Page = {
 
 export class Navigation {
   private root: HTMLElement;
-  private pages: Page[];
 
   constructor(root: HTMLElement) {
     this.root = root;
-    this.pages = [
-      { name: 'Главная', path: '/' },
-      { name: 'Вход', path: '/login' },
-      { name: 'Регистрация', path: '/registration' },
-    ];
     this.render();
-    this.addEventListeners();
   }
 
   public setActiveLink(targetPath: string): void {
@@ -31,34 +25,61 @@ export class Navigation {
     });
   }
 
-  private render(): void {
+  public render(): void {
+    this.root.innerHTML = '';
+
     const nav = document.createElement('nav');
     nav.classList.add('navbar');
 
-    this.pages.forEach((page) => {
-      const link = document.createElement('a');
-      link.href = page.path;
-      link.textContent = page.name;
-      link.classList.add('nav-link');
-      nav.appendChild(link);
-    });
+    const homeLink = this.createLink('Главная', '/');
+    const loginLink = this.createLink('Вход', '/login');
+    const registerLink = this.createLink('Регистрация', '/registration');
+
+    nav.appendChild(homeLink);
+    nav.appendChild(loginLink);
+    nav.appendChild(registerLink);
+
+
+
+    if (AuthService.isAuthenticated()) {
+      const profileLink = this.createLink('👤 Профиль', '/profile');
+      const logoutButton = this.createLogoutButton();
+
+      nav.appendChild(profileLink);
+      nav.appendChild(logoutButton);
+    } else {
+      const loginLink = this.createLink('Вход', '/login');
+      const registerLink = this.createLink('Регистрация', '/registration');
+
+      nav.appendChild(loginLink);
+      nav.appendChild(registerLink);
+    }
 
     this.root.appendChild(nav);
   }
 
-  private addEventListeners(): void {
-    const links = this.root.querySelectorAll('.nav-link');
-    links.forEach((link) => {
-      link.addEventListener('click', (event) => {
-        event.preventDefault();
-        const target = event.target;
-        if (target instanceof HTMLAnchorElement) {
-          const targetPath = target.getAttribute('href');
-          if (targetPath) {
-            navigateTo(targetPath);
-          }
-        }
-      });
+  private createLink(name: string, path: string): HTMLAnchorElement {
+    const link = document.createElement('a');
+    link.href = path;
+    link.textContent = name;
+    link.classList.add('nav-link');
+
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      navigateTo(path);
     });
+    return link;
+  }
+
+  private createLogoutButton(): HTMLButtonElement {
+    const button = document.createElement('button');
+    button.textContent = 'Выйти';
+    button.classList.add('nav-btn');
+    button.addEventListener('click', () => {
+      AuthService.logout();
+      this.render();
+      navigateTo('/');
+    });
+    return button;
   }
 }

@@ -4,6 +4,7 @@ import './../../pages/loginPage/loginPage.css';
 import createErrorMessage from './errorMessage';
 import validateEmail from './validateEmail';
 import validatePassword from './validatePassword';
+import { navigateTo } from '../../main';
 
 export default class loginPage {
   private container: HTMLElement;
@@ -29,18 +30,21 @@ export default class loginPage {
     const titleForm = new ElementCreator({
       tagName: 'h2',
       classNames: ['auth-form__title'],
-      textContent: 'Login',
+      textContent: 'Авторизация',
     });
-    container.addInnerElement(this.createTitleForm().getElement());
-    container.addInnerElement(form);
     form.addInnerElement(titleForm);
     form.addInnerElement(this.createLoginInput());
     form.addInnerElement(this.createPasswordInput());
     form.addInnerElement(this.createButtonsBox());
+
     form.getElement().addEventListener('submit', async (event: Event): Promise<void> => {
       event.preventDefault();
       await this.handleLogin();
     });
+
+    container.addInnerElement(this.createTitleForm().getElement());
+    container.addInnerElement(form);
+
     return container.getElement();
   }
 
@@ -79,7 +83,7 @@ export default class loginPage {
     const textInfo = new ElementCreator({
       tagName: 'span',
       classNames: ['auth-form__info'],
-      textContent: "Don't have an account?",
+      textContent: 'У вас нет аккаунта?',
     });
     btnsBox.addInnerElement(this.createBtnLogin());
     btnsBox.addInnerElement(textInfo);
@@ -201,7 +205,8 @@ export default class loginPage {
     const buttonLogin = new ElementCreator({
       tagName: 'button',
       classNames: ['auth-form__button-login', 'auth--btn'],
-      textContent: 'Login',
+      textContent: 'Вход',
+      attribute: ['type=submit'],
     });
     return buttonLogin;
   }
@@ -210,9 +215,9 @@ export default class loginPage {
     const buttonRegistration = new ElementCreator({
       tagName: 'button',
       classNames: ['auth-form__button-register', 'auth--btn'],
-      textContent: 'Register',
+      textContent: 'Регистрация',
       callback: (): void => {
-        window.location.href = '/register';
+        navigateTo('/registration');
       },
     });
     return buttonRegistration;
@@ -242,12 +247,8 @@ export default class loginPage {
 
     try {
       const isLoggedIn = await AuthorizationService.login(loginValue, passwordValue);
-
       if (isLoggedIn) {
-        // Перенаправление после успешного входа
-        window.history.pushState({}, '', '/store');
-        window.dispatchEvent(new PopStateEvent('popstate'));
-      } else {
+        setTimeout(() => navigateTo('/store'), 0);
       }
     } catch (error) {
       console.error('Login error:', error);
