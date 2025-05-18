@@ -1,9 +1,13 @@
+* {
+  box-sizing: border-box;
+}
 .navbar {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 1rem;
   padding: 0.8rem;
+  width: 100%;
 }
 
 @media (max-width: 600px) {
@@ -18,6 +22,7 @@
     text-align: center;
     margin-bottom: 0.3rem;
   }
+
 }
 
 @media (min-width: 601px) and (max-width: 900px) {
