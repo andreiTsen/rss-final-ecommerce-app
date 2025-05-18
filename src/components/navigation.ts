@@ -43,16 +43,7 @@ export class Navigation {
 
     if (AuthService.isAuthenticated()) {
       const profileLink = this.createLink('👤 Профиль', '/profile');
-      const logoutButton = this.createLogoutButton();
-
       nav.appendChild(profileLink);
-      nav.appendChild(logoutButton);
-    } else {
-      const loginLink = this.createLink('Вход', '/login');
-      const registerLink = this.createLink('Регистрация', '/registration');
-
-      nav.appendChild(loginLink);
-      nav.appendChild(registerLink);
     }
 
     this.root.appendChild(nav);
@@ -71,15 +62,4 @@ export class Navigation {
     return link;
   }
 
-  private createLogoutButton(): HTMLButtonElement {
-    const button = document.createElement('button');
-    button.textContent = 'Выйти';
-    button.classList.add('nav-btn');
-    button.addEventListener('click', () => {
-      AuthService.logout();
-      this.render();
-      navigateTo('/');
-    });
-    return button;
-  }
 }

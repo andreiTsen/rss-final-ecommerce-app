@@ -77,10 +77,10 @@ export class AuthorizationService {
     let errorMessage;
     switch (code) {
       case 400:
-        errorMessage = createErrorMessage('This email address or password was not found. Try again!', '.auth-error');
+        errorMessage = createErrorMessage('Данная учётная запись не найдена. Проверьте введённые данные!', 'auth-error');
         break;
       case 500:
-        errorMessage = createErrorMessage('The server is not available. Try again later.', '.auth-error');
+        errorMessage = createErrorMessage('Сервер не доступен. Попробуйте позднее!', 'auth-error');
         break;
     }
     if (errorMessage) {

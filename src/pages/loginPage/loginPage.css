@@ -35,7 +35,7 @@ svg {
 }
 
 .auth-form__input-box {
-  width: 100%;
+  width: 95%;
   padding: 0.2rem 1.5rem;
   position: relative;
 }
@@ -131,6 +131,9 @@ svg {
   width: 100%;
   padding: 5px 15px;
   color: red;
+  width: 75%;
+  text-align: center;
+  margin: 0 auto;
 }
 
 .no-valid {
@@ -144,4 +147,39 @@ svg {
   margin-bottom: 30px;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
   text-align: center;
-} /*# sourceMappingURL=loginPage.css.map */
+} 
+
+.auth-error {
+  margin-bottom: 7px;
+  width: 75%;
+  text-align: center;
+}
+
+@media screen and (max-width: 768px) {
+  .auth-form {
+    max-width: 90%;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .auth-form__input-box {
+      width: 95%;
+      padding: 0.2rem 1rem;
+      position: relative;
+  }
+}
+
+@media screen and (max-width: 550px) {
+  .auth-form {
+    max-width: 85%;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .auth-form__login-icon {
+    right: 10px;
+  }
+  .auth-form__password-icon {
+    right: 10px;
+  }
+}

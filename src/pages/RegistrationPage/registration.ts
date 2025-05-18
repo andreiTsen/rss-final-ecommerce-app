@@ -1,7 +1,7 @@
-import { apiRoot } from '../api';
-import { AuthService } from '../services/authService';
+import { apiRoot } from '../../api';
+import { AuthService } from '../../services/authService';
 import { CustomerDraft } from '@commercetools/platform-sdk';
-import { navigateTo } from '../main';
+import { navigateTo } from '../../main';
 
 type UserAddress = {
   street: string;
@@ -449,7 +449,7 @@ export class RegistrationPage {
       const errorElement = RegistrationPage.getElement<HTMLDivElement>('#email-error');
       if (errorElement) {
         if (!emailInput.value) {
-          errorElement.textContent = 'Поле электронной почты обязательно для заполнения';
+          errorElement.textContent = 'Поле электронной почты обязательно для заполнения!';
         } else if (!RegistrationPage.isValidEmail(emailInput.value)) {
           errorElement.textContent = 'Пожалуйста, введите корректный адрес электронной почты';
         } else {
@@ -590,10 +590,10 @@ export class RegistrationPage {
     const loginLink = document.createElement('div');
     loginLink.className = 'login-link';
 
-    const loginText = document.createTextNode('Уже есть аккаунт? ');
+    const loginText = document.createTextNode('У вас уже есть аккаунт? ');
     const loginAnchor = document.createElement('a');
     loginAnchor.href = '/login';
-    loginAnchor.textContent = 'Вход тут, если уже естть учетная запись';
+    loginAnchor.textContent = 'Вход, если уже есть учетная запись';
 
     loginAnchor.addEventListener('click', (event) => {
       event.preventDefault();
@@ -661,7 +661,7 @@ export class RegistrationPage {
 
     const passwordLabel = document.createElement('label');
     passwordLabel.htmlFor = 'password';
-    passwordLabel.textContent = 'Пароль*';
+    passwordLabel.textContent = 'Пароль';
 
     const passwordInput = document.createElement('input');
     passwordInput.type = 'password';
@@ -1371,7 +1371,7 @@ export class RegistrationPage {
       !isValid &&
       addressErrorContainer
     ) {
-      addressErrorContainer.textContent = `Для установки адреса ${type === 'shipping' ? 'доставки' : 'выставления счета'} по умолчанію необходимо правільно заполнить все поля`;
+      addressErrorContainer.textContent = `Для установки адреса ${type === 'shipping' ? 'доставки' : 'выставления счета'} по умолчанию необходимо правильно заполнить все поля`;
     } else if (addressErrorContainer) {
       addressErrorContainer.textContent = '';
     }
@@ -1431,7 +1431,7 @@ export class RegistrationPage {
   }
 
   private static handleRegistrationError(error: unknown): { success: boolean; message: string } {
-    console.error('Ошібка регистрации юзера:', error);
+    console.error('Ошибка регистрации юзера:', error);
 
     const statusCode = RegistrationPage.getStatusCode(error);
 
@@ -1465,7 +1465,7 @@ export class RegistrationPage {
       if (hasDuplicateEmail) {
         return {
           success: false,
-          message: 'Юзер с этим email уже существует. Используйте другой email',
+          message: 'Пользователь с этим email уже существует. Используйте другой email',
         };
       }
     }
@@ -1487,7 +1487,7 @@ export class RegistrationPage {
         })
         .execute();
 
-      console.log('Юзер зарегистрирован:', response);
+      console.log('Пользователь зарегистрирован:', response);
 
       return RegistrationPage.handleSuccessfulRegistration(userData);
     } catch (error: unknown) {
@@ -1537,7 +1537,7 @@ export class RegistrationPage {
     } else if (defaultBillingAddress) {
       return ' Ваш адрес выставления счета сохранен как адрес по умолчанию.';
     } else {
-      return ' Ваши адреса доставки и выставления счета сохранены.';
+      return ' Ваши адреса доставки и выставления сохранены.';
     }
   }
 

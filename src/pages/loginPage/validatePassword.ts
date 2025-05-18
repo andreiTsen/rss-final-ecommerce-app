@@ -11,19 +11,19 @@ export default function validatePassword(value: string): passwordValidationResul
   const whitespace = /\s+/;
   if (!validFormat.test(value)) {
     if (!uppercase.test(value)) {
-      return { isValid: false, message: 'Пароль должен содержать буквы в верхнем регистре' };
+      return { isValid: false, message: 'Пароль должен содержать буквы в верхнем регистре.' };
     }
     if (!lowercase.test(value)) {
-      return { isValid: false, message: 'Пароль должен содержать буквы в нижнем регистре' };
+      return { isValid: false, message: 'Пароль должен содержать буквы в нижнем регистре.' };
     }
     if (!digit.test(value)) {
-      return { isValid: false, message: 'Пароль должен содержать один символ' };
+      return { isValid: false, message: 'Пароль должен содержать хотя бы одну цифру!' };
     }
     if (whitespace.test(value)) {
       return { isValid: false, message: 'Удалите отступ!' };
     }
     if (value.length < 8) {
-      return { isValid: false, message: 'Пароль должен содержать не менее 8 знаков' };
+      return { isValid: false, message: 'Пароль должен содержать не менее 8 символов.' };
     }
     if (!value) {
       return { isValid: false, message: 'Введите пароль!' };

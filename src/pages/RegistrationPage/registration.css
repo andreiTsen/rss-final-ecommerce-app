@@ -81,6 +81,7 @@ select:focus {
   margin-top: 5px;
   min-height: 20px;
   background-color: #ffebee;
+  width: 50%;
 }
 
 .dob-fields {
@@ -333,4 +334,11 @@ select:focus {
 
 .billing-address .address-subsection-title {
   color: #ff9800;
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
 }

@@ -1,5 +1,5 @@
-import './pages/registration.css';
-import { RegistrationPage } from './pages/registration';
+import './pages/RegistrationPage/registration.css';
+import { RegistrationPage } from './pages/RegistrationPage/registration';
 import { AuthService } from './services/authService';
 import { Navigation } from './components/navigation';
 import loginPage from './pages/loginPage/loginPage';
@@ -75,7 +75,6 @@ function handleRouting(): void {
 
 export function navigateTo(path: string): void {
   window.history.pushState({}, '', path);
-  console.log('Navigating to:', path);
   handleRouting();
 }
 
