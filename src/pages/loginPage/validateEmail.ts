@@ -11,14 +11,14 @@ export default function validateEmail(value: string): emailValidationResult {
 
   if (!emailRegex.test(String(value))) {
     if (domainName.test(String(value))) {
-      return { isValid: false, message: 'Адрес почты должен содержаать перед доменным именем @' };
+      return { isValid: false, message: 'Адрес почты должен содержать перед доменным именем @' };
     }
 
     if (charAt.test(String(value))) {
-      return { isValid: false, message: "Пожалуйста вставьте '@' между именем почты и доменным именем" };
+      return { isValid: false, message: "Пожалуйста вставьте '@' между именем почты и доменным именем." };
     }
     if (whitespace.test(String(value))) {
-      return { isValid: false, message: 'Пожалуйста удалите пробел!' };
+      return { isValid: false, message: 'Пожалуйста удалите пробелы!' };
     }
     if (!value) {
       return { isValid: false, message: 'Пожалуйста введите почту!' };
