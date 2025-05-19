@@ -1,0 +1,83 @@
+{
+  "name": "rss-final-ecommerce-app",
+  "version": "1.0.0",
+  "description": "RS Final command project",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack serve --open",
+    "build": "webpack --mode production",
+    "lint": "node --no-warnings=ExperimentalWarning --input-type=commonjs ./node_modules/eslint/bin/eslint.js . --ext .ts,.tsx",
+    "lint:fix": "node --no-warnings=ExperimentalWarning --input-type=commonjs ./node_modules/eslint/bin/eslint.js . --ext .ts --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/preset-env": "^7.27.2",
+    "@babel/preset-typescript": "^7.27.1",
+    "@commercetools/platform-sdk": "^8.8.0",
+    "@commercetools/sdk-client": "^4.0.1",
+    "@types/jest": "^29.5.14",
+    "@typescript-eslint/eslint-plugin": "^8.31.0",
+    "@typescript-eslint/parser": "^8.31.0",
+    "clean-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^13.0.0",
+    "css-loader": "^7.1.2",
+    "dotenv-webpack": "^8.1.0",
+    "eslint": "^9.25.1",
+    "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-unicorn": "^59.0.0",
+    "eslint-webpack-plugin": "^5.0.1",
+    "html-webpack-plugin": "^5.6.3",
+    "husky": "^9.1.7",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "prettier": "^3.5.3",
+    "style-loader": "^4.0.0",
+    "ts-jest": "^29.3.3",
+    "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "webpack": "^5.99.7",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.1"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "coverageReporters": [
+      "text",
+      "html"
+    ],
+    "coverageDirectory": "coverage",
+    "preset": "ts-jest",
+    "testEnvironment": "jsdom",
+    "moduleFileExtensions": [
+      "ts",
+      "js",
+      "json"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(ts|tsx|js)$",
+    "moduleNameMapper": {
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
+    }
+  },
+  "dependencies": {
+    "@commercetools/sdk-client-v2": "^3.0.0",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.1",
+    "dotenv": "^16.5.0",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10",
+    "stream-browserify": "^3.0.0"
+  }
+}
