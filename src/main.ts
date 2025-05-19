@@ -3,9 +3,6 @@ import { RegistrationPage } from './pages/RegistrationPage/registration';
 import { AuthService } from './services/authService';
 import { Navigation } from './components/navigation';
 import loginPage from './pages/loginPage/loginPage';
-
-import './main.css';
-
 // const appRoot = document.body;
 
 let appContainer: HTMLElement;

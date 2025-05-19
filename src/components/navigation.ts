@@ -13,7 +13,8 @@ export class Navigation {
   public setActiveLink(targetPath: string): void {
     const links = this.root.querySelectorAll('.nav-link');
     links.forEach((link) => {
-      if (link.getAttribute('href') === targetPath) {
+      const linkPath = link.getAttribute("href");
+      if (linkPath === targetPath || (linkPath === "/" && targetPath === "/store") || (targetPath === '/stre' && linkPath === '/')) {
         link.classList.add('active');
       } else {
         link.classList.remove('active');
