@@ -173,7 +173,8 @@ svg {
   .auth-form {
     padding: 0;
   }
-  .box-input, .password-box {
+  .box-input,
+  .password-box {
     padding-right: 0;
   }
 }
