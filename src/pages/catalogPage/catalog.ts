@@ -18,11 +18,56 @@ export class CatalogPage {
     const catalogContent = document.createElement('div');
     catalogContent.className = 'catalog-content';
 
+    const sidebar = this.createSidebar();
     const mainContent = this.createMainContent();
+
+    catalogContent.appendChild(sidebar);
     catalogContent.appendChild(mainContent);
 
     catalogContainer.appendChild(catalogContent);
     this.container.appendChild(catalogContainer);
+  }
+
+  private createSidebar(): HTMLElement {
+    const sidebar = document.createElement('aside');
+    sidebar.className = 'catalog-sidebar';
+
+    const categoriesSection = this.createCategoriesSection();
+    sidebar.appendChild(categoriesSection);
+
+    return sidebar;
+  }
+
+  private createCategoriesSection(): HTMLElement {
+    const section = document.createElement('div');
+    section.className = 'categories-section';
+
+    const title = document.createElement('h3');
+    title.className = 'sidebar-title';
+    title.textContent = 'Категории';
+
+    const categoriesList = document.createElement('ul');
+    categoriesList.className = 'categories-list';
+
+    const categories = ['Художественная литература', 'Научная литература', 'Детские книги', 'Учебники', 'Комиксы'];
+
+    categories.forEach((categoryName) => {
+      const listItem = document.createElement('li');
+      listItem.className = 'category-item';
+
+      const link = document.createElement('a');
+      link.href = '#';
+      link.className = 'category-link';
+      link.textContent = categoryName;
+
+      listItem.appendChild(link);
+      categoriesList.appendChild(listItem);
+    });
+
+    section.appendChild(title);
+    section.appendChild(categoriesList);
+
+    return section;
   }
 
   private createCatalogHeader(): HTMLElement {
@@ -138,18 +183,18 @@ export class CatalogPage {
     if (hasDiscount && discountPrice) {
       const currentPrice = document.createElement('span');
       currentPrice.className = 'price-current';
-      currentPrice.textContent = `${discountPrice}₽`;
+      currentPrice.textContent = `${discountPrice}$`;
 
       const originalPriceSpan = document.createElement('span');
       originalPriceSpan.className = 'price-original';
-      originalPriceSpan.textContent = `${originalPrice}₽`;
+      originalPriceSpan.textContent = `${originalPrice}$`;
 
       priceContainer.appendChild(currentPrice);
       priceContainer.appendChild(originalPriceSpan);
     } else {
       const currentPrice = document.createElement('span');
       currentPrice.className = 'price-current';
-      currentPrice.textContent = `${originalPrice}₽`;
+      currentPrice.textContent = `${originalPrice}$`;
       priceContainer.appendChild(currentPrice);
     }
 
