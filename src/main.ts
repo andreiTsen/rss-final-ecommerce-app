@@ -3,6 +3,11 @@ import { RegistrationPage } from './pages/RegistrationPage/registration';
 import { AuthService } from './services/authService';
 import { Navigation } from './components/navigation';
 import loginPage from './pages/loginPage/loginPage';
+import { AuthorizationService } from './services/authentication';
+import productAboutPage from './pages/productAboutPage/productAboutPage';
+import { getProduct } from './services/getProduct';
+import './pages/productAboutPage/productAboutPage.css';
+import { customerApiRoot } from './services/customerApi';
 // const appRoot = document.body;
 
 let appContainer: HTMLElement;
@@ -36,7 +41,7 @@ function setupRouting(): void {
 
 function handleRouting(): void {
   const path = window.location.pathname;
-  const isAuthenticated = AuthService.isAuthenticated();
+  const isAuthenticated = AuthorizationService.isAuthenticated();
 
   appContainer.innerHTML = '';
 
@@ -58,8 +63,12 @@ function handleRouting(): void {
       }
       break;
 
+    case '/product-about': {
+      void handleProductAbout();
+      break;
+    }
+
     case '/store':
-    case '/':
       renderPlaceholderPage('Страница магазина', isAuthenticated);
       break;
 
@@ -73,6 +82,43 @@ function handleRouting(): void {
 export function navigateTo(path: string): void {
   window.history.pushState({}, '', path);
   handleRouting();
+}
+
+async function handleProductAbout(): Promise<void> {
+  const parameters = new URLSearchParams(window.location.search);
+  const key = parameters.get('key');
+  try {
+    if (key) {
+      const product = await getProduct(key);
+      if (product) {
+        let category = '';
+        if (product.categories && product.categories.length > 0) {
+          category = await getCategoryNameById(product.categories[0].id);
+        }
+        const title = product.name?.['en-US'] || 'Без названия';
+        const info = product.description?.['en-US'] || 'Нет описания';
+        const price = String(product.masterVariant.prices?.[0]?.value?.centAmount);
+        const img = product.masterVariant?.images?.[0]?.url || '';
+        const author = product.masterVariant?.attributes?.[0].value;
+        console.log(product);
+        new productAboutPage(appContainer, title, info, price, img, category, author);
+      } else {
+        appContainer.textContent = 'Ошибка загрузки информации о продукте';
+      }
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function getCategoryNameById(id: string): Promise<string> {
+  try {
+    const response = await customerApiRoot.categories().withId({ ID: id }).get().execute();
+    return response.body.name['en-US'];
+  } catch (error) {
+    console.error(error);
+    return 'not category';
+  }
 }
 
 function createPlaceholderContainer(pageName: string): HTMLDivElement {
@@ -95,18 +141,28 @@ function createPlaceholderContainer(pageName: string): HTMLDivElement {
 function createAuthenticatedContent(container: HTMLDivElement, pageName: string): void {
   if (pageName !== 'Страница магазина') return;
 
-  const user = AuthService.getCurrentUser();
+  const user = AuthorizationService.getCurrentUser();
 
   const welcomeMessage = document.createElement('p');
   welcomeMessage.className = 'welcome-message';
   welcomeMessage.textContent = `Добро пожаловать, ${user?.firstName || 'пользователь'}! Вы вошли в систему.`;
   container.appendChild(welcomeMessage);
+  const buttonProducts = document.createElement('button');
+  buttonProducts.textContent = 'Подробная информация о продукте';
+  buttonProducts.setAttribute('data-key', 'atomic-habits');
+  buttonProducts.addEventListener('click', () => {
+    const key = buttonProducts.getAttribute('data-key');
+    if (key) {
+      navigateTo(`/product-about?key=${encodeURIComponent(key)}`);
+    }
+  });
+  container.appendChild(buttonProducts);
 
   const logoutButton = document.createElement('button');
   logoutButton.className = 'logout-button';
   logoutButton.textContent = 'Выйти из учетной записи';
   logoutButton.addEventListener('click', () => {
-    AuthService.logout();
+    AuthorizationService.logout();
     navigation.render();
     navigateTo('/');
   });

@@ -1,0 +1,35 @@
+.about-page__container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 1.5rem 2rem;
+  gap: 2rem;
+  width: 100%;
+}
+
+.img-container {
+  max-width: 50%;
+}
+
+.info-container {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+}
+
+.about-page_product-img {
+  max-width: 75vw;
+  max-height: 87vh;
+}
+
+.about-page_product-title {
+  font-size: 2.5rem;
+  color: #4caf50;
+}
+
+.about-page_product-category,
+.about-page_product-info,
+.about-page_product-price,
+.about-page_product-author {
+  font-size: 1.25rem;
+}
