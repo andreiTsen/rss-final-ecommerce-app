@@ -98,7 +98,7 @@ async function handleProductAbout(): Promise<void> {
         const title = product.name?.['en-US'] || 'Без названия';
         const info = product.description?.['en-US'] || 'Нет описания';
         const price = String(product.masterVariant.prices?.[0]?.value?.centAmount);
-        const img = product.masterVariant?.images?.[0]?.url || '';
+        const img = product.masterVariant?.images?.map((img) => img.url) || [];
         const author = product.masterVariant?.attributes?.[0].value;
         console.log(product);
         new productAboutPage(appContainer, title, info, price, img, category, author);

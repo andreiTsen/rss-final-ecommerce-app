@@ -1,6 +1,8 @@
+import Swiper from 'swiper';
+import { Navigation, Pagination } from 'swiper/modules';
 import ElementCreator from '../../utils/ElementCreator';
 import './../../pages/productAboutPage/productAboutPage.css';
-
+import 'swiper/swiper-bundle.css';
 export default class productAboutPage {
   private container: HTMLElement;
   constructor(
@@ -8,19 +10,19 @@ export default class productAboutPage {
     title: string,
     info: string,
     price: string,
-    img: string,
+    imgs: string[],
     category: string,
     author: string
   ) {
     this.container = container;
-    this.container.appendChild(this.createContainerPage(title, info, price, img, category, author));
+    this.container.appendChild(this.createContainerPage(title, info, price, imgs, category, author));
   }
 
   public createContainerPage(
     title: string,
     info: string,
     price: string,
-    img: string,
+    imgs: string[],
     category: string,
     author: string
   ): HTMLElement {
@@ -31,7 +33,11 @@ export default class productAboutPage {
     const imgContainer = this.createImgContainer();
     const infoContainer = this.createInfoContainer();
     infoContainer.appendChild(this.createTitleProducts(title));
-    imgContainer.appendChild(this.createImgProducts(img));
+    if (imgs.length > 1) {
+      imgContainer.appendChild(this.createSlider(imgs));
+    } else {
+      imgContainer.appendChild(this.createImgProducts(imgs[0]));
+    }
     infoContainer.appendChild(this.createCategories(category));
     infoContainer.appendChild(this.createAuthor(author));
     infoContainer.appendChild(this.createAboutInfoProducts(info));
@@ -113,5 +119,70 @@ export default class productAboutPage {
     });
     imgElement.setAttributes([`src=${img}`]);
     return imgElement.getElement();
+  }
+
+  public createSlider(imgs: string[]): HTMLElement {
+    const sliderContainer = new ElementCreator({
+      tagName: 'div',
+      classNames: ['swiper'],
+    }).getElement();
+    const wrapper = new ElementCreator({
+      tagName: 'div',
+      classNames: ['swiper-wrapper'],
+    }).getElement();
+
+    imgs.forEach((img) => {
+      const slide = new ElementCreator({
+        tagName: 'div',
+        classNames: ['swiper-slide'],
+      }).getElement();
+      const image = new ElementCreator({
+        tagName: 'img',
+        classNames: ['about-page_product-img'],
+      }).getElement();
+      image.setAttribute('src', img);
+      slide.appendChild(image);
+      wrapper.appendChild(slide);
+    });
+    sliderContainer.appendChild(wrapper);
+    const pagination = this.createPaginationElement();
+    const buttonNext = this.createButtonNext();
+    const buttonPrevious = this.createButtonPrevious();
+    sliderContainer.appendChild(pagination);
+    sliderContainer.appendChild(buttonNext);
+    sliderContainer.appendChild(buttonPrevious);
+    setTimeout(() => {
+      new Swiper(sliderContainer, {
+        modules: [Navigation, Pagination],
+        loop: true,
+        pagination: { el: pagination, clickable: true },
+        navigation: { nextEl: buttonNext, prevEl: buttonPrevious },
+      });
+    }, 0);
+    return sliderContainer;
+  }
+
+  public createPaginationElement(): HTMLElement {
+    const pagination = new ElementCreator({
+      tagName: 'div',
+      classNames: ['swiper-pagination'],
+    });
+    return pagination.getElement();
+  }
+
+  public createButtonNext(): HTMLElement {
+    const nextButton = new ElementCreator({
+      tagName: 'div',
+      classNames: ['swiper-button-next'],
+    });
+    return nextButton.getElement();
+  }
+
+  public createButtonPrevious(): HTMLElement {
+    const previousButton = new ElementCreator({
+      tagName: 'div',
+      classNames: ['swiper-button-prev'],
+    });
+    return previousButton.getElement();
   }
 }
