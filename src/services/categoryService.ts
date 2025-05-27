@@ -5,58 +5,209 @@ export type CategoryData = {
   id: string;
   name: string;
   slug: string;
+  description?: string;
+  parentId?: string;
+  productCount?: number;
 };
 
 export class CategoryService {
+  private static categoryCache = new Map<string, CategoryData>();
+
   public static async getCategories(): Promise<CategoryData[]> {
     try {
-      console.log('Загружаем категории...');
+      const response = await apiRoot
+        .categories()
+        .get({
+          queryArgs: {
+            limit: 100,
+            sort: 'name.en asc',
+            expand: ['parent'],
+          },
+        })
+        .execute();
+
+      const categories = response.body.results.map((category) => this.mapCategoryToData(category));
+
+      categories.forEach((category) => {
+        this.categoryCache.set(category.id, category);
+      });
+
+      return categories;
+    } catch (error) {
+      console.error('Ошібка полученія категорий из API:', error);
+      return [];
+    }
+  }
+
+  public static async getCategoryById(categoryId: string): Promise<CategoryData | null> {
+    if (this.categoryCache.has(categoryId)) {
+      return this.categoryCache.get(categoryId) || null;
+    }
+
+    try {
+      const response = await apiRoot
+        .categories()
+        .withId({ ID: categoryId })
+        .get({
+          queryArgs: {
+            expand: ['parent'],
+          },
+        })
+        .execute();
+
+      const categoryData = this.mapCategoryToData(response.body);
+
+      this.categoryCache.set(categoryId, categoryData);
+
+      return categoryData;
+    } catch (error) {
+      console.error(`Ошібка полученія категорій ${categoryId}:`, error);
+      return null;
+    }
+  }
+
+  public static async getCategoryProductCount(categoryId: string): Promise<number> {
+    try {
+      const response = await apiRoot
+        .productProjections()
+        .search()
+        .get({
+          queryArgs: {
+            limit: 0,
+            staged: false,
+            filter: [`categories.id:"${categoryId}"`],
+          },
+        })
+        .execute();
+
+      const count = response.body.total || 0;
+
+      return count;
+    } catch (error) {
+      console.error(`Ошибка при счета ${categoryId}:`, error);
+      return 0;
+    }
+  }
+
+  public static async getCategoriesWithProductCount(): Promise<CategoryData[]> {
+    try {
+      const categories = await this.getCategories();
+
+      const categoriesWithCount = await Promise.all(
+        categories.map(async (category) => {
+          const productCount = await this.getCategoryProductCount(category.id);
+          return {
+            ...category,
+            productCount,
+          };
+        })
+      );
+
+      return categoriesWithCount;
+    } catch (error) {
+      console.error('Ошібка полученія категорий с товаром:', error);
+      return [];
+    }
+  }
+
+  public static async searchCategories(searchText: string): Promise<CategoryData[]> {
+    try {
       const response = await apiRoot
         .categories()
         .get({
           queryArgs: {
             limit: 50,
+            where: `name(en contains "${searchText}" or ru contains "${searchText}")`,
+            sort: 'name.en asc',
           },
         })
         .execute();
 
-      console.log('Ответ категорій API:', response.body);
-      console.log('Колічество категорій:', response.body.results.length);
-
       const categories = response.body.results.map((category) => this.mapCategoryToData(category));
-      console.log('Тест категорій:', categories);
 
       return categories;
     } catch (error) {
-      console.error('Ошібка полученія категорий:', error);
+      console.error('Ошібка поіска:', error);
+      return [];
+    }
+  }
+
+  public static clearCache(): void {
+    this.categoryCache.clear();
+  }
+
+  public static async getCategoryHierarchy(): Promise<CategoryData[]> {
+    try {
+      const allCategories = await this.getCategories();
+
+      const sortedCategories = allCategories.sort((a, b) => {
+        if (!a.parentId && b.parentId) return -1;
+        if (a.parentId && !b.parentId) return 1;
+
+        return a.name.localeCompare(b.name);
+      });
+
+      return sortedCategories;
+    } catch (error) {
+      console.error('Ошібка категорій:', error);
       return [];
     }
   }
 
   private static mapCategoryToData(category: Category): CategoryData {
-    console.log('Обрабатываем категорию:', category);
+    const categoryName = this.extractCategoryName(category);
+    const categorySlug = this.extractCategorySlug(category);
+    const categoryDescription = this.extractCategoryDescription(category);
+    const parentId = this.extractParentId(category);
 
-    const categoryName =
+    const categoryData: CategoryData = {
+      id: category.id,
+      name: categoryName,
+      slug: categorySlug,
+      description: categoryDescription,
+      parentId,
+    };
+
+    return categoryData;
+  }
+
+  private static extractCategoryName(category: Category): string {
+    return (
       category.name?.['en-US'] ||
       category.name?.['en'] ||
       category.name?.['ru'] ||
       category.name?.['de-DE'] ||
+      category.name?.['de'] ||
       Object.values(category.name || {}).find((name) => name && name.trim() !== '') ||
-      'Без названия';
+      'Категория без названия'
+    );
+  }
 
-    const categorySlug =
+  private static extractCategorySlug(category: Category): string {
+    return (
       category.slug?.['en-US'] ||
       category.slug?.['en'] ||
       category.slug?.['ru'] ||
       category.slug?.['de-DE'] ||
+      category.slug?.['de'] ||
       Object.values(category.slug || {}).find((slug) => slug && slug.trim() !== '') ||
       category.key ||
-      '';
+      category.id
+    );
+  }
 
-    return {
-      id: category.id,
-      name: categoryName,
-      slug: categorySlug,
-    };
+  private static extractCategoryDescription(category: Category): string | undefined {
+    return (
+      category.description?.['en-US'] ||
+      category.description?.['en'] ||
+      category.description?.['ru'] ||
+      category.description?.['de-DE'] ||
+      category.description?.['de'] ||
+      Object.values(category.description || {}).find((desc) => desc && desc.trim() !== '')
+    );
+  }
+
+  private static extractParentId(category: Category): string | undefined {
+    return category.parent?.id;
   }
 }
