@@ -1,30 +1,59 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 .about-page__container {
   display: flex;
   justify-content: center;
+  align-items: flex-start;
   flex-wrap: wrap;
-  padding: 1.5rem 2rem;
+  padding: 2.5rem;
   gap: 2rem;
   width: 100%;
+  margin: 0 auto;
 }
 
-.img-container {
+/* .img-container {
   max-width: 50%;
+} */
+
+.img-container {
+  max-width: 550px;
+  min-width: 350px;
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 }
 
 .info-container {
   display: flex;
   flex-direction: column;
-  width: 50%;
+  max-width: 800px;
+  min-width: 300px;
+  flex: 1 1 0;
 }
 
-.about-page_product-img {
+/* .about-page_product-img {
   max-width: 75vw;
   max-height: 87vh;
+} */
+
+.about-page_product-img {
+  max-width: 100%;
+  max-height: 380px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+  cursor: pointer;
 }
 
 .about-page_product-title {
   font-size: 2.5rem;
   color: #4caf50;
+  margin-bottom: 0.7rem;
 }
 
 .about-page_product-category,
@@ -32,4 +61,94 @@
 .about-page_product-price,
 .about-page_product-author {
   font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.about-page_product-price {
+  margin-bottom: 0;
+}
+
+.swiper {
+  width: 100%;
+  height: 400px;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  color: #4caf50 !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: #4caf50 !important;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal-container {
+  position: relative;
+  background: transparent;
+  border-radius: 8px;
+  max-width: 95vw;
+  max-height: 95vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-image {
+  display: block;
+  margin: 0 auto;
+  max-width: 80vw;
+  max-height: 80vh;
+  border-radius: 8px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close_btn {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  font-size: 2.5rem;
+  color: #fff;
+  cursor: pointer;
+  background: red;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  line-height: 38px;
+  text-align: center;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-swiper {
+  width: 80vw;
+  max-width: 700px;
+  height: 90vh;
+  max-height: 800px;
+  background: #fff;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swiper-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
 }

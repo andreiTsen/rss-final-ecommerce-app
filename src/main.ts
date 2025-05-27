@@ -8,6 +8,7 @@ import productAboutPage from './pages/productAboutPage/productAboutPage';
 import { getProduct } from './services/getProduct';
 import './pages/productAboutPage/productAboutPage.css';
 import { customerApiRoot } from './services/customerApi';
+// import './assets/style.css'
 // const appRoot = document.body;
 
 let appContainer: HTMLElement;
@@ -97,7 +98,8 @@ async function handleProductAbout(): Promise<void> {
         }
         const title = product.name?.['en-US'] || 'Без названия';
         const info = product.description?.['en-US'] || 'Нет описания';
-        const price = String(product.masterVariant.prices?.[0]?.value?.centAmount);
+        const priceCent = product.masterVariant.prices?.[0]?.value?.centAmount ?? 0;
+        const price = (priceCent / 100).toFixed(2);
         const img = product.masterVariant?.images?.map((img) => img.url) || [];
         const author = product.masterVariant?.attributes?.[0].value;
         console.log(product);

@@ -117,6 +117,7 @@ export default class productAboutPage {
       tagName: 'img',
       classNames: ['about-page_product-img'],
     });
+    imgElement.setCallback(() => this.createImgModal([img]));
     imgElement.setAttributes([`src=${img}`]);
     return imgElement.getElement();
   }
@@ -130,7 +131,6 @@ export default class productAboutPage {
       tagName: 'div',
       classNames: ['swiper-wrapper'],
     }).getElement();
-
     imgs.forEach((img) => {
       const slide = new ElementCreator({
         tagName: 'div',
@@ -141,6 +141,7 @@ export default class productAboutPage {
         classNames: ['about-page_product-img'],
       }).getElement();
       image.setAttribute('src', img);
+      image.addEventListener('click', () => this.createImgModal(imgs));
       slide.appendChild(image);
       wrapper.appendChild(slide);
     });
@@ -184,5 +185,90 @@ export default class productAboutPage {
       classNames: ['swiper-button-prev'],
     });
     return previousButton.getElement();
+  }
+
+  public createImgModal(imgs: string[]): void {
+    const modal = new ElementCreator({
+      tagName: 'div',
+      classNames: ['modal'],
+    });
+    const modalContainer = new ElementCreator({
+      tagName: 'div',
+      classNames: ['modal-container'],
+    });
+
+    const closeButton = this.createModalCloseButton(() => document.body.removeChild(modal.getElement()));
+    const sliderContainer = this.createModalSlider(imgs);
+
+    modal.setCallback((event: Event) => {
+      if (event.target === modal.getElement()) {
+        document.body.removeChild(modal.getElement());
+      }
+    });
+
+    modalContainer.addInnerElement(closeButton);
+    modalContainer.addInnerElement(sliderContainer.container);
+    modal.addInnerElement(modalContainer);
+    document.body.appendChild(modal.getElement());
+
+    setTimeout(() => {
+      new Swiper(sliderContainer.swiperEl, {
+        modules: [Navigation, Pagination],
+        loop: true,
+        pagination: { el: sliderContainer.pagination, clickable: true },
+        navigation: { nextEl: sliderContainer.buttonNext, prevEl: sliderContainer.buttonPrevious },
+      });
+    }, 0);
+  }
+
+  private createModalCloseButton(click: () => void): HTMLElement {
+    const closeButton = new ElementCreator({
+      tagName: 'button',
+      classNames: ['modal-close_btn'],
+    });
+    closeButton.addTextContent('×');
+    closeButton.setCallback(click);
+    return closeButton.getElement();
+  }
+
+  private createModalSlider(imgs: string[]): {
+    container: HTMLElement;
+    swiperEl: HTMLElement;
+    pagination: HTMLElement;
+    buttonNext: HTMLElement;
+    buttonPrevious: HTMLElement;
+  } {
+    const sliderContainer = new ElementCreator({
+      tagName: 'div',
+      classNames: ['swiper', 'modal-swiper'],
+    });
+    const wrapper = new ElementCreator({
+      tagName: 'div',
+      classNames: ['swiper-wrapper'],
+    });
+    imgs.forEach((img) => {
+      const slide = document.createElement('div');
+      slide.classList.add('swiper-slide');
+      const imageSlide = document.createElement('img');
+      imageSlide.classList.add('modal-image');
+      imageSlide.src = img;
+      slide.appendChild(imageSlide);
+      wrapper.addInnerElement(slide);
+    });
+    sliderContainer.addInnerElement(wrapper);
+    const pagination = this.createPaginationElement();
+    const buttonNext = this.createButtonNext();
+    const buttonPrevious = this.createButtonPrevious();
+    sliderContainer.addInnerElement(pagination);
+    sliderContainer.addInnerElement(buttonNext);
+    sliderContainer.addInnerElement(buttonPrevious);
+
+    return {
+      container: sliderContainer.getElement(),
+      swiperEl: sliderContainer.getElement(),
+      pagination,
+      buttonNext,
+      buttonPrevious,
+    };
   }
 }
