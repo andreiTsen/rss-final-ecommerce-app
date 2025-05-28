@@ -51,6 +51,7 @@ type QueryArguments = {
   expand: string[];
   where?: string[];
   sort?: string[];
+  'text.en-US'?: string;
 };
 
 type PriceInfo = {
@@ -132,6 +133,10 @@ export class ProductService {
     const whereConditions = this.buildWhereConditions(filters);
     if (whereConditions.length > 0) {
       queryArguments.where = whereConditions;
+    }
+
+    if (filters?.searchText && filters.searchText.trim()) {
+      queryArguments['text.en-US'] = filters.searchText.trim();
     }
 
     return queryArguments;
@@ -259,12 +264,14 @@ export class ProductService {
     if (!searchText || !searchText.trim()) return products;
 
     const searchTextLower = searchText.toLowerCase().trim();
-    const filtered = products.filter(
-      (product) =>
-        product.name.toLowerCase().includes(searchTextLower) ||
-        (product.description && product.description.toLowerCase().includes(searchTextLower)) ||
-        (product.author && product.author.toLowerCase().includes(searchTextLower))
-    );
+    const filtered = products.filter((product) => {
+      const nameMatch = product.name.toLowerCase().includes(searchTextLower);
+      const descriptionMatch = product.description && product.description.toLowerCase().includes(searchTextLower);
+      const authorMatch = product.author && product.author.toLowerCase().includes(searchTextLower);
+      const categoryMatch = product.category && product.category.toLowerCase().includes(searchTextLower);
+
+      return nameMatch || descriptionMatch || authorMatch || categoryMatch;
+    });
 
     return filtered;
   }

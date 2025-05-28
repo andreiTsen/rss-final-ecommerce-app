@@ -12,6 +12,7 @@ export class CatalogPage {
   };
   private currentFilters: ProductFilters = {};
   private currentSortOption: SortOption = 'default';
+  private searchTimeout: NodeJS.Timeout | null = null;
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -41,7 +42,7 @@ export class CatalogPage {
   }
 
   private render(): void {
-    this.container.innerHTML = '';
+    this.container.textContent = '';
 
     const catalogContainer = document.createElement('div');
     catalogContainer.className = 'catalog-container';
@@ -199,7 +200,10 @@ export class CatalogPage {
       const clearAllButton = document.createElement('button');
       clearAllButton.className = 'clear-all-filters-btn';
       clearAllButton.textContent = 'Сбросіть все';
-      clearAllButton.addEventListener('click', () => void this.clearAllFilters());
+      clearAllButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        void this.clearAllFilters();
+      });
       filtersHeader.appendChild(clearAllButton);
     } else {
       filtersTitle.textContent = ``;
@@ -241,7 +245,7 @@ export class CatalogPage {
       const category = this.categories.find((cat) => cat.id === this.currentFilters.categoryId);
       const categoryName = category ? category.name : 'Неизвестная категория';
 
-      const tag = this.createFilterTag(`${categoryName}`, () => void this.removeFilter('categoryId'));
+      const tag = this.createFilterTag(categoryName, () => void this.removeFilter('categoryId'));
       container.appendChild(tag);
     }
   }
@@ -249,7 +253,7 @@ export class CatalogPage {
   private addSearchFilterTag(container: HTMLElement): void {
     if (this.currentFilters.searchText) {
       const tag = this.createFilterTag(
-        `"${this.currentFilters.searchText}"`,
+        `Поиск: "${this.currentFilters.searchText}"`,
         () => void this.removeFilter('searchText')
       );
       container.appendChild(tag);
@@ -259,10 +263,10 @@ export class CatalogPage {
   private addPriceFilterTag(container: HTMLElement): void {
     if (this.currentFilters.priceRange) {
       const { min, max } = this.currentFilters.priceRange;
-      let priceText = 'price ';
+      let priceText = 'Цена: ';
 
       if (min !== undefined && max !== undefined) {
-        priceText += `${min}₽ - ${max}₽`;
+        priceText += `${min}$ - ${max}$`;
       } else if (min !== undefined) {
         priceText += `от ${min}$`;
       } else if (max !== undefined) {
@@ -276,7 +280,7 @@ export class CatalogPage {
 
   private addAuthorFilterTag(container: HTMLElement): void {
     if (this.currentFilters.author) {
-      const tag = this.createFilterTag(`author ${this.currentFilters.author}`, () => void this.removeFilter('author'));
+      const tag = this.createFilterTag(`Автор: ${this.currentFilters.author}`, () => void this.removeFilter('author'));
       container.appendChild(tag);
     }
   }
@@ -294,7 +298,7 @@ export class CatalogPage {
 
     const label = document.createElement('span');
     label.className = 'filter-tag-label';
-    label.textContent = `Кнігі категоріі ${text}`;
+    label.textContent = text;
 
     const removeButton = document.createElement('button');
     removeButton.className = 'filter-tag-remove';
@@ -315,18 +319,62 @@ export class CatalogPage {
         break;
       case 'searchText':
         await this.updateSearchFilter(undefined);
+        this.clearSearchInput();
         break;
       case 'priceRange':
         await this.updatePriceFilter(undefined);
+        this.clearPriceInputs();
         break;
       case 'author':
         await this.updateAuthorFilter(undefined);
+        this.clearAuthorSelect();
         break;
       case 'hasDiscount':
         await this.updateDiscountFilter(undefined);
+        this.clearDiscountCheckbox();
         break;
       default:
         break;
+    }
+  }
+
+  private clearSearchInput(): void {
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput instanceof HTMLInputElement) {
+      searchInput.value = '';
+    }
+
+    const clearSearchButton = document.querySelector('.clear-search-btn');
+    if (clearSearchButton instanceof HTMLButtonElement) {
+      clearSearchButton.style.display = 'none';
+    }
+  }
+
+  private clearPriceInputs(): void {
+    const priceInputs = document.querySelectorAll('.price-input');
+    priceInputs.forEach((input) => {
+      if (input instanceof HTMLInputElement) {
+        input.value = '';
+      }
+    });
+  }
+
+  private clearAuthorSelect(): void {
+    const authorSelect = document.querySelector('.author-select');
+    if (authorSelect instanceof HTMLSelectElement) {
+      authorSelect.value = '';
+    }
+
+    const resetAuthorButton = document.querySelector('.reset-author-btn');
+    if (resetAuthorButton instanceof HTMLButtonElement) {
+      resetAuthorButton.style.display = 'none';
+    }
+  }
+
+  private clearDiscountCheckbox(): void {
+    const discountCheckbox = document.querySelector('.discount-checkbox');
+    if (discountCheckbox instanceof HTMLInputElement) {
+      discountCheckbox.checked = false;
     }
   }
 
@@ -446,8 +494,6 @@ export class CatalogPage {
   }
 
   private setupSearchInputListener(searchInput: HTMLInputElement, clearSearchButton: HTMLButtonElement): void {
-    let searchTimeout: NodeJS.Timeout;
-
     searchInput.addEventListener('input', (event) => {
       const target = event.target;
       if (target instanceof HTMLInputElement) {
@@ -455,10 +501,24 @@ export class CatalogPage {
 
         clearSearchButton.style.display = value ? 'block' : 'none';
 
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
+        if (this.searchTimeout) {
+          clearTimeout(this.searchTimeout);
+        }
+
+        this.searchTimeout = setTimeout(() => {
           void this.updateSearchFilter(value || undefined);
-        }, 500);
+        }, 300);
+      }
+    });
+
+    searchInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        if (this.searchTimeout) {
+          clearTimeout(this.searchTimeout);
+        }
+        const value = searchInput.value.trim();
+        void this.updateSearchFilter(value || undefined);
       }
     });
   }
@@ -498,9 +558,12 @@ export class CatalogPage {
     const allProductsLink = document.createElement('a');
     allProductsLink.href = '#';
     allProductsLink.className = 'category-link';
+    allProductsLink.dataset.categoryId = 'all';
+
     if (!this.currentFilters.categoryId) {
       allProductsLink.classList.add('active');
     }
+
     allProductsLink.textContent = 'Все товары';
     allProductsLink.addEventListener('click', (event) => {
       event.preventDefault();
@@ -518,6 +581,8 @@ export class CatalogPage {
     const link = document.createElement('a');
     link.href = '#';
     link.className = 'category-link';
+    link.dataset.categoryId = category.id;
+
     if (this.currentFilters.categoryId === category.id) {
       link.classList.add('active');
     }
@@ -818,7 +883,7 @@ export class CatalogPage {
     if (activeFiltersCount > 0) {
       const filtersText = document.createElement('span');
       filtersText.className = 'results-filters';
-      filtersText.textContent = ` (применено фильтров: ${activeFiltersCount})`;
+      filtersText.textContent = ` (Количество фильтров: ${activeFiltersCount})`;
       resultsInfo.appendChild(countText);
       resultsInfo.appendChild(filtersText);
     } else {
@@ -877,7 +942,8 @@ export class CatalogPage {
     const resetButton = document.createElement('button');
     resetButton.className = 'reset-filters-btn';
     resetButton.textContent = 'Сбросить все фильтры';
-    resetButton.addEventListener('click', () => {
+    resetButton.addEventListener('click', (event) => {
+      event.preventDefault();
       const clearAllButton = document.querySelector('.clear-all-filters-btn');
       if (clearAllButton instanceof HTMLButtonElement) {
         clearAllButton.click();
@@ -912,12 +978,110 @@ export class CatalogPage {
     card.className = 'product-card';
 
     const imageContainer = this.createImageContainer(product);
-    const productInfo = this.createProductInfo(product);
+    const productInfo = this.createProductInfoWithHighlight(product);
 
     card.appendChild(imageContainer);
     card.appendChild(productInfo);
 
     return card;
+  }
+
+  private createProductInfoWithHighlight(product: ProductData): HTMLElement {
+    const productInfo = document.createElement('div');
+    productInfo.className = 'product-info';
+
+    const title = this.createProductTitleWithHighlight(product);
+    const description = this.createProductDescriptionWithHighlight(product);
+    const author = this.createProductAuthorWithHighlight(product);
+    const category = this.createProductCategoryWithHighlight(product);
+    const priceContainer = this.createProductPriceContainer(product);
+    const buttonsContainer = this.createButtonsContainer(product);
+
+    productInfo.appendChild(title);
+    productInfo.appendChild(description);
+    productInfo.appendChild(author);
+    productInfo.appendChild(category);
+    productInfo.appendChild(priceContainer);
+    productInfo.appendChild(buttonsContainer);
+
+    return productInfo;
+  }
+
+  private createProductTitleWithHighlight(product: ProductData): HTMLElement {
+    const title = document.createElement('h3');
+    title.className = 'product-title';
+
+    this.setTextWithHighlight(title, product.name, this.currentFilters.searchText);
+
+    return title;
+  }
+
+  private createProductDescriptionWithHighlight(product: ProductData): HTMLElement {
+    const description = document.createElement('p');
+    description.className = 'product-description';
+
+    const maxLength = 100;
+    const text = product.description || 'Описание отсутствует';
+    const truncatedText = text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+
+    this.setTextWithHighlight(description, truncatedText, this.currentFilters.searchText);
+
+    return description;
+  }
+
+  private createProductAuthorWithHighlight(product: ProductData): HTMLElement {
+    const author = document.createElement('p');
+    author.className = 'product-author';
+    const authorText = product.author ? `Автор: ${product.author}` : 'Автор не указан';
+
+    this.setTextWithHighlight(author, authorText, this.currentFilters.searchText);
+
+    return author;
+  }
+
+  private createProductCategoryWithHighlight(product: ProductData): HTMLElement {
+    const category = document.createElement('p');
+    category.className = 'product-category';
+    const categoryText = `Категория: ${product.category || 'Без категории'}`;
+
+    this.setTextWithHighlight(category, categoryText, this.currentFilters.searchText);
+
+    return category;
+  }
+
+  private setTextWithHighlight(element: HTMLElement, text: string, searchText?: string): void {
+    element.textContent = '';
+
+    if (!searchText || !searchText.trim()) {
+      element.textContent = text;
+      return;
+    }
+
+    const searchTextLower = searchText.trim().toLowerCase();
+    const textLower = text.toLowerCase();
+
+    let lastIndex = 0;
+    let index = textLower.indexOf(searchTextLower);
+
+    while (index !== -1) {
+      if (index > lastIndex) {
+        const beforeText = document.createTextNode(text.substring(lastIndex, index));
+        element.appendChild(beforeText);
+      }
+
+      const highlightSpan = document.createElement('mark');
+      highlightSpan.className = 'search-highlight';
+      highlightSpan.textContent = text.substring(index, index + searchText.length);
+      element.appendChild(highlightSpan);
+
+      lastIndex = index + searchText.length;
+      index = textLower.indexOf(searchTextLower, lastIndex);
+    }
+
+    if (lastIndex < text.length) {
+      const remainingText = document.createTextNode(text.substring(lastIndex));
+      element.appendChild(remainingText);
+    }
   }
 
   private createImageContainer(product: ProductData): HTMLElement {
@@ -940,60 +1104,6 @@ export class CatalogPage {
     }
 
     return imageContainer;
-  }
-
-  private createProductInfo(product: ProductData): HTMLElement {
-    const productInfo = document.createElement('div');
-    productInfo.className = 'product-info';
-
-    const title = this.createProductTitle(product);
-    const description = this.createProductDescription(product);
-    const author = this.createProductAuthor(product);
-    const category = this.createProductCategory(product);
-    const priceContainer = this.createProductPriceContainer(product);
-    const buttonsContainer = this.createButtonsContainer(product);
-
-    productInfo.appendChild(title);
-    productInfo.appendChild(description);
-    productInfo.appendChild(author);
-    productInfo.appendChild(category);
-    productInfo.appendChild(priceContainer);
-    productInfo.appendChild(buttonsContainer);
-
-    return productInfo;
-  }
-
-  private createProductTitle(product: ProductData): HTMLElement {
-    const title = document.createElement('h3');
-    title.className = 'product-title';
-    title.textContent = product.name;
-    return title;
-  }
-
-  private createProductDescription(product: ProductData): HTMLElement {
-    const description = document.createElement('p');
-    description.className = 'product-description';
-
-    const maxLength = 100;
-    const text = product.description || 'Описание отсутствует';
-    const truncatedText = text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-
-    description.textContent = truncatedText;
-    return description;
-  }
-
-  private createProductAuthor(product: ProductData): HTMLElement {
-    const author = document.createElement('p');
-    author.className = 'product-author';
-    author.textContent = product.author ? `Автор: ${product.author}` : 'Автор не указан';
-    return author;
-  }
-
-  private createProductCategory(product: ProductData): HTMLElement {
-    const category = document.createElement('p');
-    category.className = 'product-category';
-    category.textContent = `Категория: ${product.category || 'Без категории'}`;
-    return category;
   }
 
   private createProductPriceContainer(product: ProductData): HTMLElement {
@@ -1077,12 +1187,36 @@ export class CatalogPage {
       this.currentFilters.categoryId = categoryId;
     }
 
+    this.updateActiveCategoryInUI(categoryId);
+
     await this.applyFilters();
+  }
+
+  private updateActiveCategoryInUI(categoryId: string | undefined): void {
+    const categoryLinks = document.querySelectorAll('.category-link');
+    categoryLinks.forEach((link) => {
+      link.classList.remove('active');
+    });
+
+    if (categoryId === undefined) {
+      const allProductsLink = document.querySelector('.category-link');
+      if (allProductsLink) {
+        allProductsLink.classList.add('active');
+      }
+    } else {
+      const categoryLinks = document.querySelectorAll('.category-link');
+      categoryLinks.forEach((link) => {
+        if (link instanceof HTMLAnchorElement && link.dataset.categoryId === categoryId) {
+          link.classList.add('active');
+        }
+      });
+    }
   }
 
   private async updateSearchFilter(searchText: string | undefined): Promise<void> {
     if (searchText === undefined || searchText === '') {
       delete this.currentFilters.searchText;
+      this.clearSearchInput();
     } else {
       this.currentFilters.searchText = searchText;
     }
@@ -1093,6 +1227,7 @@ export class CatalogPage {
   private async updatePriceFilter(priceRange: { min?: number; max?: number } | undefined): Promise<void> {
     if (priceRange === undefined) {
       delete this.currentFilters.priceRange;
+      this.clearPriceInputs();
     } else {
       this.currentFilters.priceRange = priceRange;
     }
@@ -1103,6 +1238,7 @@ export class CatalogPage {
   private async updateAuthorFilter(author: string | undefined): Promise<void> {
     if (author === undefined || author === '') {
       delete this.currentFilters.author;
+      this.clearAuthorSelect();
     } else {
       this.currentFilters.author = author;
     }
@@ -1113,6 +1249,7 @@ export class CatalogPage {
   private async updateDiscountFilter(hasDiscount: boolean | undefined): Promise<void> {
     if (hasDiscount === undefined || hasDiscount === false) {
       delete this.currentFilters.hasDiscount;
+      this.clearDiscountCheckbox();
     } else {
       this.currentFilters.hasDiscount = hasDiscount;
     }
@@ -1122,13 +1259,124 @@ export class CatalogPage {
 
   private async applyFilters(): Promise<void> {
     try {
-      this.showLoadingIndicator();
-      this.products = await ProductService.getProducts(12, this.currentFilters);
-      this.render();
+      this.showProductsLoading();
+
+      const products = await ProductService.getProducts(12, this.currentFilters);
+
+      this.products = products;
+
+      this.updateProductsGrid();
+      this.updateResultsInfo();
+      this.updateActiveFiltersSection();
     } catch (error) {
       console.error('Ошібка фильтров:', error);
-      this.showErrorMessage();
+      this.showProductsError();
     }
+  }
+
+  private showProductsError(): void {
+    const productsGrid = document.querySelector('.products-grid');
+    if (productsGrid) {
+      productsGrid.textContent = '';
+
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'products-error';
+
+      const errorIcon = document.createElement('div');
+      errorIcon.className = 'error-icon';
+      errorIcon.textContent = 'Ошібка';
+
+      const title = document.createElement('h3');
+      title.textContent = 'Ошибка загрузки товаров';
+
+      const description = document.createElement('p');
+      description.textContent = 'Не удалось загрузить товары. Попробуйте позже.';
+
+      const retryButton = document.createElement('button');
+      retryButton.className = 'retry-products-btn';
+      retryButton.textContent = 'Попробовать снова';
+      retryButton.addEventListener('click', () => {
+        location.reload();
+      });
+
+      errorDiv.appendChild(errorIcon);
+      errorDiv.appendChild(title);
+      errorDiv.appendChild(description);
+      errorDiv.appendChild(retryButton);
+
+      productsGrid.appendChild(errorDiv);
+    }
+  }
+
+  private showProductsLoading(): void {
+    const productsGrid = document.querySelector('.products-grid');
+    if (productsGrid) {
+      productsGrid.textContent = '';
+
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'products-loading';
+
+      const spinner = document.createElement('div');
+      spinner.className = 'loading-spinner';
+
+      const text = document.createElement('p');
+      text.textContent = 'Поиск товаров...';
+
+      loadingDiv.appendChild(spinner);
+      loadingDiv.appendChild(text);
+      productsGrid.appendChild(loadingDiv);
+    }
+  }
+
+  private updateProductsGrid(): void {
+    const productsGrid = document.querySelector('.products-grid');
+    if (!productsGrid) return;
+
+    productsGrid.textContent = '';
+
+    if (this.products.length === 0) {
+      const noProductsMessage = this.createNoProductsMessage();
+      productsGrid.appendChild(noProductsMessage);
+      return;
+    }
+
+    this.products.forEach((product) => {
+      const productCard = this.createProductCard(product);
+      productsGrid.appendChild(productCard);
+    });
+  }
+
+  private updateResultsInfo(): void {
+    const resultsInfo = document.querySelector('.results-info');
+    if (!resultsInfo) return;
+
+    const count = this.products.length;
+    const text = count === 1 ? 'товар' : count < 5 ? 'товара' : 'товаров';
+
+    resultsInfo.textContent = '';
+
+    const countText = document.createElement('span');
+    countText.className = 'results-count';
+    countText.textContent = `Найдено ${count} ${text}`;
+
+    const activeFiltersCount = this.getActiveFiltersCount();
+    if (activeFiltersCount > 0) {
+      const filtersText = document.createElement('span');
+      filtersText.className = 'results-filters';
+      filtersText.textContent = ` (количество фильтров: ${activeFiltersCount})`;
+      resultsInfo.appendChild(countText);
+      resultsInfo.appendChild(filtersText);
+    } else {
+      resultsInfo.appendChild(countText);
+    }
+  }
+
+  private updateActiveFiltersSection(): void {
+    const activeFiltersSection = document.querySelector('.active-filters-section');
+    if (!activeFiltersSection) return;
+
+    const newActiveFiltersSection = this.createActiveFiltersSection();
+    activeFiltersSection.replaceWith(newActiveFiltersSection);
   }
 
   private getActiveFiltersCount(): number {
@@ -1149,17 +1397,78 @@ export class CatalogPage {
     this.currentSortOption = 'default';
 
     try {
-      this.showLoadingIndicator();
+      this.showProductsLoading();
+
       this.products = await ProductService.getProducts(12);
-      this.render();
+
+      this.updateProductsGrid();
+      this.updateResultsInfo();
+      this.updateActiveFiltersSection();
+      this.updateSidebarFilters();
     } catch (error) {
-      console.error('Ошібка сброса фільтров:', error);
-      this.showErrorMessage();
+      console.error('Ошибка сброса фильтров:', error);
+      this.showProductsError();
+    }
+  }
+
+  private updateSidebarFilters(): void {
+    this.updateSearchInputs();
+    this.updateSortSelect();
+    this.updateActiveCategoryInUI(undefined);
+    this.updatePriceInputs();
+    this.updateAuthorSelect();
+    this.updateDiscountCheckbox();
+  }
+
+  private updateSearchInputs(): void {
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput instanceof HTMLInputElement) {
+      searchInput.value = '';
+    }
+
+    const clearSearchButton = document.querySelector('.clear-search-btn');
+    if (clearSearchButton instanceof HTMLButtonElement) {
+      clearSearchButton.style.display = 'none';
+    }
+  }
+
+  private updateSortSelect(): void {
+    const sortSelect = document.querySelector('.sort-select');
+    if (sortSelect instanceof HTMLSelectElement) {
+      sortSelect.value = 'default';
+    }
+  }
+
+  private updatePriceInputs(): void {
+    const priceInputs = document.querySelectorAll('.price-input');
+    priceInputs.forEach((input) => {
+      if (input instanceof HTMLInputElement) {
+        input.value = '';
+      }
+    });
+  }
+
+  private updateAuthorSelect(): void {
+    const authorSelect = document.querySelector('.author-select');
+    if (authorSelect instanceof HTMLSelectElement) {
+      authorSelect.value = '';
+    }
+
+    const resetAuthorButton = document.querySelector('.reset-author-btn');
+    if (resetAuthorButton instanceof HTMLButtonElement) {
+      resetAuthorButton.style.display = 'none';
+    }
+  }
+
+  private updateDiscountCheckbox(): void {
+    const discountCheckbox = document.querySelector('.discount-checkbox');
+    if (discountCheckbox instanceof HTMLInputElement) {
+      discountCheckbox.checked = false;
     }
   }
 
   private viewProductDetails(product: ProductData): void {
-    console.log(`Товар: ${product.name}\nЦена: ${product.price}₽\nКатегория: ${product.category}`);
+    console.log(`Товар: ${product.name}\nЦена: ${product.price}$\nКатегория: ${product.category}`);
   }
 
   private addToCart(product: ProductData, event: Event): void {
@@ -1177,25 +1486,8 @@ export class CatalogPage {
     }
   }
 
-  private showLoadingIndicator(): void {
-    this.container.innerHTML = '';
-    const loadingDiv = document.createElement('div');
-    loadingDiv.className = 'loading-indicator';
-
-    const loadingSpinner = document.createElement('div');
-    loadingSpinner.className = 'loading-spinner';
-
-    const loadingText = document.createElement('p');
-    loadingText.textContent = 'Загрузка товаров...';
-
-    loadingDiv.appendChild(loadingSpinner);
-    loadingDiv.appendChild(loadingText);
-
-    this.container.appendChild(loadingDiv);
-  }
-
   private showErrorMessage(): void {
-    this.container.innerHTML = '';
+    this.container.textContent = '';
     const errorDiv = document.createElement('div');
     errorDiv.className = 'error-message';
 
