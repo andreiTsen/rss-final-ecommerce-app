@@ -23,6 +23,8 @@ export type ProductData = {
   attributes?: Record<string, unknown>;
 };
 
+export type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'default';
+
 export type ProductFilters = {
   categoryId?: string;
   priceRange?: {
@@ -32,6 +34,7 @@ export type ProductFilters = {
   author?: string;
   hasDiscount?: boolean;
   searchText?: string;
+  sortBy?: SortOption;
 };
 
 export type FilterOptions = {
@@ -47,6 +50,7 @@ type QueryArguments = {
   staged: boolean;
   expand: string[];
   where?: string[];
+  sort?: string[];
 };
 
 type PriceInfo = {
@@ -67,6 +71,8 @@ export class ProductService {
 
   public static async getProducts(limit: number = 12, filters?: ProductFilters): Promise<ProductData[]> {
     try {
+      const apiFilters = { ...filters };
+      delete apiFilters.sortBy;
       const queryArguments = this.buildQueryArguments(limit, filters);
 
       const response = await apiRoot
@@ -210,8 +216,43 @@ export class ProductService {
     filteredProducts = this.applySearchFilter(filteredProducts, filters.searchText);
     filteredProducts = this.applyPriceRangeFilter(filteredProducts, filters.priceRange);
     filteredProducts = this.applyAuthorFilter(filteredProducts, filters.author);
+    filteredProducts = this.applySorting(filteredProducts, filters.sortBy);
 
     return filteredProducts;
+  }
+
+  private static applySorting(products: ProductData[], sortBy?: SortOption): ProductData[] {
+    if (!sortBy || sortBy === 'default') {
+      return products;
+    }
+
+    const sortedProducts = [...products];
+
+    try {
+      switch (sortBy) {
+        case 'name-asc':
+          return sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
+        case 'name-desc':
+          return sortedProducts.sort((a, b) => b.name.localeCompare(a.name));
+        case 'price-asc':
+          return sortedProducts.sort((a, b) => {
+            const priceA = typeof a.price === 'number' ? a.price : 0;
+            const priceB = typeof b.price === 'number' ? b.price : 0;
+            return priceA - priceB;
+          });
+        case 'price-desc':
+          return sortedProducts.sort((a, b) => {
+            const priceA = typeof a.price === 'number' ? a.price : 0;
+            const priceB = typeof b.price === 'number' ? b.price : 0;
+            return priceB - priceA;
+          });
+        default:
+          return sortedProducts;
+      }
+    } catch (error) {
+      console.error('Ошібка при сортіровке:', error);
+      return products;
+    }
   }
 
   private static applySearchFilter(products: ProductData[], searchText?: string): ProductData[] {

@@ -478,7 +478,7 @@
   backdrop-filter: blur(10px);
   position: relative;
   z-index: 1;
-  top: 30px;
+  top: -10px;
   left: 35%;
 }
 
@@ -544,6 +544,44 @@
   gap: 30px;
 }
 
+.sort-section {
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.sort-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sort-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+  font-family: inherit;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #219a52;
+}
+
+.sort-select:hover {
+  border-color: #219a52;
+}
+
+.sort-select option:checked {
+  background-color: #219a52;
+  color: white;
+}
+
 @media (max-width: 768px) {
   .products-grid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -568,6 +606,11 @@
     width: 100%;
     padding: 10px;
     font-size: 0.9rem;
+  }
+
+  .sort-select {
+    font-size: 0.85rem;
+    padding: 8px 10px;
   }
 }
 

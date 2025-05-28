@@ -1,5 +1,5 @@
 import './catalog.css';
-import { ProductService, ProductData, ProductFilters, FilterOptions } from '../../services/productService';
+import { ProductService, ProductData, ProductFilters, FilterOptions, SortOption } from '../../services/productService';
 import { CategoryService, CategoryData } from '../../services/categoryService';
 
 export class CatalogPage {
@@ -11,6 +11,7 @@ export class CatalogPage {
     priceRange: { min: 0, max: 10000 },
   };
   private currentFilters: ProductFilters = {};
+  private currentSortOption: SortOption = 'default';
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -72,6 +73,88 @@ export class CatalogPage {
     panel.appendChild(activeFiltersSection);
 
     return panel;
+  }
+
+  private isSortOption(value: string): value is SortOption {
+    return ['default', 'name-asc', 'name-desc', 'price-asc', 'price-desc'].includes(value);
+  }
+
+  private createSortSection(): HTMLElement {
+    const section = document.createElement('div');
+    section.className = 'filter-section sort-section';
+
+    const title = this.createSectionTitle('Сортировка');
+    const sortContainer = this.createSortContainer();
+
+    section.appendChild(title);
+    section.appendChild(sortContainer);
+
+    return section;
+  }
+
+  private createSortContainer(): HTMLElement {
+    const sortContainer = document.createElement('div');
+    sortContainer.className = 'sort-container';
+
+    const sortSelect = this.createSortSelect();
+    sortContainer.appendChild(sortSelect);
+
+    return sortContainer;
+  }
+
+  private createSortSelect(): HTMLSelectElement {
+    const sortSelect = document.createElement('select');
+    sortSelect.className = 'sort-select';
+
+    const sortOptions = [
+      { value: 'default', label: 'По умолчанию' },
+      { value: 'name-asc', label: 'По алфавиту' },
+      { value: 'name-desc', label: 'Протів алфавита' },
+      { value: 'price-asc', label: 'Цена: по возрастанию' },
+      { value: 'price-desc', label: 'Цена: по убыванию' },
+    ];
+
+    sortOptions.forEach((option) => {
+      const optionElement = document.createElement('option');
+      optionElement.value = option.value;
+      optionElement.textContent = option.label;
+      if (this.currentSortOption === option.value) {
+        optionElement.selected = true;
+      }
+      sortSelect.appendChild(optionElement);
+    });
+
+    sortSelect.addEventListener('change', (event) => {
+      const target = event.target;
+      if (target && target instanceof HTMLSelectElement && this.isSortOption(target.value)) {
+        void this.updateSortOption(target.value);
+      }
+    });
+
+    return sortSelect;
+  }
+
+  private async updateSortOption(sortOption: SortOption): Promise<void> {
+    this.currentSortOption = sortOption;
+    this.currentFilters.sortBy = sortOption;
+    await this.applyFilters();
+  }
+
+  private addSortFilterTag(container: HTMLElement): void {
+    if (this.currentSortOption && this.currentSortOption !== 'default') {
+      const sortLabels: Record<string, string> = {
+        'name-asc': 'По алфавіту',
+        'name-desc': 'Протів алфавіта',
+        'price-asc': 'Цена: по возрастанію',
+        'price-desc': 'Цена: по убыванію',
+      };
+
+      const label = sortLabels[this.currentSortOption];
+      if (label) {
+        const tag = this.createFilterTag(`Сортировка: ${label}`, () => void this.updateSortOption('default'));
+        container.appendChild(tag);
+      }
+    }
   }
 
   private createCatalogHeaderSection(): HTMLElement {
@@ -150,6 +233,7 @@ export class CatalogPage {
     this.addPriceFilterTag(container);
     this.addAuthorFilterTag(container);
     this.addDiscountFilterTag(container);
+    this.addSortFilterTag(container);
   }
 
   private addCategoryFilterTag(container: HTMLElement): void {
@@ -255,6 +339,9 @@ export class CatalogPage {
 
     const searchSection = this.createSearchSection();
     sidebar.appendChild(searchSection);
+
+    const sortSection = this.createSortSection();
+    sidebar.appendChild(sortSection);
 
     const categoriesSection = this.createCategoriesSection();
     sidebar.appendChild(categoriesSection);
@@ -628,8 +715,9 @@ export class CatalogPage {
 
     authorSelect.addEventListener('change', (event) => {
       const target = event.target;
-      if (target instanceof HTMLSelectElement) {
-        void this.updateAuthorFilter(target.value || undefined);
+      if (target && target instanceof HTMLSelectElement) {
+        const value = target.value;
+        void this.updateAuthorFilter(value || undefined);
       }
     });
 
@@ -964,7 +1052,6 @@ export class CatalogPage {
     detailsButton.textContent = 'Подробнее';
 
     detailsButton.setAttribute('data-key', product.key ?? product.id);
-    console.log('Свойства продукта:', Object.keys(product));
 
     detailsButton.addEventListener('click', () => {
       this.viewProductDetails(product);
@@ -1052,12 +1139,14 @@ export class CatalogPage {
     if (this.currentFilters.priceRange) count++;
     if (this.currentFilters.author) count++;
     if (this.currentFilters.hasDiscount) count++;
+    if (this.currentSortOption && this.currentSortOption !== 'default') count++;
 
     return count;
   }
 
   private async clearAllFilters(): Promise<void> {
     this.currentFilters = {};
+    this.currentSortOption = 'default';
 
     try {
       this.showLoadingIndicator();
