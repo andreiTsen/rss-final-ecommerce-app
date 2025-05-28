@@ -9,6 +9,7 @@ import {
 
 export type ProductData = {
   id: string;
+  key?: string;
   name: string;
   description?: string;
   price: number;
@@ -265,6 +266,7 @@ export class ProductService {
 
     return {
       id: product.id,
+      key: product.key,
       name: productName,
       description,
       price: priceInfo.finalPrice,

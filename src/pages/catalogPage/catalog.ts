@@ -210,7 +210,7 @@ export class CatalogPage {
 
     const label = document.createElement('span');
     label.className = 'filter-tag-label';
-    label.textContent = text;
+    label.textContent = `Кнігі категоріі ${text}`;
 
     const removeButton = document.createElement('button');
     removeButton.className = 'filter-tag-remove';
@@ -963,7 +963,8 @@ export class CatalogPage {
     detailsButton.className = 'details-btn';
     detailsButton.textContent = 'Подробнее';
 
-    detailsButton.setAttribute('data-key', product.name);
+    detailsButton.setAttribute('data-key', product.key ?? product.id);
+    console.log('Свойства продукта:', Object.keys(product));
 
     detailsButton.addEventListener('click', () => {
       this.viewProductDetails(product);
