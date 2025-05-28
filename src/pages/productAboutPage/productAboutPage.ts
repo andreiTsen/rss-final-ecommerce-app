@@ -3,6 +3,7 @@ import { Navigation, Pagination } from 'swiper/modules';
 import ElementCreator from '../../utils/ElementCreator';
 import './../../pages/productAboutPage/productAboutPage.css';
 import 'swiper/swiper-bundle.css';
+
 export default class productAboutPage {
   private container: HTMLElement;
   constructor(
@@ -12,10 +13,11 @@ export default class productAboutPage {
     price: string,
     imgs: string[],
     category: string,
-    author: string
+    author: string,
+    discountedPrice: string
   ) {
     this.container = container;
-    this.container.appendChild(this.createContainerPage(title, info, price, imgs, category, author));
+    this.container.appendChild(this.createContainerPage(title, info, price, imgs, category, author, discountedPrice));
   }
 
   public createContainerPage(
@@ -24,7 +26,8 @@ export default class productAboutPage {
     price: string,
     imgs: string[],
     category: string,
-    author: string
+    author: string,
+    discountedPrice: string
   ): HTMLElement {
     const container = new ElementCreator({
       tagName: 'div',
@@ -41,7 +44,7 @@ export default class productAboutPage {
     infoContainer.appendChild(this.createCategories(category));
     infoContainer.appendChild(this.createAuthor(author));
     infoContainer.appendChild(this.createAboutInfoProducts(info));
-    infoContainer.appendChild(this.createPriceProducts(price));
+    infoContainer.appendChild(this.createPriceProducts(price, discountedPrice));
     infoContainer.appendChild(this.createBtnBuyProduct());
     container.addInnerElement(imgContainer);
     container.addInnerElement(infoContainer);
@@ -113,12 +116,26 @@ export default class productAboutPage {
     return buttonBuyProduct.getElement();
   }
 
-  public createPriceProducts(price: string): HTMLElement {
+  public createPriceProducts(price: string, discountedPrice: string | null = null): HTMLElement {
     const priceElement = new ElementCreator({
       tagName: 'p',
       classNames: ['about-page_product-price'],
-      textContent: `Стоимость: ${price}$`,
     });
+    if (discountedPrice) {
+      const oldPrice = document.createElement('span');
+      oldPrice.className = 'old-price';
+      oldPrice.textContent = `${price}$`;
+
+      const newPrice = document.createElement('span');
+      newPrice.className = 'new-price';
+      newPrice.textContent = ` ${discountedPrice}$`;
+
+      priceElement.getElement().appendChild(oldPrice);
+      priceElement.getElement().appendChild(newPrice);
+    } else {
+      priceElement.getElement().textContent = `Стоимость: ${price}$`;
+    }
+
     return priceElement.getElement();
   }
 

@@ -163,6 +163,16 @@
   margin: 0 auto;
 }
 
+.old-price {
+  text-decoration: line-through;
+  color: #888;
+  margin-right: 0.5em;
+}
+.new-price {
+  color: #4caf50;
+  font-weight: bold;
+}
+
 @media screen and (max-width: 1024px) {
   .info-container {
     align-items: flex-start;
