@@ -68,6 +68,16 @@
   margin-bottom: 0;
 }
 
+.about-page_product-btn-buy {
+  margin-top: 1rem;
+  max-width: 10rem;
+  padding: 0.5rem;
+  background-color: #ffd700;
+  outline: none;
+  cursor: pointer;
+  border: none;
+}
+
 .swiper {
   width: 100%;
   height: 400px;
@@ -151,4 +161,32 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto;
+}
+
+@media screen and (max-width: 1024px) {
+  .info-container {
+    align-items: flex-start;
+  }
+  .swiper-slide {
+    max-width: 85vw !important;
+  }
+  .img-container {
+    max-width: 85vw;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .modal-image {
+    max-width: 80vw !important;
+    height: 110%;
+  }
+  .swiper-wrapper {
+    max-height: 70vh;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  .swiper-slide {
+    max-width: 100vw !important;
+  }
 }

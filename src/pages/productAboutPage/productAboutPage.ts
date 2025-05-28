@@ -42,6 +42,7 @@ export default class productAboutPage {
     infoContainer.appendChild(this.createAuthor(author));
     infoContainer.appendChild(this.createAboutInfoProducts(info));
     infoContainer.appendChild(this.createPriceProducts(price));
+    infoContainer.appendChild(this.createBtnBuyProduct());
     container.addInnerElement(imgContainer);
     container.addInnerElement(infoContainer);
     return container.getElement();
@@ -101,6 +102,15 @@ export default class productAboutPage {
     });
 
     return authorElement.getElement();
+  }
+
+  public createBtnBuyProduct(): HTMLElement {
+    const buttonBuyProduct = new ElementCreator({
+      tagName: 'button',
+      classNames: ['about-page_product-btn-buy'],
+      textContent: `Добавить в корзину`,
+    });
+    return buttonBuyProduct.getElement();
   }
 
   public createPriceProducts(price: string): HTMLElement {
