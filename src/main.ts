@@ -3,10 +3,10 @@ import { RegistrationPage } from './pages/RegistrationPage/registration';
 import { AuthService } from './services/authService';
 import { Navigation } from './components/navigation';
 import loginPage from './pages/loginPage/loginPage';
-// const appRoot = document.body;
+import { ProfilePage } from './pages/ProfilePage/Profile';
 
 let appContainer: HTMLElement;
-let navigation: Navigation;
+export let navigation: Navigation;
 
 document.addEventListener('DOMContentLoaded', () => {
   const existingContainer = document.getElementById('app');
@@ -37,9 +37,7 @@ function setupRouting(): void {
 function handleRouting(): void {
   const path = window.location.pathname;
   const isAuthenticated = AuthService.isAuthenticated();
-
   appContainer.innerHTML = '';
-
   switch (path) {
     case '/registration':
     case '/register':
@@ -48,8 +46,7 @@ function handleRouting(): void {
       } else {
         navigateTo('/store');
       }
-      break;
-
+      break;  
     case '/login':
       if (!isAuthenticated) {
         new loginPage(appContainer);
@@ -57,11 +54,17 @@ function handleRouting(): void {
         navigateTo('/store');
       }
       break;
-
     case '/store':
     case '/':
       renderPlaceholderPage('Страница магазина', isAuthenticated);
       break;
+    case '/profile':
+  if (isAuthenticated) {
+    new ProfilePage(appContainer);
+  } else {
+    navigateTo('/login');
+  }
+  break;
 
     default:
       renderPlaceholderPage('Oшибка 404. Страница не найдена', isAuthenticated);
