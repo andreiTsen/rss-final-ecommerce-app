@@ -1,11 +1,7 @@
 import { AuthService } from '../../services/authService';
 import { navigateTo, navigation } from '../../main';
 
-
-
-
-export default function createSidebar(onNavigate: (sectionId:string) => void): HTMLElement {
-
+export default function createSidebar(onNavigate: (sectionId: string) => void): HTMLElement {
   const sidebar = document.createElement('aside');
   sidebar.className = 'sidebar';
 
@@ -13,7 +9,7 @@ export default function createSidebar(onNavigate: (sectionId:string) => void): H
     { label: 'Профиль', id: 'profile' },
     { label: 'Адресс', id: 'adress' },
     { label: 'Пароль', id: 'password' },
-    { label: 'Выйти', id: 'logout' }
+    { label: 'Выйти', id: 'logout' },
   ];
 
   links.forEach(({ label, id }) => {
@@ -21,20 +17,19 @@ export default function createSidebar(onNavigate: (sectionId:string) => void): H
     link.textContent = label;
     link.className = 'sidebar-link';
     link.addEventListener('click', () => {
-      
       if (id === 'logout') {
         AuthService.logout();
         navigation.render();
         navigateTo('/');
-        return
+        return;
       }
-      sidebar.querySelectorAll('.sidebar-link').forEach(button => button.classList.remove('active'));
+      sidebar.querySelectorAll('.sidebar-link').forEach((button) => button.classList.remove('active'));
       link.classList.add('active');
 
       onNavigate(id);
     });
     sidebar.appendChild(link);
   });
-  
+
   return sidebar;
 }

@@ -1,40 +1,38 @@
-// import { UserData } from "./sectionProfile";
+import { UserData } from "./sectionProfile";
+import { renderButtonContainer } from "./buttonContainer";
 
-// export function renderEditProfileForm(user: UserData): HTMLElement {
-//   const wrapper = document.getElementById('profile-info');
-//   console.log(wrapper);
-//   // const form = document.createElement('form');
+export function renderEditProfileForm(user: UserData): HTMLElement {
+  const form = document.createElement('form');
+  form.id = 'edit-profile-form';
+  form.classList.add('edit-profile-form');
+  const title = document.createElement('h2');
+  title.textContent = 'Редактировать профиль';
+  const editInfo = [
+    { label: 'Имя', name: 'firstName' },
+    { label: 'Фамилия', name: 'lastName' },
+    { label: 'Email', name: 'email' },
+    { label: 'Дата рождения', name: 'dateOfBirth' },
+  ];
+  const editInfoElements = editInfo.map((info) => {
+    const label = document.createElement('label');
+    label.textContent = info.label;
+    const input = document.createElement('input');
+    if (info.name === 'dateOfBirth') {
+      input.type = 'date';
+    }
+    input.type = 'text';
+    input.name = info.name;
+    input.placeholder = info.label;
+    input.value = user[info.name as keyof UserData] || '';
+    return { label, input };
+  });
+  
+  const submitButton = renderButtonContainer();
 
-//   // const [firstNameLabel, firstNameInput] = createTextInput('text', user.firstName, 'Имя:');
-//   // const [lastNameLabel, lastNameInput] = createTextInput('text', user.lastName, 'Фамилия:');
-//   // // и так далее...
-
-//   // const saveButton = createSaveButton(() => {
-//   //   // логика сохранения
-//   // });
-
-//   // form.append(firstNameLabel, firstNameInput, lastNameLabel, lastNameInput, saveButton);
-//   // wrapper.append(form);
-
-//   return wrapper;
-// }
-
-// function createTextInput(type: string, value: string, labelText: string): [HTMLLabelElement, HTMLInputElement] {
-//   const label = document.createElement('label');
-//   label.textContent = labelText;
-//   const input = document.createElement('input');
-//   input.type = type;
-//   input.value = value || '';
-//   return [label, input];
-// }
-
-// function createSaveButton(onClick: () => void): HTMLButtonElement {
-//   const btn = document.createElement('button');
-//   btn.textContent = 'Сохранить';
-//   btn.classList.add('save-button');
-//   btn.addEventListener('click', (e) => {
-//     e.preventDefault();
-//     onClick();
-//   });
-//   return btn;
-// }
+  form.append(title, ...editInfoElements.map(({ label, input }) => {
+    const div = document.createElement('div');
+    div.append(label, input);
+    return div;
+  }),  submitButton);
+  return form;
+}

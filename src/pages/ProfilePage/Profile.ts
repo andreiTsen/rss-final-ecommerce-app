@@ -3,7 +3,7 @@ import { navigateTo } from '../../main';
 import './profile.css';
 import createSidebar from './sidebar';
 import { renderProfileInfoSection, UserData } from './sectionProfile';
-import { renderChangePasswordSection } from './sectionPassword';  
+import { renderChangePasswordSection } from './sectionPassword';
 
 export class ProfilePage {
   private container: HTMLElement;
@@ -37,9 +37,6 @@ export class ProfilePage {
     this.container.appendChild(layout);
 
     this.renderSection('profile', this.user!);
-
-
-
   }
 
   private renderSection(sectionId: string, user: UserData): void {
@@ -64,11 +61,9 @@ export class ProfilePage {
       // street.textContent = `Улица: ${user.addresses[0].streetName || 'не указано'}`;
       // content.append(title, paragraph, city, index, street);
     } else if (sectionId === 'password') {
-    //  const section = renderChangePasswordSection((oldPass, newPass) => {
-      
-        
-    //   });
-    // content.append(section);
+      //  const section = renderChangePasswordSection((oldPass, newPass) => {
+      //   });
+      // content.append(section);
     } else {
       content.textContent = 'Раздел не найден.';
     }

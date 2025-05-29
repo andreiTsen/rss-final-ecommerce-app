@@ -1,13 +1,12 @@
-
 import avatarFallback from '../../assets/raccoon.png';
-// import { renderEditProfileForm } from '../ProfilePage/renderEditProfile';
+import { renderEditProfileForm } from '../ProfilePage/renderEditProfile';
 
 export type UserData = {
   firstName?: string;
   lastName?: string;
   email?: string;
-  dateOfBirth?: string; 
-}
+  dateOfBirth?: string;
+};
 
 export function renderProfileInfoSection(user: UserData): HTMLElement {
   const wrapper = document.createElement('div');
@@ -41,8 +40,9 @@ export function renderProfileInfoSection(user: UserData): HTMLElement {
   wrapper.append(title, avatar, name, lastName, email, birthDate, editButton);
 
   editButton.addEventListener('click', () => {
-    // const editForm = renderEditProfileForm(user);
-    // wrapper.appendChild(editForm);
+    wrapper.innerHTML = '';
+    const editForm = renderEditProfileForm(user);
+    wrapper.appendChild(editForm);
   });
   return wrapper;
 }

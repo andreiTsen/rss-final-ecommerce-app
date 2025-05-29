@@ -46,7 +46,7 @@ function handleRouting(): void {
       } else {
         navigateTo('/store');
       }
-      break;  
+      break;
     case '/login':
       if (!isAuthenticated) {
         new loginPage(appContainer);
@@ -59,12 +59,12 @@ function handleRouting(): void {
       renderPlaceholderPage('Страница магазина', isAuthenticated);
       break;
     case '/profile':
-  if (isAuthenticated) {
-    new ProfilePage(appContainer);
-  } else {
-    navigateTo('/login');
-  }
-  break;
+      if (isAuthenticated) {
+        new ProfilePage(appContainer);
+      } else {
+        navigateTo('/login');
+      }
+      break;
 
     default:
       renderPlaceholderPage('Oшибка 404. Страница не найдена', isAuthenticated);
