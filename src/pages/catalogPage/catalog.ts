@@ -16,12 +16,14 @@ export class CatalogPage {
 
   constructor(container: HTMLElement) {
     this.container = container;
+    this.initializeFromURL();
     void this.init();
   }
 
   private async init(): Promise<void> {
     await this.loadData();
     this.render();
+    this.setupPopstateHandler();
   }
 
   private async loadData(): Promise<void> {
@@ -46,6 +48,9 @@ export class CatalogPage {
 
     const catalogContainer = document.createElement('div');
     catalogContainer.className = 'catalog-container';
+
+    const breadcrumbs = this.createBreadcrumbs();
+    catalogContainer.appendChild(breadcrumbs);
 
     const headerAndFiltersPanel = this.createHeaderAndFiltersPanel();
     catalogContainer.appendChild(headerAndFiltersPanel);
@@ -74,6 +79,200 @@ export class CatalogPage {
     panel.appendChild(activeFiltersSection);
 
     return panel;
+  }
+
+  private setupPopstateHandler(): void {
+    window.addEventListener('popstate', () => {
+      this.initializeFromURL();
+      void this.applyFilters();
+    });
+  }
+
+  private initializeFromURL(): void {
+    const urlParameters = new URLSearchParams(window.location.search);
+
+    this.initializeCategoryFromURL(urlParameters);
+    this.initializeFiltersFromURL(urlParameters);
+    this.initializeSortFromURL(urlParameters);
+  }
+
+  private initializeCategoryFromURL(urlParameters: URLSearchParams): void {
+    const categoryParameter = urlParameters.get('category');
+    if (categoryParameter && categoryParameter !== 'all') {
+      const category = this.categories.find((cat) => cat.slug === categoryParameter || cat.id === categoryParameter);
+
+      if (category) {
+        this.currentFilters.categoryId = category.id;
+      }
+    }
+  }
+
+  private initializeFiltersFromURL(urlParameters: URLSearchParams): void {
+    const searchText = urlParameters.get('search');
+    if (searchText) {
+      this.currentFilters.searchText = searchText;
+    }
+
+    const author = urlParameters.get('author');
+    if (author) {
+      this.currentFilters.author = author;
+    }
+
+    const minPrice = urlParameters.get('minPrice');
+    const maxPrice = urlParameters.get('maxPrice');
+    if (minPrice || maxPrice) {
+      this.currentFilters.priceRange = {
+        min: minPrice ? parseFloat(minPrice) : undefined,
+        max: maxPrice ? parseFloat(maxPrice) : undefined,
+      };
+    }
+
+    const hasDiscount = urlParameters.get('discount');
+    if (hasDiscount === 'true') {
+      this.currentFilters.hasDiscount = true;
+    }
+  }
+
+  private initializeSortFromURL(urlParameters: URLSearchParams): void {
+    const sortBy = urlParameters.get('sort');
+    if (sortBy && this.isSortOption(sortBy)) {
+      this.currentSortOption = sortBy;
+      this.currentFilters.sortBy = sortBy;
+    }
+  }
+
+  private updateURL(): void {
+    const url = new URL(window.location.href);
+    const parameters = new URLSearchParams();
+
+    this.addCategoryToURL(parameters);
+    this.addFiltersToURL(parameters);
+    this.addSortToURL(parameters);
+
+    const newURL = parameters.toString() ? `${url.pathname}?${parameters.toString()}` : url.pathname;
+    window.history.pushState({ filters: this.currentFilters }, '', newURL);
+  }
+
+  private addCategoryToURL(parameters: URLSearchParams): void {
+    if (this.currentFilters.categoryId) {
+      const category = this.categories.find((cat) => cat.id === this.currentFilters.categoryId);
+      const categorySlug = category?.slug || this.currentFilters.categoryId;
+      parameters.set('category', categorySlug);
+    }
+  }
+
+  private addFiltersToURL(parameters: URLSearchParams): void {
+    if (this.currentFilters.searchText) {
+      parameters.set('search', this.currentFilters.searchText);
+    }
+
+    if (this.currentFilters.author) {
+      parameters.set('author', this.currentFilters.author);
+    }
+
+    if (this.currentFilters.priceRange) {
+      if (this.currentFilters.priceRange.min !== undefined) {
+        parameters.set('minPrice', this.currentFilters.priceRange.min.toString());
+      }
+      if (this.currentFilters.priceRange.max !== undefined) {
+        parameters.set('maxPrice', this.currentFilters.priceRange.max.toString());
+      }
+    }
+
+    if (this.currentFilters.hasDiscount) {
+      parameters.set('discount', 'true');
+    }
+  }
+
+  private addSortToURL(parameters: URLSearchParams): void {
+    if (this.currentSortOption && this.currentSortOption !== 'default') {
+      parameters.set('sort', this.currentSortOption);
+    }
+  }
+
+  private createBreadcrumbs(): HTMLElement {
+    const breadcrumbsContainer = document.createElement('nav');
+    breadcrumbsContainer.className = 'breadcrumbs';
+    breadcrumbsContainer.setAttribute('aria-label', 'Навигационная цепочка');
+
+    const breadcrumbsList = document.createElement('ol');
+    breadcrumbsList.className = 'breadcrumbs-list';
+
+    const catalogItem = this.createBreadcrumbItem(
+      'Каталог',
+      () => {
+        void this.resetToAllProducts();
+      },
+      !this.currentFilters.categoryId
+    );
+    breadcrumbsList.appendChild(catalogItem);
+
+    if (this.currentFilters.categoryId) {
+      const currentCategory = this.categories.find((cat) => cat.id === this.currentFilters.categoryId);
+      if (currentCategory) {
+        const categoryItem = this.createBreadcrumbItem(currentCategory.name, undefined, true);
+        breadcrumbsList.appendChild(categoryItem);
+      }
+    }
+
+    breadcrumbsContainer.appendChild(breadcrumbsList);
+    return breadcrumbsContainer;
+  }
+
+  private async resetToAllProducts(): Promise<void> {
+    try {
+      delete this.currentFilters.categoryId;
+
+      this.updateActiveCategoryInUI(undefined);
+      this.updateURL();
+      await this.applyFilters();
+    } catch (error) {
+      console.error('Ошібка при сбросе":', error);
+    }
+  }
+
+  private createBreadcrumbItem(text: string, onClick?: () => void, isActive: boolean = false): HTMLElement {
+    const listItem = document.createElement('li');
+    listItem.className = 'breadcrumb-item';
+
+    if (isActive) {
+      listItem.classList.add('active');
+      const span = document.createElement('span');
+      span.textContent = text;
+      span.className = 'breadcrumb-current';
+      listItem.appendChild(span);
+    } else {
+      const link = document.createElement('button');
+      link.textContent = text;
+      link.className = 'breadcrumb-link';
+      link.type = 'button';
+
+      if (onClick) {
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onClick();
+        });
+      }
+
+      listItem.appendChild(link);
+
+      const separator = document.createElement('span');
+      separator.className = 'breadcrumb-separator';
+      separator.textContent = '/';
+      separator.setAttribute('aria-hidden', 'true');
+      listItem.appendChild(separator);
+    }
+
+    return listItem;
+  }
+
+  private updateBreadcrumbs(): void {
+    const existingBreadcrumbs = document.querySelector('.breadcrumbs');
+    if (existingBreadcrumbs) {
+      const newBreadcrumbs = this.createBreadcrumbs();
+      existingBreadcrumbs.replaceWith(newBreadcrumbs);
+    }
   }
 
   private isSortOption(value: string): value is SortOption {
@@ -138,6 +337,7 @@ export class CatalogPage {
   private async updateSortOption(sortOption: SortOption): Promise<void> {
     this.currentSortOption = sortOption;
     this.currentFilters.sortBy = sortOption;
+    this.updateURL();
     await this.applyFilters();
   }
 
@@ -555,8 +755,8 @@ export class CatalogPage {
     const allProductsItem = document.createElement('li');
     allProductsItem.className = 'category-item';
 
-    const allProductsLink = document.createElement('a');
-    allProductsLink.href = '#';
+    const allProductsLink = document.createElement('button');
+    allProductsLink.type = 'button';
     allProductsLink.className = 'category-link';
     allProductsLink.dataset.categoryId = 'all';
 
@@ -578,8 +778,8 @@ export class CatalogPage {
     const listItem = document.createElement('li');
     listItem.className = 'category-item';
 
-    const link = document.createElement('a');
-    link.href = '#';
+    const link = document.createElement('button');
+    link.type = 'button';
     link.className = 'category-link';
     link.dataset.categoryId = category.id;
 
@@ -928,16 +1128,15 @@ export class CatalogPage {
   private createNoProductsWithFilters(container: HTMLElement): void {
     const noProductsIcon = document.createElement('div');
     noProductsIcon.className = 'no-products-icon';
-    noProductsIcon.textContent = 'товары не найдены';
 
     const title = document.createElement('h3');
     title.textContent = 'Товары не найдены';
 
     const description1 = document.createElement('p');
-    description1.textContent = 'По выбранным фильтрам товары не найдены.';
+    description1.textContent = '';
 
     const description2 = document.createElement('p');
-    description2.textContent = 'Попробуйте изменить критерии поиска или сбросить фильтры.';
+    description2.textContent = 'Выберіте другую категорію';
 
     const resetButton = document.createElement('button');
     resetButton.className = 'reset-filters-btn';
@@ -1188,7 +1387,7 @@ export class CatalogPage {
     }
 
     this.updateActiveCategoryInUI(categoryId);
-
+    this.updateURL();
     await this.applyFilters();
   }
 
@@ -1199,17 +1398,15 @@ export class CatalogPage {
     });
 
     if (categoryId === undefined) {
-      const allProductsLink = document.querySelector('.category-link');
+      const allProductsLink = document.querySelector('.category-link[data-category-id="all"]');
       if (allProductsLink) {
         allProductsLink.classList.add('active');
       }
     } else {
-      const categoryLinks = document.querySelectorAll('.category-link');
-      categoryLinks.forEach((link) => {
-        if (link instanceof HTMLAnchorElement && link.dataset.categoryId === categoryId) {
-          link.classList.add('active');
-        }
-      });
+      const targetCategoryLink = document.querySelector(`.category-link[data-category-id="${categoryId}"]`);
+      if (targetCategoryLink) {
+        targetCategoryLink.classList.add('active');
+      }
     }
   }
 
@@ -1221,6 +1418,7 @@ export class CatalogPage {
       this.currentFilters.searchText = searchText;
     }
 
+    this.updateURL();
     await this.applyFilters();
   }
 
@@ -1232,6 +1430,7 @@ export class CatalogPage {
       this.currentFilters.priceRange = priceRange;
     }
 
+    this.updateURL();
     await this.applyFilters();
   }
 
@@ -1243,6 +1442,7 @@ export class CatalogPage {
       this.currentFilters.author = author;
     }
 
+    this.updateURL();
     await this.applyFilters();
   }
 
@@ -1254,6 +1454,7 @@ export class CatalogPage {
       this.currentFilters.hasDiscount = hasDiscount;
     }
 
+    this.updateURL();
     await this.applyFilters();
   }
 
@@ -1268,6 +1469,7 @@ export class CatalogPage {
       this.updateProductsGrid();
       this.updateResultsInfo();
       this.updateActiveFiltersSection();
+      this.updateBreadcrumbs();
     } catch (error) {
       console.error('Ошібка фильтров:', error);
       this.showProductsError();
@@ -1396,6 +1598,8 @@ export class CatalogPage {
     this.currentFilters = {};
     this.currentSortOption = 'default';
 
+    window.history.pushState({}, '', window.location.pathname);
+
     try {
       this.showProductsLoading();
 
@@ -1405,6 +1609,7 @@ export class CatalogPage {
       this.updateResultsInfo();
       this.updateActiveFiltersSection();
       this.updateSidebarFilters();
+      this.updateBreadcrumbs();
     } catch (error) {
       console.error('Ошибка сброса фильтров:', error);
       this.showProductsError();
