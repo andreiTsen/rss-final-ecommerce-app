@@ -12,7 +12,7 @@ export function renderEditProfileForm(user: UserData): HTMLElement {
     { label: 'Фамилия', name: 'lastName' },
     { label: 'Email', name: 'email' },
     { label: 'Дата рождения', name: 'dateOfBirth' },
-  ];
+  ] as const;
   const editInfoElements = editInfo.map((info) => {
     const label = document.createElement('label');
     label.textContent = info.label;
@@ -23,7 +23,7 @@ export function renderEditProfileForm(user: UserData): HTMLElement {
     input.type = 'text';
     input.name = info.name;
     input.placeholder = info.label;
-    input.value = user[info.name as keyof UserData] || '';
+    input.value = user[info.name] || '';
     return { label, input };
   });
   
@@ -33,6 +33,6 @@ export function renderEditProfileForm(user: UserData): HTMLElement {
     const div = document.createElement('div');
     div.append(label, input);
     return div;
-  }),  submitButton);
+  }), submitButton);
   return form;
 }

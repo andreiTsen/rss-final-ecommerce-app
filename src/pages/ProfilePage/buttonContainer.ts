@@ -15,7 +15,7 @@ export function renderButtonContainer(): HTMLElement {
       form.dispatchEvent(new Event('submit', { cancelable: true }));
     }
   });
-  cancelButton.addEventListener('click', () => {  
+  cancelButton.addEventListener('click', () => {
     const form = document.querySelector('form');
     if (form) {
       form.dispatchEvent(new Event('reset'));

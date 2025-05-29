@@ -80,7 +80,9 @@
   gap: 10px;
   margin-top: 20px;
 }
-.edit-profile-button, .save-button,  .cancel-button {
+.edit-profile-button,
+.save-button,
+.cancel-button {
   background-color: #ffd700;
   color: #333;
   border: none;

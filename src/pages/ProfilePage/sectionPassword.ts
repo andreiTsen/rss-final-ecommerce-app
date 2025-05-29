@@ -1,5 +1,3 @@
-
-
 export function renderChangePasswordSection(onChange: (oldPass: string, newPass: string) => void): HTMLElement {
   const wrapper = document.createElement('div');
   wrapper.classList.add('change-password-section');
@@ -9,13 +7,11 @@ export function renderChangePasswordSection(onChange: (oldPass: string, newPass:
 
   const form = document.createElement('form');
 
-
   const oldPassLabel = document.createElement('label');
   oldPassLabel.textContent = 'Старый пароль: ';
   const oldPassInput = document.createElement('input');
   oldPassInput.type = 'password';
   oldPassInput.required = true;
-
 
   const newPassLabel = document.createElement('label');
   newPassLabel.textContent = 'Новый пароль: ';
