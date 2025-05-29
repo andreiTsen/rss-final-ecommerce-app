@@ -11,7 +11,7 @@
 
 .catalog-title {
   font-size: 2.5rem;
-  color: #2c3e50;
+  color: #ffd700;
   margin-bottom: 10px;
   font-weight: 600;
   text-align: center;
@@ -459,6 +459,7 @@
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
   color: white;
   height: 220px;
+  border-bottom: #ffd700 110px solid;
 }
 
 .active-filters-header {
@@ -477,7 +478,7 @@
 }
 
 .clear-all-filters-btn {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgb(192, 57, 43);
   color: white;
   border: 2px solid rgba(255, 255, 255, 0.3);
   padding: 8px 16px;
@@ -490,11 +491,23 @@
   position: relative;
   z-index: 1;
   top: -10px;
-  left: 35%;
+  left: 40%;
+}
+
+.reset-filters-btn {
+  background: #27ae60;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-left: 10px;
 }
 
 .clear-all-filters-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
   border-color: rgba(255, 255, 255, 0.5);
   transform: translateY(-2px);
 }

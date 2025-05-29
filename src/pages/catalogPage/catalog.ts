@@ -364,7 +364,7 @@ export class CatalogPage {
 
     const title = document.createElement('h1');
     title.className = 'catalog-title';
-    title.textContent = 'Каталог товаров';
+    title.textContent = 'Crazy Bookstore';
 
     catalogHeader.appendChild(title);
     return catalogHeader;
