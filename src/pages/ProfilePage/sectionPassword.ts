@@ -1,47 +1,37 @@
-export function renderChangePasswordSection(onChange: (oldPass: string, newPass: string) => void): HTMLElement {
+import { UserData } from './sectionProfile';
+
+
+export function renderChangePassword(user: UserData): HTMLElement {
   const wrapper = document.createElement('div');
-  wrapper.classList.add('change-password-section');
-
+  wrapper.classList.add('password-section-wrapper');
+   console.log(user);
   const title = document.createElement('h2');
-  title.textContent = 'Смена пароля';
+  title.textContent = 'Изменить пароль';
+  wrapper.appendChild(title);
+  const list =[
+    { label: 'Текущий пароль', type: 'password', name: 'currentPassword' },
+    { label: 'Новый пароль', type: 'password', name: 'newPassword' },
+    { label: 'Подтвердите новый пароль', type: 'password', name: 'confirmNewPassword' }
+  ]
+  list.forEach(item => {
+    const label = document.createElement('label');
+    label.textContent = item.label;
+    const input = document.createElement('input');
+    input.type = item.type;
+    input.name = item.name;
+    input.classList.add('input-field');
+    wrapper.appendChild(label);
+    wrapper.appendChild(input);
+  });
+  
+  const editButton = document.createElement('button');
+  editButton.textContent = 'Сменить пароль';
+  editButton.classList.add('edit-address-btn');
+  wrapper.append( editButton);
+  editButton.addEventListener('click', () => {
+    wrapper.innerHTML = '';
+  });
 
-  const form = document.createElement('form');
-
-  const oldPassLabel = document.createElement('label');
-  oldPassLabel.textContent = 'Старый пароль: ';
-  const oldPassInput = document.createElement('input');
-  oldPassInput.type = 'password';
-  oldPassInput.required = true;
-
-  const newPassLabel = document.createElement('label');
-  newPassLabel.textContent = 'Новый пароль: ';
-  const newPassInput = document.createElement('input');
-  newPassInput.type = 'password';
-  newPassInput.required = true;
-
-  // Кнопка
-  const button = document.createElement('button');
-  button.type = 'submit';
-  button.textContent = 'Изменить пароль';
-
-  // Сообщение
-  const message = document.createElement('div');
-  message.classList.add('change-password-msg');
-
-  // Обработка формы
-  form.onsubmit = (e) => {
-    e.preventDefault();
-    // Тут можно добавить валидацию
-    if (oldPassInput.value && newPassInput.value) {
-      onChange(oldPassInput.value, newPassInput.value);
-    }
-  };
-
-  // Сборка
-  form.append(oldPassLabel, oldPassInput, document.createElement('br'));
-  form.append(newPassLabel, newPassInput, document.createElement('br'));
-  form.append(button);
-  wrapper.append(title, form, message);
 
   return wrapper;
 }

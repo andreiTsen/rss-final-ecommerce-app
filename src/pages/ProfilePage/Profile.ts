@@ -3,7 +3,8 @@ import { navigateTo } from '../../main';
 import './profile.css';
 import createSidebar from './sidebar';
 import { renderProfileInfoSection, UserData } from './sectionProfile';
-import { renderChangePasswordSection } from './sectionPassword';
+import { renderAddressSection } from './sectionAdresses';
+import { renderChangePassword } from './sectionPassword';
 
 export class ProfilePage {
   private container: HTMLElement;
@@ -11,6 +12,7 @@ export class ProfilePage {
   constructor(container: HTMLElement) {
     this.container = container;
     this.user = AuthService.getCurrentUser();
+    
     if (!this.user) {
       navigateTo('/login');
       return;
@@ -19,7 +21,7 @@ export class ProfilePage {
   }
   private render(): void {
     this.container.innerHTML = '';
-
+ 
     const layout = document.createElement('div');
     layout.classList.add('profile-layout');
 
@@ -37,6 +39,7 @@ export class ProfilePage {
     this.container.appendChild(layout);
 
     this.renderSection('profile', this.user!);
+
   }
 
   private renderSection(sectionId: string, user: UserData): void {
@@ -49,21 +52,11 @@ export class ProfilePage {
       const profileSection = renderProfileInfoSection(user);
       content.appendChild(profileSection);
     } else if (sectionId === 'adress') {
-      // const title = document.createElement('h2');
-      // title.textContent = 'Адрес доставки';
-      // const paragraph = document.createElement('p');
-      // paragraph.textContent = `Страна: ${user.addresses[0].country || 'не указана'}`;
-      // const city = document.createElement('p');
-      // city.textContent = `Город: ${user.addresses[0].city || 'не указано'}`;
-      // const index = document.createElement('p');
-      // index.textContent = `Индекс: ${user.addresses[0].postalCode || 'не указан'}`;
-      // const street = document.createElement('p');
-      // street.textContent = `Улица: ${user.addresses[0].streetName || 'не указано'}`;
-      // content.append(title, paragraph, city, index, street);
+      const addressSection = renderAddressSection(user);
+      content.appendChild(addressSection);
     } else if (sectionId === 'password') {
-      //  const section = renderChangePasswordSection((oldPass, newPass) => {
-      //   });
-      // content.append(section);
+      const section = renderChangePassword(user);
+      content.append(section);
     } else {
       content.textContent = 'Раздел не найден.';
     }

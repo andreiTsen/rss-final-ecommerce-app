@@ -1,11 +1,19 @@
 import avatarFallback from '../../assets/raccoon.png';
-import { renderEditProfileForm } from '../ProfilePage/renderEditProfile';
+import { EditProfileForm } from '../ProfilePage/renderEditProfile';
+
+export type Address = {
+  country?: string;
+  city?: string;
+  postalCode?: string;
+  streetName?: string;
+};
 
 export type UserData = {
   firstName?: string;
   lastName?: string;
   email?: string;
   dateOfBirth?: string;
+  addresses?: Address[];
 };
 
 export function renderProfileInfoSection(user: UserData): HTMLElement {
@@ -41,8 +49,8 @@ export function renderProfileInfoSection(user: UserData): HTMLElement {
 
   editButton.addEventListener('click', () => {
     wrapper.innerHTML = '';
-    const editForm = renderEditProfileForm(user);
-    wrapper.appendChild(editForm);
+    const editForm = new EditProfileForm(user);
+    wrapper.appendChild(editForm.element);
   });
   return wrapper;
 }

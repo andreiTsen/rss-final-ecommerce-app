@@ -1,3 +1,5 @@
+
+
 export function renderButtonContainer(): HTMLElement {
   const container = document.createElement('div');
   container.classList.add('button-container');
@@ -12,14 +14,16 @@ export function renderButtonContainer(): HTMLElement {
   saveButton.addEventListener('click', () => {
     const form = document.querySelector('form');
     if (form) {
-      form.dispatchEvent(new Event('submit', { cancelable: true }));
+      
     }
   });
   cancelButton.addEventListener('click', () => {
     const form = document.querySelector('form');
+
     if (form) {
       form.dispatchEvent(new Event('reset'));
     }
   });
   return container;
 }
+
