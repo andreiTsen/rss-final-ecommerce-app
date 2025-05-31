@@ -18,7 +18,9 @@ export default class productAboutPage {
     pages: string
   ) {
     this.container = container;
-    this.container.appendChild(this.createContainerPage(title, info, price, imgs, category, author, discountedPrice, pages));
+    this.container.appendChild(
+      this.createContainerPage(title, info, price, imgs, category, author, discountedPrice, pages)
+    );
   }
 
   public createContainerPage(

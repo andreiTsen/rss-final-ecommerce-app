@@ -8,7 +8,7 @@ import productAboutPage from './pages/productAboutPage/productAboutPage';
 import { getProduct, handleProductAbout } from './services/getProduct';
 import './pages/productAboutPage/productAboutPage.css';
 import { customerApiRoot } from './services/customerApi';
-import './assets/style.css'
+import './assets/style.css';
 // const appRoot = document.body;
 
 let appContainer: HTMLElement;
@@ -84,7 +84,6 @@ export function navigateTo(path: string): void {
   window.history.pushState({}, '', path);
   handleRouting();
 }
-
 
 function createPlaceholderContainer(pageName: string): HTMLDivElement {
   const pageContainer = document.createElement('div');

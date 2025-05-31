@@ -95,7 +95,7 @@
 }
 
 .swiper-pagination-bullets {
-bottom: var(--swiper-pagination-bottom, 4px) !important;
+  bottom: var(--swiper-pagination-bottom, 4px) !important;
 }
 
 .swiper-pagination-bullet-active {
@@ -182,7 +182,7 @@ bottom: var(--swiper-pagination-bottom, 4px) !important;
 .new-price {
   color: #4caf50;
   font-weight: bold;
-    font-size: 1.5rem;
+  font-size: 1.5rem;
 }
 
 @media screen and (max-width: 1024px) {
@@ -206,12 +206,12 @@ bottom: var(--swiper-pagination-bottom, 4px) !important;
     max-height: 70vh;
   }
   .about-page_product-category,
-.about-page_product-info,
-.about-page_product-price,
-.about-page_product-author,
-.about-page_product-pages {
-  font-size: 1rem;
-}
+  .about-page_product-info,
+  .about-page_product-price,
+  .about-page_product-author,
+  .about-page_product-pages {
+    font-size: 1rem;
+  }
   .about-page_product-title {
     font-size: 2rem;
   }
