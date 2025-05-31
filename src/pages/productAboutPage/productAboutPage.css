@@ -10,7 +10,7 @@
   align-items: flex-start;
   flex-wrap: wrap;
   padding: 2.5rem;
-  gap: 2rem;
+  gap: 1.5rem;
   width: 100%;
   margin: 0 auto;
 }
@@ -31,7 +31,7 @@
 .info-container {
   display: flex;
   flex-direction: column;
-  max-width: 800px;
+  max-width: 650px;
   min-width: 300px;
   flex: 1 1 0;
 }
@@ -59,9 +59,14 @@
 .about-page_product-category,
 .about-page_product-info,
 .about-page_product-price,
-.about-page_product-author {
+.about-page_product-author,
+.about-page_product-pages {
   font-size: 1.25rem;
   margin-bottom: 1rem;
+}
+
+.about-page_product-info {
+  text-align: justify;
 }
 
 .about-page_product-price {
@@ -70,6 +75,7 @@
 
 .about-page_product-btn-buy {
   margin-top: 1rem;
+  min-width: 7rem;
   max-width: 10rem;
   padding: 0.5rem;
   background-color: #ffd700;
@@ -86,6 +92,10 @@
 .swiper-button-next,
 .swiper-button-prev {
   color: #4caf50 !important;
+}
+
+.swiper-pagination-bullets {
+bottom: var(--swiper-pagination-bottom, 4px) !important;
 }
 
 .swiper-pagination-bullet-active {
@@ -166,11 +176,13 @@
 .old-price {
   text-decoration: line-through;
   color: #888;
+  font-size: 1.25rem;
   margin-right: 0.5em;
 }
 .new-price {
   color: #4caf50;
   font-weight: bold;
+    font-size: 1.5rem;
 }
 
 @media screen and (max-width: 1024px) {
@@ -193,10 +205,23 @@
   .swiper-wrapper {
     max-height: 70vh;
   }
+  .about-page_product-category,
+.about-page_product-info,
+.about-page_product-price,
+.about-page_product-author,
+.about-page_product-pages {
+  font-size: 1rem;
+}
+  .about-page_product-title {
+    font-size: 2rem;
+  }
 }
 
 @media screen and (max-width: 420px) {
   .swiper-slide {
     max-width: 100vw !important;
+  }
+  .about-page_product-info {
+    font-size: 0.85rem;
   }
 }

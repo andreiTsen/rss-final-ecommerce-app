@@ -5,10 +5,10 @@ import { Navigation } from './components/navigation';
 import loginPage from './pages/loginPage/loginPage';
 import { AuthorizationService } from './services/authentication';
 import productAboutPage from './pages/productAboutPage/productAboutPage';
-import { getProduct } from './services/getProduct';
+import { getProduct, handleProductAbout } from './services/getProduct';
 import './pages/productAboutPage/productAboutPage.css';
 import { customerApiRoot } from './services/customerApi';
-// import './assets/style.css'
+import './assets/style.css'
 // const appRoot = document.body;
 
 let appContainer: HTMLElement;
@@ -65,7 +65,7 @@ function handleRouting(): void {
       break;
 
     case '/product-about': {
-      void handleProductAbout();
+      void handleProductAbout(appContainer);
       break;
     }
 
@@ -85,43 +85,6 @@ export function navigateTo(path: string): void {
   handleRouting();
 }
 
-async function handleProductAbout(): Promise<void> {
-  const parameters = new URLSearchParams(window.location.search);
-  const key = parameters.get('key');
-  try {
-    if (key) {
-      const product = await getProduct(key);
-      if (product) {
-        let category = '';
-        if (product.categories && product.categories.length > 0) {
-          category = await getCategoryNameById(product.categories[0].id);
-        }
-        const title = product.name?.['en-US'] || 'Без названия';
-        const info = product.description?.['en-US'] || 'Нет описания';
-        const priceCent = product.masterVariant.prices?.[0]?.value?.centAmount ?? 0;
-        const price = (priceCent / 100).toFixed(2);
-        const img = product.masterVariant?.images?.map((img) => img.url) || [];
-        const author = product.masterVariant?.attributes?.[0].value;
-        console.log(product);
-        new productAboutPage(appContainer, title, info, price, img, category, author);
-      } else {
-        appContainer.textContent = 'Ошибка загрузки информации о продукте';
-      }
-    }
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-async function getCategoryNameById(id: string): Promise<string> {
-  try {
-    const response = await customerApiRoot.categories().withId({ ID: id }).get().execute();
-    return response.body.name['en-US'];
-  } catch (error) {
-    console.error(error);
-    return 'not category';
-  }
-}
 
 function createPlaceholderContainer(pageName: string): HTMLDivElement {
   const pageContainer = document.createElement('div');
@@ -149,16 +112,16 @@ function createAuthenticatedContent(container: HTMLDivElement, pageName: string)
   welcomeMessage.className = 'welcome-message';
   welcomeMessage.textContent = `Добро пожаловать, ${user?.firstName || 'пользователь'}! Вы вошли в систему.`;
   container.appendChild(welcomeMessage);
-  const buttonProducts = document.createElement('button');
-  buttonProducts.textContent = 'Подробная информация о продукте';
-  buttonProducts.setAttribute('data-key', 'atomic-habits');
-  buttonProducts.addEventListener('click', () => {
-    const key = buttonProducts.getAttribute('data-key');
-    if (key) {
-      navigateTo(`/product-about?key=${encodeURIComponent(key)}`);
-    }
-  });
-  container.appendChild(buttonProducts);
+  // const buttonProducts = document.createElement('button');
+  // buttonProducts.textContent = 'Подробная информация о продукте';
+  // buttonProducts.setAttribute('data-key', 'physics-scientists-engineers');
+  // buttonProducts.addEventListener('click', () => {
+  //   const key = buttonProducts.getAttribute('data-key');
+  //   if (key) {
+  //     navigateTo(`/product-about?key=${encodeURIComponent(key)}`);
+  //   }
+  // });
+  // container.appendChild(buttonProducts);
 
   const logoutButton = document.createElement('button');
   logoutButton.className = 'logout-button';

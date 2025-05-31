@@ -14,10 +14,11 @@ export default class productAboutPage {
     imgs: string[],
     category: string,
     author: string,
-    discountedPrice: string
+    discountedPrice: string,
+    pages: string
   ) {
     this.container = container;
-    this.container.appendChild(this.createContainerPage(title, info, price, imgs, category, author, discountedPrice));
+    this.container.appendChild(this.createContainerPage(title, info, price, imgs, category, author, discountedPrice, pages));
   }
 
   public createContainerPage(
@@ -27,7 +28,8 @@ export default class productAboutPage {
     imgs: string[],
     category: string,
     author: string,
-    discountedPrice: string
+    discountedPrice: string,
+    pages: string
   ): HTMLElement {
     const container = new ElementCreator({
       tagName: 'div',
@@ -43,6 +45,7 @@ export default class productAboutPage {
     }
     infoContainer.appendChild(this.createCategories(category));
     infoContainer.appendChild(this.createAuthor(author));
+    infoContainer.appendChild(this.createPages(pages));
     infoContainer.appendChild(this.createAboutInfoProducts(info));
     infoContainer.appendChild(this.createPriceProducts(price, discountedPrice));
     infoContainer.appendChild(this.createBtnBuyProduct());
@@ -71,7 +74,7 @@ export default class productAboutPage {
     const titleElement = new ElementCreator({
       tagName: 'h1',
       classNames: ['about-page_product-title'],
-      textContent: `Название: ${title}`,
+      textContent: `${title}`,
     });
 
     return titleElement.getElement();
@@ -81,9 +84,8 @@ export default class productAboutPage {
     const infoElement = new ElementCreator({
       tagName: 'p',
       classNames: ['about-page_product-info'],
-      textContent: `Описание: ${info}`,
+      textContent: `About the book: ${info}`,
     });
-
     return infoElement.getElement();
   }
 
@@ -91,7 +93,7 @@ export default class productAboutPage {
     const categoryElement = new ElementCreator({
       tagName: 'p',
       classNames: ['about-page_product-category'],
-      textContent: `Категория: ${category}`,
+      textContent: `Category: ${category}`,
     });
 
     return categoryElement.getElement();
@@ -101,7 +103,7 @@ export default class productAboutPage {
     const authorElement = new ElementCreator({
       tagName: 'span',
       classNames: ['about-page_product-author'],
-      textContent: `Автор: ${author}`,
+      textContent: `Author: ${author}`,
     });
 
     return authorElement.getElement();
@@ -111,9 +113,19 @@ export default class productAboutPage {
     const buttonBuyProduct = new ElementCreator({
       tagName: 'button',
       classNames: ['about-page_product-btn-buy'],
-      textContent: `Добавить в корзину`,
+      textContent: `Buy`,
     });
     return buttonBuyProduct.getElement();
+  }
+
+  public createPages(pages: string): HTMLElement {
+    const pagesElement = new ElementCreator({
+      tagName: 'span',
+      classNames: ['about-page_product-pages'],
+      textContent: `Number of pages: ${pages}`,
+    });
+
+    return pagesElement.getElement();
   }
 
   public createPriceProducts(price: string, discountedPrice: string | null = null): HTMLElement {
@@ -133,7 +145,7 @@ export default class productAboutPage {
       priceElement.getElement().appendChild(oldPrice);
       priceElement.getElement().appendChild(newPrice);
     } else {
-      priceElement.getElement().textContent = `Стоимость: ${price}$`;
+      priceElement.getElement().textContent = `Price: ${price}$`;
     }
 
     return priceElement.getElement();
