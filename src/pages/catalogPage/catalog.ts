@@ -1,6 +1,7 @@
 import './catalog.css';
 import { ProductService, ProductData, ProductFilters, FilterOptions, SortOption } from '../../services/productService';
 import { CategoryService, CategoryData } from '../../services/categoryService';
+import { navigateTo } from '../../main';
 
 export class CatalogPage {
   private container: HTMLElement;
@@ -1360,10 +1361,14 @@ export class CatalogPage {
     detailsButton.className = 'details-btn';
     detailsButton.textContent = 'Подробнее';
 
-    detailsButton.setAttribute('data-key', product.key ?? product.id);
+    const key = product.key ?? product.id;
+    detailsButton.setAttribute('data-key', key);
 
     detailsButton.addEventListener('click', () => {
-      this.viewProductDetails(product);
+      const dataKey = detailsButton.getAttribute('data-key');
+      if (dataKey) {
+        navigateTo(dataKey);
+      }
     });
 
     return detailsButton;
@@ -1640,7 +1645,7 @@ export class CatalogPage {
   private updateSortSelect(): void {
     const sortSelect = document.querySelector('.sort-select');
     if (sortSelect instanceof HTMLSelectElement) {
-      sortSelect.value = 'default';
+      sortSelect.value = this.currentSortOption;
     }
   }
 
