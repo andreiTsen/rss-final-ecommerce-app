@@ -1367,7 +1367,7 @@ export class CatalogPage {
     detailsButton.addEventListener('click', () => {
       const dataKey = detailsButton.getAttribute('data-key');
       if (dataKey) {
-        navigateTo(dataKey);
+        navigateTo(`/product-about?key=${encodeURIComponent(dataKey)}`);
       }
     });
 
@@ -1675,10 +1675,6 @@ export class CatalogPage {
     if (discountCheckbox instanceof HTMLInputElement) {
       discountCheckbox.checked = false;
     }
-  }
-
-  private viewProductDetails(product: ProductData): void {
-    console.log(`Товар: ${product.name}\nЦена: ${product.price}$\nКатегория: ${product.category}`);
   }
 
   private addToCart(product: ProductData, event: Event): void {
