@@ -4,7 +4,6 @@ import { EditAddressForm, countries } from './renderEditAdresses';
 export function renderAddressSection(user: UserData): HTMLElement {
   const wrapper = document.createElement('div');
   wrapper.classList.add('address-section-wrapper');
-  console.log(user);
   const title = document.createElement('h2');
   title.textContent = 'Адрес доставки';
   const address = user.addresses?.[0] || {};

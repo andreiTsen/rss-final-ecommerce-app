@@ -2,6 +2,7 @@ import avatarFallback from '../../assets/raccoon.png';
 import { EditProfileForm } from '../ProfilePage/renderEditProfile';
 
 export type Address = {
+  id?: string;
   country?: string;
   city?: string;
   postalCode?: string;

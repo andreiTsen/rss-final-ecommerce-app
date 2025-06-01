@@ -54,7 +54,7 @@ export class ProfilePage {
       const addressSection = renderAddressSection(user);
       content.appendChild(addressSection);
     } else if (sectionId === 'password') {
-      const section = renderChangePassword(user);
+      const section = renderChangePassword();
       content.append(section);
     } else {
       content.textContent = 'Раздел не найден.';

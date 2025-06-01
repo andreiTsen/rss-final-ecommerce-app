@@ -1,6 +1,7 @@
 import { UserData } from './sectionProfile';
 import { renderButtonContainer } from './buttonContainer';
 import { updateProfileInfo } from './UpateUser';
+
 import { AuthService } from '../../services/authService';
 
 const fields: { name: keyof UserData; label: string; type?: string }[] = [
