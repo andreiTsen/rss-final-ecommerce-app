@@ -1,8 +1,4 @@
-
-export function validateNameFields(
-  firstNameInput: HTMLInputElement,
-  lastNameInput: HTMLInputElement
-): boolean {
+export function validateNameFields(firstNameInput: HTMLInputElement, lastNameInput: HTMLInputElement): boolean {
   let isValid = true;
 
   const firstNameError = document.getElementById('firstName-error');
@@ -30,10 +26,7 @@ export function validateNameFields(
   return isValid;
 }
 
-export function validatePostalCode(
-  postalCodeInput: HTMLInputElement,
-  type: string 
-): boolean {
+export function validatePostalCode(postalCodeInput: HTMLInputElement, type: string): boolean {
   const postalCodeError = document.getElementById(`${type}-postalCode-error`);
   if (!postalCodeInput.value.trim()) {
     if (postalCodeError) postalCodeError.textContent = 'Поле почтового индекса обязательно для заполнения';

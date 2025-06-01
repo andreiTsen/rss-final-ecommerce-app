@@ -82,7 +82,8 @@
 }
 .edit-profile-button,
 .save-button,
-.cancel-button, .edit-address-btn {
+.cancel-button,
+.edit-address-btn {
   background-color: #ffd700;
   color: #333;
   border: none;

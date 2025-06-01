@@ -12,7 +12,7 @@ export class ProfilePage {
   constructor(container: HTMLElement) {
     this.container = container;
     this.user = AuthService.getCurrentUser();
-    
+
     if (!this.user) {
       navigateTo('/login');
       return;
@@ -21,7 +21,7 @@ export class ProfilePage {
   }
   private render(): void {
     this.container.innerHTML = '';
- 
+
     const layout = document.createElement('div');
     layout.classList.add('profile-layout');
 
@@ -39,7 +39,6 @@ export class ProfilePage {
     this.container.appendChild(layout);
 
     this.renderSection('profile', this.user!);
-
   }
 
   private renderSection(sectionId: string, user: UserData): void {

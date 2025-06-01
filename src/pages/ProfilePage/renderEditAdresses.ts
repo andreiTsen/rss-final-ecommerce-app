@@ -2,25 +2,23 @@ import type { Address } from './sectionProfile';
 import { renderButtonContainer } from './buttonContainer';
 
 export const countries = [
-      { value: '', text: 'Выберите страну' },
-      { value: 'US', text: 'США' },
-      { value: 'CA', text: 'Канада' },
-      { value: 'UK', text: 'Великобритания' },
-      { value: 'DE', text: 'Германия' },
-      { value: 'FR', text: 'Франция' },
-      { value: 'BY', text: 'Беларусь' },
-      { value: 'UA', text: 'Украина' },
-    ];
+  { value: '', text: 'Выберите страну' },
+  { value: 'US', text: 'США' },
+  { value: 'CA', text: 'Канада' },
+  { value: 'UK', text: 'Великобритания' },
+  { value: 'DE', text: 'Германия' },
+  { value: 'FR', text: 'Франция' },
+  { value: 'BY', text: 'Беларусь' },
+  { value: 'UA', text: 'Украина' },
+];
 
 export class EditAddressForm {
   private form: HTMLFormElement;
   private inputs: Partial<Record<keyof Address, HTMLInputElement>> = {};
-  
 
   constructor(address: Address) {
     this.form = this.render(address);
   }
-  
 
   public get element(): HTMLFormElement {
     if (!this.form) {
@@ -34,9 +32,9 @@ export class EditAddressForm {
         city: formData.get('city'),
         postalCode: formData.get('postalCode'),
         streetName: formData.get('streetName'),
-      } 
+      };
       console.log(formDataObject);
-    });    
+    });
     return this.form;
   }
   private render(address: Address): HTMLFormElement {
@@ -45,7 +43,7 @@ export class EditAddressForm {
     const title = document.createElement('h2');
     title.textContent = 'Редактировать адрес';
     form.appendChild(title);
-    const fields: Array<{ label: string, name: keyof Address }> = [
+    const fields: Array<{ label: string; name: keyof Address }> = [
       { label: 'Страна', name: 'country' },
       { label: 'Город', name: 'city' },
       { label: 'Индекс', name: 'postalCode' },
@@ -56,11 +54,11 @@ export class EditAddressForm {
       labelElement.textContent = label;
       labelElement.htmlFor = name;
       if (name === 'country') {
-        const country = countries.find(c => c.value === address[name]);
+        const country = countries.find((c) => c.value === address[name]);
         const countrySelect = country?.value || '';
         form.appendChild(labelElement);
         form.appendChild(this.countrySelect(countrySelect));
-      }else {
+      } else {
         const input = document.createElement('input');
         input.name = name;
         input.id = name;
@@ -75,7 +73,7 @@ export class EditAddressForm {
     });
     const conteinersButton = renderButtonContainer();
     form.appendChild(conteinersButton);
-    
+
     return form;
   }
 
@@ -83,8 +81,8 @@ export class EditAddressForm {
     const select = document.createElement('select');
     select.name = 'country';
     select.id = 'country';
-    
-    countries.forEach(country => {
+
+    countries.forEach((country) => {
       const option = document.createElement('option');
       option.value = country.value;
       option.textContent = country.text;
@@ -93,7 +91,7 @@ export class EditAddressForm {
       }
       select.appendChild(option);
     });
-    
+
     return select;
   }
 }
