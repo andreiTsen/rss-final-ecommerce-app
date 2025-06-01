@@ -56,24 +56,22 @@ function handlePasswordChange(inputs: { [key: string]: HTMLInputElement }, wrapp
   const currentPassword = inputs['currentPassword'].value;
   const newPassword = inputs['newPassword'].value;
   const confirmNewPassword = inputs['confirmNewPassword'].value;
-
   if (currentPassword === newPassword) {
     alert('Новый пароль не должен совпадать со старым');
     return;
   }
-
   if (newPassword.length < 8) {
     alert('Новый пароль должен быть не менее 8 символов');
     return;
   }
-
   const hasUpperCase = /[A-Z]/.test(newPassword);
   const hasLowerCase = /[a-z]/.test(newPassword);
   const hasDigit = /\d/.test(newPassword);
   const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
-
   if (!hasUpperCase || !hasLowerCase || !hasDigit || !hasSpecialChar) {
-    alert('Пароль должен содержать минимум одну заглавную букву, одну строчную букву, одну цифру и один специальный символ');
+    alert(
+      'Пароль должен содержать минимум одну заглавную букву, одну строчную букву, одну цифру и один специальный символ'
+    );
     return;
   }
 
@@ -81,7 +79,6 @@ function handlePasswordChange(inputs: { [key: string]: HTMLInputElement }, wrapp
     alert('Пароли не совпадают');
     return;
   }
-
 
   sendPasswordChangeToServer(currentPassword, newPassword)
     .then(() => {
@@ -94,7 +91,6 @@ function handlePasswordChange(inputs: { [key: string]: HTMLInputElement }, wrapp
 }
 
 function sendPasswordChangeToServer(currentPassword: string, newPassword: string): Promise<void> {
-  
-  console.log('Изменение пароля на сервере:', currentPassword, newPassword)
-  return Promise.resolve()
+  console.log('Изменение пароля на сервере:', currentPassword, newPassword);
+  return Promise.resolve();
 }
