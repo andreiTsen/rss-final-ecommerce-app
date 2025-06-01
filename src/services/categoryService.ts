@@ -39,6 +39,26 @@ export class CategoryService {
     }
   }
 
+  public static async getCategoryPath(categoryId: string): Promise<CategoryData[]> {
+    try {
+      const path: CategoryData[] = [];
+      let currentCategoryId: string | undefined = categoryId;
+
+      while (currentCategoryId) {
+        const category = await this.getCategoryById(currentCategoryId);
+        if (!category) break;
+
+        path.unshift(category);
+        currentCategoryId = category.parentId;
+      }
+
+      return path;
+    } catch (error) {
+      console.error('Ошибка путі категории:', error);
+      return [];
+    }
+  }
+
   public static async getCategoryById(categoryId: string): Promise<CategoryData | null> {
     if (this.categoryCache.has(categoryId)) {
       return this.categoryCache.get(categoryId) || null;

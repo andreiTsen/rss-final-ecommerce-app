@@ -7,6 +7,7 @@ export class CatalogPage {
   private container: HTMLElement;
   private products: ProductData[] = [];
   private categories: CategoryData[] = [];
+  private categoryPath: CategoryData[] = [];
   private filterOptions: FilterOptions = {
     authors: [],
     priceRange: { min: 0, max: 10000 },
@@ -38,6 +39,12 @@ export class CatalogPage {
       this.categories = categories;
       this.products = products;
       this.filterOptions = filterOptions;
+
+      if (this.currentFilters.categoryId) {
+        this.categoryPath = await CategoryService.getCategoryPath(this.currentFilters.categoryId);
+      } else {
+        this.categoryPath = [];
+      }
     } catch (error) {
       console.error('Ошібка загрузкі каталога:', error);
       this.showErrorMessage();
@@ -201,20 +208,26 @@ export class CatalogPage {
 
     const catalogItem = this.createBreadcrumbItem(
       'Каталог',
-      () => {
+      (): void => {
         void this.resetToAllProducts();
       },
-      !this.currentFilters.categoryId
+      this.categoryPath.length === 0
     );
     breadcrumbsList.appendChild(catalogItem);
 
-    if (this.currentFilters.categoryId) {
-      const currentCategory = this.categories.find((cat) => cat.id === this.currentFilters.categoryId);
-      if (currentCategory) {
-        const categoryItem = this.createBreadcrumbItem(currentCategory.name, undefined, true);
-        breadcrumbsList.appendChild(categoryItem);
-      }
-    }
+    this.categoryPath.forEach((category, index): void => {
+      const isLast = index === this.categoryPath.length - 1;
+      const categoryItem = this.createBreadcrumbItem(
+        category.name,
+        isLast
+          ? undefined
+          : (): void => {
+              void this.updateCategoryFilter(category.id);
+            },
+        isLast
+      );
+      breadcrumbsList.appendChild(categoryItem);
+    });
 
     breadcrumbsContainer.appendChild(breadcrumbsList);
     return breadcrumbsContainer;
@@ -223,6 +236,7 @@ export class CatalogPage {
   private async resetToAllProducts(): Promise<void> {
     try {
       delete this.currentFilters.categoryId;
+      this.categoryPath = [];
 
       this.updateActiveCategoryInUI(undefined);
       this.updateURL();
@@ -443,10 +457,10 @@ export class CatalogPage {
 
   private addCategoryFilterTag(container: HTMLElement): void {
     if (this.currentFilters.categoryId) {
-      const category = this.categories.find((cat) => cat.id === this.currentFilters.categoryId);
-      const categoryName = category ? category.name : 'Неизвестная категория';
+      const categoryNames = this.categoryPath.map((cat) => cat.name).join(' / ');
+      const displayName = categoryNames || 'Неизвестная категория';
 
-      const tag = this.createFilterTag(categoryName, () => void this.removeFilter('categoryId'));
+      const tag = this.createFilterTag(displayName, () => void this.removeFilter('categoryId'));
       container.appendChild(tag);
     }
   }
@@ -1387,8 +1401,10 @@ export class CatalogPage {
   private async updateCategoryFilter(categoryId: string | undefined): Promise<void> {
     if (categoryId === undefined) {
       delete this.currentFilters.categoryId;
+      this.categoryPath = [];
     } else {
       this.currentFilters.categoryId = categoryId;
+      this.categoryPath = await CategoryService.getCategoryPath(categoryId);
     }
 
     this.updateActiveCategoryInUI(categoryId);
