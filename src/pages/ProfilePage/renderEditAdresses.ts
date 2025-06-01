@@ -1,7 +1,6 @@
 import type { Address } from './sectionProfile';
 import { renderButtonContainer } from './buttonContainer';
 import { updateAddress } from './UpateUser';
-import { UserData } from './sectionProfile';
 
 export const countries = [
   { value: '', text: 'Выберите страну' },
@@ -13,8 +12,6 @@ export const countries = [
   { value: 'BY', text: 'Беларусь' },
   { value: 'UA', text: 'Украина' },
 ];
-
-
 
 export class EditAddressForm {
   private form: HTMLFormElement;
@@ -57,15 +54,16 @@ export class EditAddressForm {
         alert('Ошибка при сохранении адреса. Попробуйте позже.');
       }
     });
-    return this.form;  }
+    return this.form;
+  }
   private render(address: Address): HTMLFormElement {
     const form = document.createElement('form');
     form.classList.add('edit-address-form');
-    
+
     this.appendTitle(form);
     this.appendIdInput(form, address);
     this.appendFields(form, address);
-    
+
     const conteinersButton = renderButtonContainer();
     form.appendChild(conteinersButton);
 

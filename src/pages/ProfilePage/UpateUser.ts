@@ -15,8 +15,8 @@ export async function updateProfileInfo(data: Partial<UserData>): Promise<Custom
         version: current.version,
         actions: [
           { action: 'setFirstName', firstName: data.firstName },
-          { action: 'setLastName',  lastName:  data.lastName },
-          { action: 'changeEmail',  email:     data.email ?? '' },
+          { action: 'setLastName', lastName: data.lastName },
+          { action: 'changeEmail', email: data.email ?? '' },
           { action: 'setDateOfBirth', dateOfBirth: data.dateOfBirth },
         ],
       },
