@@ -1,7 +1,7 @@
 import { UserData } from './sectionProfile';
 import { renderButtonContainer } from './buttonContainer';
 import { updateProfileInfo } from './UpateUser';
-import { AuthService } from '../../services/AuthService';
+import { AuthService } from '../../services/authService';
 
 const fields: { name: keyof UserData; label: string; type?: string }[] = [
   { name: 'firstName', label: 'Имя', type: 'text' },
@@ -28,9 +28,18 @@ export class EditProfileForm {
   }
 
   private render(): void {
+    this.renderTitle();
+    this.renderFields();
+    this.setupFormSubmit();
+  }
+
+  private renderTitle(): void {
     const title = document.createElement('h2');
     title.textContent = 'Редактировать профиль';
     this.form.append(title);
+  }
+
+  private renderFields(): void {
     fields.forEach(({ name, label, type }) => {
       const wrapper = document.createElement('div');
       const lbl = document.createElement('label');
@@ -39,7 +48,7 @@ export class EditProfileForm {
       input.type = type ?? 'text';
       input.name = name;
       input.placeholder = label;
-      input.value = this.user[name] ?? '';
+      input.value = String(this.user[name] ?? '');
       const error = document.createElement('span');
       error.className = 'field-error';
       wrapper.append(lbl, input, error);
@@ -49,14 +58,17 @@ export class EditProfileForm {
       input.addEventListener('input', () => this.validateField(name));
     });
     this.form.append(renderButtonContainer());
+  }
+
+  private setupFormSubmit(): void {
     this.form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const fd = new FormData(this.form);
       const payload: Partial<UserData> = {
-        firstName:   fd.get('firstName'),
-        lastName:    fd.get('lastName'),
-        email:       fd.get('email'),
-        dateOfBirth: fd.get('dateOfBirth'),
+        firstName: fd.get('firstName')?.toString(),
+        lastName: fd.get('lastName')?.toString(),
+        email: fd.get('email')?.toString(),
+        dateOfBirth: fd.get('dateOfBirth')?.toString(),
       };
       try {
         const updated = await updateProfileInfo(payload);
@@ -66,8 +78,9 @@ export class EditProfileForm {
       } catch (error) {
         console.error('Ошибка при обновлении профиля:', error);
         alert('Ошибка при обновлении. Попробуйте позже.');
-      }});}
-
+      }
+    });
+  }
   private validateField(name: keyof UserData): boolean {
     const input = this.elements[name]!;
     const errorElement = this.errors[name]!;
