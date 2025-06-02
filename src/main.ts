@@ -2,12 +2,14 @@ import './pages/RegistrationPage/registration.css';
 import { RegistrationPage } from './pages/RegistrationPage/registration';
 import { AuthService } from './services/authService';
 import { Navigation } from './components/navigation';
-import loginPage from './pages/loginPage/loginPage';
+import loginPage from './pages/loginPage/loginPage'
+import { ProfilePage } from './pages/ProfilePage/Profile';
+
 import { CatalogPage } from './pages/catalogPage/catalog';
 // const appRoot = document.body;
 
 let appContainer: HTMLElement;
-let navigation: Navigation;
+export let navigation: Navigation;
 
 document.addEventListener('DOMContentLoaded', () => {
   const existingContainer = document.getElementById('app');
@@ -38,9 +40,7 @@ function setupRouting(): void {
 function handleRouting(): void {
   const path = window.location.pathname;
   const isAuthenticated = AuthService.isAuthenticated();
-
   appContainer.innerHTML = '';
-
   switch (path) {
     case '/registration':
     case '/register':
@@ -50,7 +50,6 @@ function handleRouting(): void {
         navigateTo('/store');
       }
       break;
-
     case '/login':
       if (!isAuthenticated) {
         new loginPage(appContainer);
@@ -58,10 +57,16 @@ function handleRouting(): void {
         navigateTo('/store');
       }
       break;
-
     case '/store':
     case '/':
       renderPlaceholderPage('Страница магазина', isAuthenticated);
+      break;
+    case '/profile':
+      if (isAuthenticated) {
+        new ProfilePage(appContainer);
+      } else {
+        navigateTo('/login');
+      }
       break;
 
     default:
