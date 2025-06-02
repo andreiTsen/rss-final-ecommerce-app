@@ -3,7 +3,6 @@ import { AuthService } from '../../services/authService';
 import type { Customer } from '@commercetools/platform-sdk';
 import type { UserData } from './sectionProfile';
 
-
 export async function updateProfileInfo(data: Partial<UserData>): Promise<Customer> {
   const current = AuthService.getCurrentUser();
   if (!current) throw new Error('Неавторизован');
@@ -70,7 +69,11 @@ export async function updateAddress(address: {
   return response.body;
 }
 
-export async function updatePassword(version: number, currentPassword: string, newPassword: string): Promise<{ success: boolean }> {
+export async function updatePassword(
+  version: number,
+  currentPassword: string,
+  newPassword: string
+): Promise<{ success: boolean }> {
   const current = AuthService.getCurrentUser();
   if (!current) throw new Error('Неавторизован');
 
@@ -82,8 +85,6 @@ export async function updatePassword(version: number, currentPassword: string, n
         version: version,
         currentPassword,
         newPassword,
-          
-      
       },
     })
     .execute();

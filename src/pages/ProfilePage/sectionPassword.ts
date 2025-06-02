@@ -25,11 +25,10 @@ function createPasswordInputs(wrapper: HTMLElement): { [key: string]: HTMLInputE
   const list = [
     { label: 'Старый пароль', type: 'password', name: 'oldPassword' },
     { label: 'Новый пароль', type: 'password', name: 'newPassword' },
-    
   ];
   const inputs: { [key: string]: HTMLInputElement } = {};
 
-  list.forEach(item => {
+  list.forEach((item) => {
     const label = document.createElement('label');
     label.textContent = item.label;
     const input = document.createElement('input');
@@ -44,15 +43,12 @@ function createPasswordInputs(wrapper: HTMLElement): { [key: string]: HTMLInputE
   return inputs;
 }
 
-function createChangePasswordButton(
-  wrapper: HTMLElement,
-  inputs: { [key: string]: HTMLInputElement }
-): void {
+function createChangePasswordButton(wrapper: HTMLElement, inputs: { [key: string]: HTMLInputElement }): void {
   const editButton = document.createElement('button');
   editButton.textContent = 'Сменить пароль';
   editButton.classList.add('edit-address-btn');
   wrapper.appendChild(editButton);
-  const V =  AuthService.getCurrentUser()?.version || 0;
+  const V = AuthService.getCurrentUser()?.version || 0;
   editButton.addEventListener('click', async () => {
     const newPwd = inputs['newPassword'].value.trim();
     const oldPwd = inputs['oldPassword'].value.trim();
@@ -71,15 +67,11 @@ function createChangePasswordButton(
         const modalElements = renderModal('Пароль успешно изменён!');
         document.body.appendChild(modalElements);
       } else {
-        document.body.appendChild(
-          renderModal('Не удалось сменить пароль. Попробуйте позже.')
-        );
+        document.body.appendChild(renderModal('Не удалось сменить пароль. Попробуйте позже.'));
       }
     } catch (error) {
       console.error('Ошибка при смене пароля:', error);
-      document.body.appendChild(
-        renderModal('Ошибка при смене пароля. Попробуйте позже.')
-      );
+      document.body.appendChild(renderModal('Ошибка при смене пароля. Попробуйте позже.'));
     }
   });
 }

@@ -25,11 +25,6 @@ export function renderProfileInfoSection(user: UserData): HTMLElement {
   const title = document.createElement('h2');
   title.textContent = 'Личная информация';
 
-  const avatar = document.createElement('img');
-  avatar.src = avatarFallback;
-  avatar.alt = 'Фото профиля';
-  avatar.classList.add('profile-avatar');
-
   const name = document.createElement('p');
   name.textContent = `Имя: ${user.firstName || 'не указано'}`;
 
@@ -46,7 +41,7 @@ export function renderProfileInfoSection(user: UserData): HTMLElement {
   editButton.classList.add('edit-profile-button');
   editButton.textContent = 'Редактировать';
 
-  wrapper.append(title, avatar, name, lastName, email, birthDate, editButton);
+  wrapper.append(title, name, lastName, email, birthDate, editButton);
 
   editButton.addEventListener('click', () => {
     wrapper.innerHTML = '';
