@@ -4,7 +4,7 @@ import './../../pages/loginPage/loginPage.css';
 import createErrorMessage from './errorMessage';
 import validateEmail from './validateEmail';
 import validatePassword from './validatePassword';
-import { navigateTo } from '../../main';
+import { navigateTo, navigation } from '../../main';
 
 export default class loginPage {
   private container: HTMLElement;
@@ -248,6 +248,7 @@ export default class loginPage {
     try {
       const isLoggedIn = await AuthorizationService.login(loginValue, passwordValue);
       if (isLoggedIn) {
+        navigation.render();
         setTimeout(() => navigateTo('/store'), 0);
       }
     } catch (error) {
