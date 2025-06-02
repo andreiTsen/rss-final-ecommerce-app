@@ -15,7 +15,9 @@ import { CatalogPage } from './pages/catalogPage/catalog';
 
 let appContainer: HTMLElement;
 export let navigation: Navigation;
-alert('Просьба проверить нашу работу в последний день кросс-чека) Или проверить всё, кроме страницы пользователя. Спасибо за понимание :)')
+alert(
+  'Просьба проверить нашу работу в последний день кросс-чека) Или проверить всё, кроме страницы пользователя. Спасибо за понимание :)'
+);
 
 document.addEventListener('DOMContentLoaded', () => {
   const existingContainer = document.getElementById('app');
@@ -50,7 +52,7 @@ function handleRouting(): void {
   switch (path) {
     case '/':
     case '/store':
-      new CatalogPage(appContainer)
+      new CatalogPage(appContainer);
       break;
     case '/registration':
       if (!isAuthenticated) {
@@ -163,5 +165,4 @@ function renderPlaceholderPage(pageName: string, isAuthenticated: boolean): void
   }
 
   appContainer.appendChild(container);
-
 }
