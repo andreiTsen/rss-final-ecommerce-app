@@ -231,7 +231,7 @@ export default class productAboutPage {
   public createImgModal(imgs: string[]): void {
     const modal = new ElementCreator({
       tagName: 'div',
-      classNames: ['modal'],
+      classNames: ['modal-product'],
     });
     const modalContainer = new ElementCreator({
       tagName: 'div',
