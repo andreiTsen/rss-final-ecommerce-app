@@ -2,9 +2,15 @@ import './pages/RegistrationPage/registration.css';
 import { RegistrationPage } from './pages/RegistrationPage/registration';
 import { AuthService } from './services/authService';
 import { Navigation } from './components/navigation';
+import loginPage from './pages/loginPage/loginPage';
+import { AuthorizationService } from './services/authentication';
+import productAboutPage from './pages/productAboutPage/productAboutPage';
+import { getProduct, handleProductAbout } from './services/getProduct';
+import './pages/productAboutPage/productAboutPage.css';
+import { customerApiRoot } from './services/customerApi';
+import './assets/style.css';
 import loginPage from './pages/loginPage/loginPage'
 import { ProfilePage } from './pages/ProfilePage/Profile';
-
 import { CatalogPage } from './pages/catalogPage/catalog';
 // const appRoot = document.body;
 
@@ -39,7 +45,7 @@ function setupRouting(): void {
 
 function handleRouting(): void {
   const path = window.location.pathname;
-  const isAuthenticated = AuthService.isAuthenticated();
+  const isAuthenticated = AuthorizationService.isAuthenticated();
   appContainer.innerHTML = '';
   switch (path) {
     case '/registration':
@@ -57,8 +63,11 @@ function handleRouting(): void {
         navigateTo('/store');
       }
       break;
+    case '/product-about': {
+      void handleProductAbout(appContainer);
+      break;
+    }
     case '/store':
-    case '/':
       renderPlaceholderPage('Страница магазина', isAuthenticated);
       break;
     case '/profile':
@@ -101,18 +110,28 @@ function createPlaceholderContainer(pageName: string): HTMLDivElement {
 function createAuthenticatedContent(container: HTMLDivElement, pageName: string): void {
   if (pageName !== 'Страница магазина') return;
 
-  const user = AuthService.getCurrentUser();
+  const user = AuthorizationService.getCurrentUser();
 
   const welcomeMessage = document.createElement('p');
   welcomeMessage.className = 'welcome-message';
   welcomeMessage.textContent = `Добро пожаловать, ${user?.firstName || 'пользователь'}! Вы вошли в систему.`;
   container.appendChild(welcomeMessage);
+  // const buttonProducts = document.createElement('button');
+  // buttonProducts.textContent = 'Подробная информация о продукте';
+  // buttonProducts.setAttribute('data-key', 'physics-scientists-engineers');
+  // buttonProducts.addEventListener('click', () => {
+  //   const key = buttonProducts.getAttribute('data-key');
+  //   if (key) {
+  //     navigateTo(`/product-about?key=${encodeURIComponent(key)}`);
+  //   }
+  // });
+  // container.appendChild(buttonProducts);
 
   const logoutButton = document.createElement('button');
   logoutButton.className = 'logout-button';
   logoutButton.textContent = 'Выйти из учетной записи';
   logoutButton.addEventListener('click', () => {
-    AuthService.logout();
+    AuthorizationService.logout();
     navigation.render();
     navigateTo('/');
   });
