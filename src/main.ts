@@ -9,10 +9,13 @@ import { getProduct, handleProductAbout } from './services/getProduct';
 import './pages/productAboutPage/productAboutPage.css';
 import { customerApiRoot } from './services/customerApi';
 import './assets/style.css';
+import loginPage from './pages/loginPage/loginPage'
+import { ProfilePage } from './pages/ProfilePage/Profile';
+import { CatalogPage } from './pages/catalogPage/catalog';
 // const appRoot = document.body;
 
 let appContainer: HTMLElement;
-let navigation: Navigation;
+export let navigation: Navigation;
 
 document.addEventListener('DOMContentLoaded', () => {
   const existingContainer = document.getElementById('app');
@@ -43,9 +46,7 @@ function setupRouting(): void {
 function handleRouting(): void {
   const path = window.location.pathname;
   const isAuthenticated = AuthorizationService.isAuthenticated();
-
   appContainer.innerHTML = '';
-
   switch (path) {
     case '/registration':
     case '/register':
@@ -55,7 +56,6 @@ function handleRouting(): void {
         navigateTo('/store');
       }
       break;
-
     case '/login':
       if (!isAuthenticated) {
         new loginPage(appContainer);
@@ -63,14 +63,19 @@ function handleRouting(): void {
         navigateTo('/store');
       }
       break;
-
     case '/product-about': {
       void handleProductAbout(appContainer);
       break;
     }
-
     case '/store':
       renderPlaceholderPage('Страница магазина', isAuthenticated);
+      break;
+    case '/profile':
+      if (isAuthenticated) {
+        new ProfilePage(appContainer);
+      } else {
+        navigateTo('/login');
+      }
       break;
 
     default:
@@ -177,4 +182,8 @@ function renderPlaceholderPage(pageName: string, isAuthenticated: boolean): void
   }
 
   appContainer.appendChild(container);
+
+  if (pageName === 'Страница магазина') {
+    new CatalogPage(appContainer);
+  }
 }
