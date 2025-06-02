@@ -1,4 +1,7 @@
 import { updatePassword } from './UpateUser';
+import validatePassword from '../loginPage/validatePassword';
+import { renderModal } from './modal';
+import { AuthService } from '../../services/authService';
 
 export function renderChangePassword(): HTMLElement {
   return createPasswordChangeForm();
@@ -11,8 +14,8 @@ function createPasswordChangeForm(): HTMLElement {
   const title = document.createElement('h2');
   title.textContent = 'Изменить пароль';
   wrapper.appendChild(title);
-  const inputs = createPasswordInputs(wrapper);
 
+  const inputs = createPasswordInputs(wrapper);
   createChangePasswordButton(wrapper, inputs);
 
   return wrapper;
@@ -20,13 +23,13 @@ function createPasswordChangeForm(): HTMLElement {
 
 function createPasswordInputs(wrapper: HTMLElement): { [key: string]: HTMLInputElement } {
   const list = [
-    { label: 'Текущий пароль', type: 'password', name: 'currentPassword' },
+    { label: 'Старый пароль', type: 'password', name: 'oldPassword' },
     { label: 'Новый пароль', type: 'password', name: 'newPassword' },
-    { label: 'Подтвердите новый пароль', type: 'password', name: 'confirmNewPassword' },
+    
   ];
   const inputs: { [key: string]: HTMLInputElement } = {};
 
-  list.forEach((item) => {
+  list.forEach(item => {
     const label = document.createElement('label');
     label.textContent = item.label;
     const input = document.createElement('input');
@@ -41,36 +44,42 @@ function createPasswordInputs(wrapper: HTMLElement): { [key: string]: HTMLInputE
   return inputs;
 }
 
-function createChangePasswordButton(wrapper: HTMLElement, inputs: { [key: string]: HTMLInputElement }): void {
+function createChangePasswordButton(
+  wrapper: HTMLElement,
+  inputs: { [key: string]: HTMLInputElement }
+): void {
   const editButton = document.createElement('button');
   editButton.textContent = 'Сменить пароль';
   editButton.classList.add('edit-address-btn');
-  wrapper.append(editButton);
-
+  wrapper.appendChild(editButton);
+  const V =  AuthService.getCurrentUser()?.version || 0;
   editButton.addEventListener('click', async () => {
-    const oldPwd = inputs['currentPassword'].value;
-    const newPwd = inputs['newPassword'].value;
-    const confirm = inputs['confirmNewPassword'].value;
-
-    if (oldPwd === newPwd) {
-      return alert('Новый пароль не должен совпадать со старым');
+    const newPwd = inputs['newPassword'].value.trim();
+    const oldPwd = inputs['oldPassword'].value.trim();
+    if (!newPwd) {
+      document.body.appendChild(renderModal('Введите новый пароль'));
+      return;
     }
-    if (newPwd.length < 6) {
-      return alert('Новый пароль должен быть не менее 6 символов');
+    const { isValid, message } = validatePassword(newPwd);
+    if (!isValid) {
+      document.body.appendChild(renderModal(message));
+      return;
     }
-    if (newPwd !== confirm) {
-      return alert('Пароли не совпадают');
-    }
-
     try {
-      await updatePassword(oldPwd, newPwd);
-      alert('Пароль успешно изменён!');
-    } catch (error: unknown) {
-      if (typeof error === 'object' && error !== null && 'statusCode' in error && error.statusCode === 400) {
-        return alert('Текущий пароль введён неверно');
+      const { success } = await updatePassword(V, oldPwd, newPwd);
+      if (success) {
+        const modalElements = renderModal('Пароль успешно изменён!');
+        document.body.appendChild(modalElements);
+      } else {
+        document.body.appendChild(
+          renderModal('Не удалось сменить пароль. Попробуйте позже.')
+        );
       }
-      console.error(error);
-      alert('Ошибка при смене пароля. Попробуйте позже.');
+    } catch (error) {
+      console.error('Ошибка при смене пароля:', error);
+      document.body.appendChild(
+        renderModal('Ошибка при смене пароля. Попробуйте позже.')
+      );
     }
   });
 }

@@ -23,8 +23,7 @@ export function renderModal(message: string, category?: string): HTMLElement {
   closeButton.classList.add('close-button');
   closeButton.addEventListener('click', () => {
     modal.remove();
-    console.log(`Modal closed with category: ${category}`);
-    console.log(`pofile content`, content);
+
     if (category === 'profile') {
       content!.innerHTML = '';
       const profileSection = renderProfileInfoSection(user!);

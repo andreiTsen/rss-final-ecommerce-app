@@ -3,6 +3,7 @@ import { AuthService } from '../../services/authService';
 import type { Customer } from '@commercetools/platform-sdk';
 import type { UserData } from './sectionProfile';
 
+
 export async function updateProfileInfo(data: Partial<UserData>): Promise<Customer> {
   const current = AuthService.getCurrentUser();
   if (!current) throw new Error('Неавторизован');
@@ -69,24 +70,20 @@ export async function updateAddress(address: {
   return response.body;
 }
 
-export async function updatePassword(oldPassword: string, newPassword: string): Promise<{ success: boolean }> {
+export async function updatePassword(version: number, currentPassword: string, newPassword: string): Promise<{ success: boolean }> {
   const current = AuthService.getCurrentUser();
-  console.log(current);
   if (!current) throw new Error('Неавторизован');
 
   const response = await apiRoot
-    .customers()
-    .withId({ ID: current.id })
+    .me()
+    .password()
     .post({
       body: {
-        version: current.version,
-        actions: [
-          // {
-          //   action: 'changePassword',
-          //   currentPassword: oldPassword,
-          //   newPassword: newPassword,
-          // },
-        ],
+        version: version,
+        currentPassword,
+        newPassword,
+          
+      
       },
     })
     .execute();
