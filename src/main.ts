@@ -3,10 +3,19 @@ import { RegistrationPage } from './pages/RegistrationPage/registration';
 import { AuthService } from './services/authService';
 import { Navigation } from './components/navigation';
 import loginPage from './pages/loginPage/loginPage';
+import { AuthorizationService } from './services/authentication';
+import productAboutPage from './pages/productAboutPage/productAboutPage';
+import { getProduct, handleProductAbout } from './services/getProduct';
+import './pages/productAboutPage/productAboutPage.css';
+import { customerApiRoot } from './services/customerApi';
+import './assets/style.css';
+import { ProfilePage } from './pages/ProfilePage/Profile';
+import { CatalogPage } from './pages/catalogPage/catalog';
 // const appRoot = document.body;
 
 let appContainer: HTMLElement;
-let navigation: Navigation;
+export let navigation: Navigation;
+alert('Просьба проверить нашу работу в последний день кросс-чека) Или проверить всё, кроме страницы пользователя. Спасибо за понимание :)')
 
 document.addEventListener('DOMContentLoaded', () => {
   const existingContainer = document.getElementById('app');
@@ -36,20 +45,20 @@ function setupRouting(): void {
 
 function handleRouting(): void {
   const path = window.location.pathname;
-  const isAuthenticated = AuthService.isAuthenticated();
-
+  const isAuthenticated = AuthorizationService.isAuthenticated();
   appContainer.innerHTML = '';
-
   switch (path) {
+    case '/':
+    case '/store':
+      new CatalogPage(appContainer)
+      break;
     case '/registration':
-    case '/register':
       if (!isAuthenticated) {
         new RegistrationPage(appContainer);
       } else {
         navigateTo('/store');
       }
       break;
-
     case '/login':
       if (!isAuthenticated) {
         new loginPage(appContainer);
@@ -57,12 +66,17 @@ function handleRouting(): void {
         navigateTo('/store');
       }
       break;
-
-    case '/store':
-    case '/':
-      renderPlaceholderPage('Страница магазина', isAuthenticated);
+    case '/product-about': {
+      void handleProductAbout(appContainer);
       break;
-
+    }
+    case '/profile':
+      if (isAuthenticated) {
+        new ProfilePage(appContainer);
+      } else {
+        navigateTo('/login');
+      }
+      break;
     default:
       renderPlaceholderPage('Oшибка 404. Страница не найдена', isAuthenticated);
       break;
@@ -95,20 +109,13 @@ function createPlaceholderContainer(pageName: string): HTMLDivElement {
 function createAuthenticatedContent(container: HTMLDivElement, pageName: string): void {
   if (pageName !== 'Страница магазина') return;
 
-  const user = AuthService.getCurrentUser();
-
-  const welcomeMessage = document.createElement('p');
-  welcomeMessage.className = 'welcome-message';
-  welcomeMessage.textContent = `Добро пожаловать, ${user?.firstName || 'пользователь'}! Вы вошли в систему.`;
-  container.appendChild(welcomeMessage);
-
   const logoutButton = document.createElement('button');
   logoutButton.className = 'logout-button';
   logoutButton.textContent = 'Выйти из учетной записи';
   logoutButton.addEventListener('click', () => {
-    AuthService.logout();
+    AuthorizationService.logout();
     navigation.render();
-    navigateTo('/');
+    navigateTo('/login');
   });
 
   container.appendChild(logoutButton);
@@ -151,10 +158,10 @@ function renderPlaceholderPage(pageName: string, isAuthenticated: boolean): void
 
   if (isAuthenticated) {
     createAuthenticatedContent(container, pageName);
-    navigation.render();
   } else {
     createUnauthenticatedContent(container);
   }
 
   appContainer.appendChild(container);
+
 }

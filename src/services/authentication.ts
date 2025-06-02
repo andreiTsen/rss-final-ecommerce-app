@@ -1,10 +1,21 @@
-import { Customer, CustomerSignInResult } from '@commercetools/platform-sdk';
+import { Customer, CustomerSignInResult, Product, ProductProjection } from '@commercetools/platform-sdk';
 import { apiRoot } from '../api';
 import createErrorMessage from '../pages/loginPage/errorMessage';
+import { customerApiRoot } from './customerApi';
+
+type TokenResponse = {
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+  scope: string;
+  token_type: string;
+};
 
 export class AuthorizationService {
   private static authErrorElement: HTMLElement | null = null;
   private static readonly TOKEN_KEY = 'auth_token';
+  private static readonly TOKEN_EXPIRES = 'token_expires';
+  private static readonly REFRESH_KEY = 'refresh_token';
   private static readonly USER_KEY = 'current_user';
   public static async login(email: string, password: string): Promise<boolean> {
     try {
@@ -20,10 +31,9 @@ export class AuthorizationService {
           },
         })
         .execute();
-      this.saveAuthData(response.body);
       const authHeader = btoa(`${process.env.CT_CLIENT_ID}:${process.env.CT_CLIENT_SECRET}`);
       const token = await fetch(
-        `${process.env.CT_AUTH_URL}oauth/${process.env.CT_PROJECT_KEY}/customers/token?grant_type=password&username=${email}&password=${password}&scope=manage_customers:${process.env.CT_PROJECT_KEY} manage_orders:${process.env.CT_PROJECT_KEY}`,
+        `${process.env.CT_AUTH_URL}oauth/${process.env.CT_PROJECT_KEY}/customers/token?grant_type=password&username=${email}&password=${password}&scope=manage_customers:${process.env.CT_PROJECT_KEY} view_published_products:${process.env.CT_PROJECT_KEY} manage_my_profile:${process.env.CT_PROJECT_KEY} view_orders:${process.env.CT_PROJECT_KEY}`,
         {
           method: 'POST',
           headers: {
@@ -32,11 +42,11 @@ export class AuthorizationService {
           },
         }
       );
-
       if (!token.ok) {
         throw new Error('Не удалось получить токен аутентификации');
       }
-
+      const tokenData: TokenResponse = await token.json();
+      this.saveAuthData(response.body, tokenData);
       return true;
     } catch (error) {
       console.error('Ошибка при входе:', error);
@@ -44,14 +54,23 @@ export class AuthorizationService {
       return false;
     }
   }
+
   public static logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
-    window.location.href = '/login';
+    localStorage.removeItem(this.REFRESH_KEY);
+    localStorage.removeItem(this.TOKEN_EXPIRES);
   }
 
   public static isAuthenticated(): boolean {
     return !!localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  public static getToken(): string {
+    if (!this.isAuthenticated()) {
+      throw new Error('User is not authenticated');
+    }
+    return localStorage.getItem(this.TOKEN_KEY) || '';
   }
 
   public static getCurrentUser(): Customer | null {
@@ -59,12 +78,15 @@ export class AuthorizationService {
     return userData ? JSON.parse(userData) : null;
   }
 
-  private static saveAuthData(data: CustomerSignInResult): void {
+  private static saveAuthData(data: CustomerSignInResult, tokenData: TokenResponse): void {
     if (data.customer) {
       localStorage.setItem(this.USER_KEY, JSON.stringify(data.customer));
     }
+    localStorage.setItem(this.TOKEN_KEY, tokenData.access_token);
+    localStorage.setItem(this.REFRESH_KEY, tokenData.refresh_token);
 
-    localStorage.setItem(this.TOKEN_KEY, 'authenticated');
+    const expiresAt = new Date().getTime() + tokenData.expires_in * 1000;
+    localStorage.setItem(this.TOKEN_EXPIRES, expiresAt.toString());
   }
   private static handleAuthorizationError(error: unknown): void {
     let code;

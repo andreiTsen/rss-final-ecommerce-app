@@ -38,6 +38,9 @@ export class AuthService {
     const userData = localStorage.getItem(this.USER_KEY);
     return userData ? JSON.parse(userData) : null;
   }
+  public static updateCurrentUser(customer: Customer): void {
+    localStorage.setItem(this.USER_KEY, JSON.stringify(customer));
+  }
 
   private static saveAuthData(data: CustomerSignInResult): void {
     if (data.customer) {

@@ -9,6 +9,13 @@ export const authMiddlewareOptions: AuthMiddlewareOptions = {
     clientSecret: process.env.CT_CLIENT_SECRET || '',
   },
   scopes: [
+    `view_published_products:${process.env.CT_PROJECT_KEY}`,
+    `view_categories:${process.env.CT_PROJECT_KEY}`,
+    `view_customers:${process.env.CT_PROJECT_KEY}`,
+    `view_orders:${process.env.CT_PROJECT_KEY}`,
+    `view_cart_discounts:${process.env.CT_PROJECT_KEY}`,
+    `view_shopping_lists:${process.env.CT_PROJECT_KEY}`,
+    `view_quote_requests:${process.env.CT_PROJECT_KEY}`,
     `manage_products:${process.env.CT_PROJECT_KEY}`,
     `manage_categories:${process.env.CT_PROJECT_KEY}`,
     `manage_customers:${process.env.CT_PROJECT_KEY}`,
@@ -17,6 +24,7 @@ export const authMiddlewareOptions: AuthMiddlewareOptions = {
     `manage_shopping_lists:${process.env.CT_PROJECT_KEY}`,
     `manage_my_profile:${process.env.CT_PROJECT_KEY}`,
     `manage_project:${process.env.CT_PROJECT_KEY}`,
+    `create_anonymous_token:${process.env.CT_PROJECT_KEY}`,
   ],
   fetch,
 };
