@@ -50,10 +50,8 @@
 .profile-info-section {
   display: flex;
   flex-direction: column;
- 
 }
 .profile-wrapper {
-
   flex-grow: 1;
   padding: 2rem;
   max-width: 500px;
@@ -114,5 +112,4 @@
   .sidebar {
     flex-direction: column;
   }
-  
 }

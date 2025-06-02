@@ -57,7 +57,6 @@ export class EditAddressForm {
       } catch (error) {
         console.error('Ошибка при сохранении адреса:', error);
         renderModal('Ошибка при сохранении адреса. Попробуйте позже.');
-        
       }
     });
     return this.form;

@@ -5,7 +5,6 @@ import { renderModal } from './modal';
 import { AuthService } from '../../services/authService';
 import { renderProfileInfoSection } from './sectionProfile';
 
-
 const fields: { name: keyof UserData; label: string; type?: string }[] = [
   { name: 'firstName', label: 'Имя', type: 'text' },
   { name: 'lastName', label: 'Фамилия', type: 'text' },

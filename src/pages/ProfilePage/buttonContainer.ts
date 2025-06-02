@@ -1,6 +1,6 @@
-import { AuthService } from "../../services/authService";
-import { renderAddressSection } from "./sectionAdresses";
-import { renderProfileInfoSection, UserData } from "./sectionProfile";
+import { AuthService } from '../../services/authService';
+import { renderAddressSection } from './sectionAdresses';
+import { renderProfileInfoSection, UserData } from './sectionProfile';
 
 function clearAndRenderContent(content: HTMLElement, renderSection: (user: UserData) => HTMLElement): void {
   content.innerHTML = '';

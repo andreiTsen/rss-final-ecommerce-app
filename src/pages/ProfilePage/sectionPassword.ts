@@ -1,4 +1,3 @@
-import { UserData } from './sectionProfile';
 import { updatePassword } from './UpateUser';
 
 export function renderChangePassword(): HTMLElement {
@@ -12,7 +11,6 @@ function createPasswordChangeForm(): HTMLElement {
   const title = document.createElement('h2');
   title.textContent = 'Изменить пароль';
   wrapper.appendChild(title);
-
   const inputs = createPasswordInputs(wrapper);
 
   createChangePasswordButton(wrapper, inputs);
@@ -49,48 +47,30 @@ function createChangePasswordButton(wrapper: HTMLElement, inputs: { [key: string
   editButton.classList.add('edit-address-btn');
   wrapper.append(editButton);
 
-  editButton.addEventListener('click', () => handlePasswordChange(inputs, wrapper));
-}
+  editButton.addEventListener('click', async () => {
+    const oldPwd = inputs['currentPassword'].value;
+    const newPwd = inputs['newPassword'].value;
+    const confirm = inputs['confirmNewPassword'].value;
 
-function handlePasswordChange(inputs: { [key: string]: HTMLInputElement }, wrapper: HTMLElement): void {
-  const currentPassword = inputs['currentPassword'].value;
-  const newPassword = inputs['newPassword'].value;
-  const confirmNewPassword = inputs['confirmNewPassword'].value;
-  if (currentPassword === newPassword) {
-    alert('Новый пароль не должен совпадать со старым');
-    return;
-  }
-  if (newPassword.length < 8) {
-    alert('Новый пароль должен быть не менее 8 символов');
-    return;
-  }
-  const hasUpperCase = /[A-Z]/.test(newPassword);
-  const hasLowerCase = /[a-z]/.test(newPassword);
-  const hasDigit = /\d/.test(newPassword);
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
-  if (!hasUpperCase || !hasLowerCase || !hasDigit || !hasSpecialChar) {
-    alert(
-      'Пароль должен содержать минимум одну заглавную букву, одну строчную букву, одну цифру и один специальный символ'
-    );
-    return;
-  }
+    if (oldPwd === newPwd) {
+      return alert('Новый пароль не должен совпадать со старым');
+    }
+    if (newPwd.length < 6) {
+      return alert('Новый пароль должен быть не менее 6 символов');
+    }
+    if (newPwd !== confirm) {
+      return alert('Пароли не совпадают');
+    }
 
-  if (newPassword !== confirmNewPassword) {
-    alert('Пароли не совпадают');
-    return;
-  }
-
-  sendPasswordChangeToServer(currentPassword, newPassword)
-    .then(() => {
-      alert('Изменение пароля прошло успешно');
-      wrapper.innerHTML = '';
-    })
-    .catch((error) => {
-      alert('Ошибка при изменении пароля: ' + error.message);
-    });
-}
-
-function sendPasswordChangeToServer(currentPassword: string, newPassword: string): Promise<void> {
-  console.log('Изменение пароля на сервере:', currentPassword, newPassword);
-  return Promise.resolve();
+    try {
+      await updatePassword(oldPwd, newPwd);
+      alert('Пароль успешно изменён!');
+    } catch (error: unknown) {
+      if (typeof error === 'object' && error !== null && 'statusCode' in error && error.statusCode === 400) {
+        return alert('Текущий пароль введён неверно');
+      }
+      console.error(error);
+      alert('Ошибка при смене пароля. Попробуйте позже.');
+    }
+  });
 }

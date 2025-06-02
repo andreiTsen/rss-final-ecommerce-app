@@ -68,12 +68,30 @@ export async function updateAddress(address: {
   AuthService.updateCurrentUser(response.body);
   return response.body;
 }
+
 export async function updatePassword(oldPassword: string, newPassword: string): Promise<{ success: boolean }> {
-  const response = await fetch('/api/profile/password', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ oldPassword, newPassword }),
-  });
-  if (!response.ok) throw new Error('Ошибка обновления пароля');
-  return response.json();
+  const current = AuthService.getCurrentUser();
+  console.log(current);
+  if (!current) throw new Error('Неавторизован');
+
+  const response = await apiRoot
+    .customers()
+    .withId({ ID: current.id })
+    .post({
+      body: {
+        version: current.version,
+        actions: [
+          // {
+          //   action: 'changePassword',
+          //   currentPassword: oldPassword,
+          //   newPassword: newPassword,
+          // },
+        ],
+      },
+    })
+    .execute();
+
+  if (!response.body) throw new Error('Ошибка обновления пароля');
+  AuthService.updateCurrentUser(response.body);
+  return { success: true };
 }
