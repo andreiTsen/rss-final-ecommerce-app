@@ -1,6 +1,6 @@
 import { navigateTo } from '../main';
-import { AuthService } from '../services/authService';
 import '../components/navigation.css';
+import { AuthorizationService } from '../services/authentication';
 
 export class Navigation {
   private root: HTMLElement;
@@ -17,7 +17,7 @@ export class Navigation {
       if (
         linkPath === targetPath ||
         (linkPath === '/' && targetPath === '/store') ||
-        (targetPath === '/stre' && linkPath === '/')
+        (targetPath === '/store' && linkPath === '/')
       ) {
         link.classList.add('active');
       } else {
@@ -32,7 +32,7 @@ export class Navigation {
     const nav = document.createElement('nav');
     nav.classList.add('navbar');
 
-    const homeLink = this.createLink('Главная', '/');
+    const homeLink = this.createLink('Каталог', '/store');
     const loginLink = this.createLink('Вход', '/login');
     const registerLink = this.createLink('Регистрация', '/registration');
 
@@ -40,7 +40,7 @@ export class Navigation {
     nav.appendChild(loginLink);
     nav.appendChild(registerLink);
 
-    if (AuthService.isAuthenticated()) {
+    if (AuthorizationService.isAuthenticated()) {
       const profileLink = this.createLink('👤 Профиль', '/profile');
       nav.appendChild(profileLink);
     }

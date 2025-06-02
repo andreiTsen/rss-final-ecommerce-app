@@ -13,7 +13,7 @@ type TokenResponse = {
 
 export class AuthorizationService {
   private static authErrorElement: HTMLElement | null = null;
-  private static readonly TOKEN_KEY = 'access_token';
+  private static readonly TOKEN_KEY = 'auth_token';
   private static readonly TOKEN_EXPIRES = 'token_expires';
   private static readonly REFRESH_KEY = 'refresh_token';
   private static readonly USER_KEY = 'current_user';
@@ -60,14 +60,10 @@ export class AuthorizationService {
     localStorage.removeItem(this.USER_KEY);
     localStorage.removeItem(this.REFRESH_KEY);
     localStorage.removeItem(this.TOKEN_EXPIRES);
-    window.location.href = '/login';
   }
 
   public static isAuthenticated(): boolean {
-    const token = localStorage.getItem(this.TOKEN_KEY);
-    const expiresAt = localStorage.getItem(this.TOKEN_EXPIRES);
-
-    return !!token && (expiresAt ? new Date().getTime() < parseInt(expiresAt) : false);
+    return !!localStorage.getItem(this.TOKEN_KEY);
   }
 
   public static getToken(): string {

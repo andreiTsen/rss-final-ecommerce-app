@@ -9,7 +9,6 @@ import { getProduct, handleProductAbout } from './services/getProduct';
 import './pages/productAboutPage/productAboutPage.css';
 import { customerApiRoot } from './services/customerApi';
 import './assets/style.css';
-import loginPage from './pages/loginPage/loginPage'
 import { ProfilePage } from './pages/ProfilePage/Profile';
 import { CatalogPage } from './pages/catalogPage/catalog';
 // const appRoot = document.body;
@@ -48,8 +47,11 @@ function handleRouting(): void {
   const isAuthenticated = AuthorizationService.isAuthenticated();
   appContainer.innerHTML = '';
   switch (path) {
+    case '/':
+    case '/store':
+      new CatalogPage(appContainer)
+      break;
     case '/registration':
-    case '/register':
       if (!isAuthenticated) {
         new RegistrationPage(appContainer);
       } else {
@@ -67,9 +69,6 @@ function handleRouting(): void {
       void handleProductAbout(appContainer);
       break;
     }
-    case '/store':
-      renderPlaceholderPage('Страница магазина', isAuthenticated);
-      break;
     case '/profile':
       if (isAuthenticated) {
         new ProfilePage(appContainer);
@@ -77,7 +76,6 @@ function handleRouting(): void {
         navigateTo('/login');
       }
       break;
-
     default:
       renderPlaceholderPage('Oшибка 404. Страница не найдена', isAuthenticated);
       break;
@@ -110,30 +108,13 @@ function createPlaceholderContainer(pageName: string): HTMLDivElement {
 function createAuthenticatedContent(container: HTMLDivElement, pageName: string): void {
   if (pageName !== 'Страница магазина') return;
 
-  const user = AuthorizationService.getCurrentUser();
-
-  const welcomeMessage = document.createElement('p');
-  welcomeMessage.className = 'welcome-message';
-  welcomeMessage.textContent = `Добро пожаловать, ${user?.firstName || 'пользователь'}! Вы вошли в систему.`;
-  container.appendChild(welcomeMessage);
-  // const buttonProducts = document.createElement('button');
-  // buttonProducts.textContent = 'Подробная информация о продукте';
-  // buttonProducts.setAttribute('data-key', 'physics-scientists-engineers');
-  // buttonProducts.addEventListener('click', () => {
-  //   const key = buttonProducts.getAttribute('data-key');
-  //   if (key) {
-  //     navigateTo(`/product-about?key=${encodeURIComponent(key)}`);
-  //   }
-  // });
-  // container.appendChild(buttonProducts);
-
   const logoutButton = document.createElement('button');
   logoutButton.className = 'logout-button';
   logoutButton.textContent = 'Выйти из учетной записи';
   logoutButton.addEventListener('click', () => {
     AuthorizationService.logout();
     navigation.render();
-    navigateTo('/');
+    navigateTo('/login');
   });
 
   container.appendChild(logoutButton);
@@ -176,14 +157,10 @@ function renderPlaceholderPage(pageName: string, isAuthenticated: boolean): void
 
   if (isAuthenticated) {
     createAuthenticatedContent(container, pageName);
-    navigation.render();
   } else {
     createUnauthenticatedContent(container);
   }
 
   appContainer.appendChild(container);
 
-  if (pageName === 'Страница магазина') {
-    new CatalogPage(appContainer);
-  }
 }

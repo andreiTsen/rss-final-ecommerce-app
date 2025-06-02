@@ -7,7 +7,7 @@ export default function createSidebar(onNavigate: (sectionId: string) => void): 
 
   const links = [
     { label: 'Профиль', id: 'profile' },
-    { label: 'Адресс', id: 'adress' },
+    { label: 'Адрес', id: 'adress' },
     { label: 'Пароль', id: 'password' },
     { label: 'Выйти', id: 'logout' },
   ];
