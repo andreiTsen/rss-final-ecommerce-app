@@ -19,7 +19,7 @@ export type UserData = {
 
 export function renderProfileInfoSection(user: UserData): HTMLElement {
   const wrapper = document.createElement('div');
-  wrapper.id = 'profile-info';
+  wrapper.id = 'profile';
   wrapper.classList.add('profile-info-section');
 
   const title = document.createElement('h2');

@@ -1,8 +1,10 @@
 import { UserData } from './sectionProfile';
 import { renderButtonContainer } from './buttonContainer';
 import { updateProfileInfo } from './UpateUser';
-
+import { renderModal } from './modal';
 import { AuthService } from '../../services/authService';
+import { renderProfileInfoSection } from './sectionProfile';
+
 
 const fields: { name: keyof UserData; label: string; type?: string }[] = [
   { name: 'firstName', label: 'Имя', type: 'text' },
@@ -19,7 +21,7 @@ export class EditProfileForm {
 
   constructor(user: UserData) {
     this.user = user;
-    this.form.id = 'edit-profile-form';
+    this.form.id = 'edit-profile-form profile';
     this.form.classList.add('edit-profile-form');
     this.render();
   }
@@ -73,12 +75,15 @@ export class EditProfileForm {
       };
       try {
         const updated = await updateProfileInfo(payload);
-        alert('Профиль обновлён!');
+        renderModal('Профиль обновлён!');
+        const modal = renderModal('Профиль обновлен успешно', 'profile');
+        document.body.appendChild(modal);
         AuthService.updateCurrentUser(updated);
-        window.location.reload();
+        renderProfileInfoSection(updated);
       } catch (error) {
         console.error('Ошибка при обновлении профиля:', error);
-        alert('Ошибка при обновлении. Попробуйте позже.');
+        const modal = renderModal('Ошибка при обновлении. Попробуйте позже.');
+        document.body.appendChild(modal);
       }
     });
   }

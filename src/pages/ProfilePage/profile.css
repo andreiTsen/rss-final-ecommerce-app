@@ -1,5 +1,5 @@
 .sidebar {
-  width: 200px;
+  width: 100%;
   padding: 1rem;
   background-color: #f0f0f0;
   display: flex;
@@ -16,16 +16,19 @@
 }
 .profile-layout {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
+  justify-content: center;
+  align-items: center;
 }
 
 .sidebar {
-  width: 220px;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
   background-color: #f1f1f1;
-  padding: 50px 1rem 1rem 1rem;
-
+  padding: 1rem 1rem 1rem 1rem;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  border-right: 1px solid #333;
 }
 
 .sidebar-link {
@@ -33,7 +36,7 @@
   width: 100%;
   background: none;
   border: none;
-  text-align: left;
+  text-align: center;
   padding: 0.5rem 1rem;
   cursor: pointer;
   font-size: 1rem;
@@ -44,16 +47,23 @@
 .sidebar-link:hover {
   background-color: #e0e0e0;
 }
-
+.profile-info-section {
+  display: flex;
+  flex-direction: column;
+ 
+}
 .profile-wrapper {
+
   flex-grow: 1;
   padding: 2rem;
+  max-width: 500px;
 }
 
 .profile-wrapper h2 {
   font-family: Arial, Helvetica, sans-serif;
   margin-bottom: 1rem;
   color: #ffd700;
+  text-align: center;
 }
 .profile-wrapper p {
   font-family: Arial, sans-serif;
@@ -66,6 +76,7 @@
   border-radius: 10px;
   object-fit: cover;
   margin-bottom: 15px;
+  align-self: center;
 }
 .sidebar-link:hover {
   background-color: #ffd700;
@@ -92,9 +103,16 @@
   cursor: pointer;
   font-size: 1rem;
   margin-top: 10px;
+  justify-self: center;
 }
 .adress-section-wrapper {
   margin-top: 0;
   padding: 0;
   border: none;
+}
+@media screen and (max-width: 768px) {
+  .sidebar {
+    flex-direction: column;
+  }
+  
 }

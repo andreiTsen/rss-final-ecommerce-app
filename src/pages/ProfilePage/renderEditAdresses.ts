@@ -1,6 +1,9 @@
 import type { Address } from './sectionProfile';
 import { renderButtonContainer } from './buttonContainer';
 import { updateAddress } from './UpateUser';
+import { renderModal } from './modal';
+import { renderAddressSection } from './sectionAdresses';
+import { AuthService } from '../../services/authService';
 
 export const countries = [
   { value: '', text: 'Выберите страну' },
@@ -46,12 +49,15 @@ export class EditAddressForm {
         postalCode: postalCode.toString(),
       };
       try {
-        await updateAddress(formDataObject);
-        alert('Адрес сохранён!');
-        window.location.reload();
+        const updated = await updateAddress(formDataObject);
+        const modal = renderModal('Адрес сохранён!', 'address');
+        document.body.appendChild(modal);
+        AuthService.updateCurrentUser(updated);
+        renderAddressSection(updated);
       } catch (error) {
         console.error('Ошибка при сохранении адреса:', error);
-        alert('Ошибка при сохранении адреса. Попробуйте позже.');
+        renderModal('Ошибка при сохранении адреса. Попробуйте позже.');
+        
       }
     });
     return this.form;
@@ -59,6 +65,7 @@ export class EditAddressForm {
   private render(address: Address): HTMLFormElement {
     const form = document.createElement('form');
     form.classList.add('edit-address-form');
+    form.id = 'address';
 
     this.appendTitle(form);
     this.appendIdInput(form, address);
