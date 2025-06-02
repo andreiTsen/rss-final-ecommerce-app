@@ -2,8 +2,11 @@ import './pages/RegistrationPage/registration.css';
 import { RegistrationPage } from './pages/RegistrationPage/registration';
 import { AuthService } from './services/authService';
 import { Navigation } from './components/navigation';
-import loginPage from './pages/loginPage/loginPage';
+import loginPage from './pages/loginPage/loginPage'
 import { ProfilePage } from './pages/ProfilePage/Profile';
+
+import { CatalogPage } from './pages/catalogPage/catalog';
+// const appRoot = document.body;
 
 let appContainer: HTMLElement;
 export let navigation: Navigation;
@@ -160,4 +163,8 @@ function renderPlaceholderPage(pageName: string, isAuthenticated: boolean): void
   }
 
   appContainer.appendChild(container);
+
+  if (pageName === 'Страница магазина') {
+    new CatalogPage(appContainer);
+  }
 }
