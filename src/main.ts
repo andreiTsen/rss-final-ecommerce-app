@@ -49,7 +49,7 @@ function handleRouting(): void {
   switch (path) {
     case '/':
     case '/store':
-      new CatalogPage(appContainer)
+      new CatalogPage(appContainer);
       break;
     case '/registration':
       if (!isAuthenticated) {
@@ -162,5 +162,4 @@ function renderPlaceholderPage(pageName: string, isAuthenticated: boolean): void
   }
 
   appContainer.appendChild(container);
-
 }
