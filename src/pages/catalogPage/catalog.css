@@ -773,7 +773,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .catalog-container {
     padding: 10px;
   }
