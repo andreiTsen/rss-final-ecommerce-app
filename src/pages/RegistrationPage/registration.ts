@@ -1,7 +1,7 @@
 import { apiRoot } from '../../api';
 import { AuthService } from '../../services/authService';
 import { CustomerDraft } from '@commercetools/platform-sdk';
-import { navigateTo } from '../../main';
+import { navigateTo, navigation } from '../../main';
 
 type UserAddress = {
   street: string;
@@ -1488,7 +1488,6 @@ export class RegistrationPage {
         .execute();
 
       console.log('Пользователь зарегистрирован:', response);
-
       return RegistrationPage.handleSuccessfulRegistration(userData);
     } catch (error: unknown) {
       return RegistrationPage.handleRegistrationError(error);
@@ -1501,6 +1500,7 @@ export class RegistrationPage {
     const successMessage = this.createSuccessMessage(userData);
 
     const loginSuccess = await AuthService.login(userData.email, userData.password);
+    navigation.render();
 
     return this.createRegistrationResult(successMessage, loginSuccess);
   }

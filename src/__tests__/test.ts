@@ -1,5 +1,8 @@
+/* eslint-disable */
+
 import validatePassword from '../pages/loginPage/validatePassword';
 import validateEmail from '../pages/loginPage/validateEmail';
+import RegistrationPage from '../pages/RegistrationPage/registration';
 
 describe('ValidatePassword', () => {
   it('should return valid password', () => {
