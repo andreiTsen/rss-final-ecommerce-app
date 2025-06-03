@@ -81,7 +81,13 @@ export class EditAddressForm {
     title.textContent = 'Редактировать адрес';
     form.appendChild(title);
   }
-
+private appendAddButton(form: HTMLFormElement): void {
+    const addButton = document.createElement('button');
+    addButton.type = 'button';
+    addButton.textContent = 'Добавить адрес';
+    addButton.classList.add('btn', 'btn-primary');
+    form.appendChild(addButton);
+  }
   private appendIdInput(form: HTMLFormElement, address: Address): void {
     const idInput = document.createElement('input');
     idInput.type = 'hidden';

@@ -46,7 +46,7 @@ const config = {
     new HtmlWebpackPlugin({
       template: './src/index.html',
       inject: 'body',
-      favicon: '',
+      favicon: './src/img/raccoon.png',
       templateParameters: {
         BASE_HREF: isProduction ? '/andreitsen-rss-final-ecommerce-app/' : '/',
       },
@@ -71,7 +71,7 @@ const config = {
       directory: path.join(__dirname, 'dist'),
     },
     compress: true,
-    port: 8081,
+    port: 8080,
     hot: true,
     open: true,
     historyApiFallback: true,
