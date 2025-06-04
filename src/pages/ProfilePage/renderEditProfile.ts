@@ -65,6 +65,17 @@ export class EditProfileForm {
   private setupFormSubmit(): void {
     this.form.addEventListener('submit', async (event) => {
       event.preventDefault();
+      let isValid = true;
+      
+      for (const field of fields) {
+        console.log(this.validateField(field.name));
+        if (!this.validateField(field.name)) {
+          isValid = false;
+        }
+      }
+      if (!isValid) {
+        return;
+      }
       const fd = new FormData(this.form);
       const payload: Partial<UserData> = {
         firstName: fd.get('firstName')?.toString(),
@@ -74,7 +85,6 @@ export class EditProfileForm {
       };
       try {
         const updated = await updateProfileInfo(payload);
-        renderModal('Профиль обновлён!');
         const modal = renderModal('Профиль обновлен успешно', 'profile');
         document.body.appendChild(modal);
         AuthService.updateCurrentUser(updated);
@@ -90,8 +100,12 @@ export class EditProfileForm {
     const input = this.elements[name]!;
     const errorElement = this.errors[name]!;
 
-    if ((name === 'firstName' || name === 'lastName') && input.value.trim().length < 2) {
+    if ((name === 'firstName' || name === 'lastName') && input.value.length < 2) {
       errorElement.textContent = 'Минимум 2 символа';
+      return false;
+    }
+    if ((name === 'firstName' || name === 'lastName') && !/^[a-zA-Zа-яА-ЯёЁ\s]+$/.test(input.value)) {
+      errorElement.textContent = 'Только буквы';
       return false;
     }
     if (name === 'email' && !input.value.includes('@')) {

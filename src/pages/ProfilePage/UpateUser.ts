@@ -93,3 +93,67 @@ export async function updatePassword(
   AuthService.updateCurrentUser(response.body);
   return { success: true };
 }
+export async function updateDefaultShippingAddress(addressId: string): Promise<Customer> {
+  const current = AuthService.getCurrentUser();
+  if (!current) throw new Error('Неавторизован');
+
+  const response = await apiRoot
+    .customers()
+    .withId({ ID: current.id })
+    .post({
+      body: {
+        version: current.version,
+        actions: [
+          {
+            action: 'setDefaultShippingAddress',
+            addressId: addressId,
+          },
+        ],
+      },
+    })
+    .execute();
+
+  if (!response.body) {
+    throw new Error('Ошибка обновления адреса доставки в CTP');
+  }
+  AuthService.updateCurrentUser(response.body);
+  return response.body;
+}
+export async function addAddress(address: {
+  id?: string;
+  country: string;
+  city: string;
+  street: string;
+  postalCode: string;
+}): Promise<Customer> {
+  const current = AuthService.getCurrentUser();
+  if (!current) throw new Error('Неавторизован');
+
+  const response = await apiRoot
+    .customers()
+    .withId({ ID: current.id })
+    .post({
+      body: {
+        version: current.version,
+        actions: [
+          {
+            action: 'addAddress',
+            address: {
+              id: address.id,
+              country: address.country,
+              city: address.city,
+              streetName: address.street,
+              postalCode: address.postalCode,
+            },
+          },
+        ],
+      },
+    })
+    .execute();
+
+  if (!response.body) {
+    throw new Error('Ошибка добавления адреса в CTP');
+  }
+  AuthService.updateCurrentUser(response.body);
+  return response.body;
+}

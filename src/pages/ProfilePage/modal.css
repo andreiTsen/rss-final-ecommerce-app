@@ -17,3 +17,13 @@
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+.modal-content h2 {
+  font-size: 1.5rem;
+  color:#ffd700;
+  margin-top: 0;
+}
+.shipping-checkbox {
+  align-self: right;
+  width: 20px;
+  margin-bottom: 10px;
+}

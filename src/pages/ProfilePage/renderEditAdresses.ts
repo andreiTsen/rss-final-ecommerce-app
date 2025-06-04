@@ -1,6 +1,6 @@
 import type { Address } from './sectionProfile';
 import { renderButtonContainer } from './buttonContainer';
-import { updateAddress } from './UpateUser';
+import { addAddress, updateAddress } from './UpateUser';
 import { renderModal } from './modal';
 import { renderAddressSection } from './sectionAdresses';
 import { AuthService } from '../../services/authService';
@@ -36,24 +36,26 @@ export class EditAddressForm {
       const city = formData.get('city');
       const postalCode = formData.get('postalCode');
       const streetName = formData.get('streetName');
-
-      if (!(id && country && city && postalCode && streetName)) {
+      if (!(country && city && postalCode && streetName)) {
         throw new Error('Missing required form data');
       }
-
+      const validate = this.validatePostalCode(postalCode.toString());
+        if (!validate || !this.validateCity(city.toString()) || !this.validateStreetName(streetName.toString())) {
+          document.body.appendChild(renderModal('Некорректные данные. Пожалуйста, проверьте введенные данные.'));
+          return;
+        }
       const formDataObject = {
-        id: id.toString(),
+        id: id ? id.toString() : undefined,
         country: country.toString(),
         city: city.toString(),
         street: streetName.toString(),
         postalCode: postalCode.toString(),
       };
       try {
-        const updated = await updateAddress(formDataObject);
+        const update = await updateAddress(formDataObject);
         const modal = renderModal('Адрес сохранён!', 'address');
         document.body.appendChild(modal);
-        AuthService.updateCurrentUser(updated);
-        renderAddressSection(updated);
+        renderAddressSection(update);
       } catch (error) {
         console.error('Ошибка при сохранении адреса:', error);
         renderModal('Ошибка при сохранении адреса. Попробуйте позже.');
@@ -127,6 +129,18 @@ export class EditAddressForm {
       }
       form.appendChild(document.createElement('br'));
     });
+  }
+  private validatePostalCode(postalCode: string): boolean {
+      const postalCodePattern = /^[0-9]{5}?$/; 
+      return postalCodePattern.test(postalCode);
+    }
+  private validateCity(city: string): boolean {
+    const cityPattern = /^[a-zA-Zа-яА-Я\s]+$/;
+    return cityPattern.test(city);
+  }
+  private validateStreetName(streetName: string): boolean {
+    const streetNamePattern = /^[a-zA-Zа-яА-Я0-9\s]+$/;
+    return streetNamePattern.test(streetName);
   }
   private countrySelect(name: string): HTMLSelectElement {
     const select = document.createElement('select');
