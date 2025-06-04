@@ -40,10 +40,10 @@ export class EditAddressForm {
         throw new Error('Missing required form data');
       }
       const validate = this.validatePostalCode(postalCode.toString());
-        if (!validate || !this.validateCity(city.toString()) || !this.validateStreetName(streetName.toString())) {
-          document.body.appendChild(renderModal('Некорректные данные. Пожалуйста, проверьте введенные данные.'));
-          return;
-        }
+      if (!validate || !this.validateCity(city.toString()) || !this.validateStreetName(streetName.toString())) {
+        document.body.appendChild(renderModal('Некорректные данные. Пожалуйста, проверьте введенные данные.'));
+        return;
+      }
       const formDataObject = {
         id: id ? id.toString() : undefined,
         country: country.toString(),
@@ -131,9 +131,9 @@ export class EditAddressForm {
     });
   }
   private validatePostalCode(postalCode: string): boolean {
-      const postalCodePattern = /^[0-9]{5}?$/; 
-      return postalCodePattern.test(postalCode);
-    }
+    const postalCodePattern = /^[0-9]{5}?$/;
+    return postalCodePattern.test(postalCode);
+  }
   private validateCity(city: string): boolean {
     const cityPattern = /^[a-zA-Zа-яА-Я\s]+$/;
     return cityPattern.test(city);

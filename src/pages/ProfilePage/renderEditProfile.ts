@@ -66,7 +66,7 @@ export class EditProfileForm {
     this.form.addEventListener('submit', async (event) => {
       event.preventDefault();
       let isValid = true;
-      
+
       for (const field of fields) {
         console.log(this.validateField(field.name));
         if (!this.validateField(field.name)) {

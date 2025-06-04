@@ -3,6 +3,8 @@ import { AuthService } from '../../services/authService';
 import type { Customer } from '@commercetools/platform-sdk';
 import type { UserData } from './sectionProfile';
 
+export type customerData = Customer;
+
 export async function updateProfileInfo(data: Partial<UserData>): Promise<Customer> {
   const current = AuthService.getCurrentUser();
   if (!current) throw new Error('Неавторизован');
@@ -75,6 +77,8 @@ export async function updatePassword(
   newPassword: string
 ): Promise<{ success: boolean }> {
   const current = AuthService.getCurrentUser();
+  const currentpwd = AuthService.getCurrentUser();
+  console.log('updatePassword', currentPassword, newPassword, version, currentpwd);
   if (!current) throw new Error('Неавторизован');
 
   const response = await apiRoot
@@ -95,6 +99,7 @@ export async function updatePassword(
 }
 export async function updateDefaultShippingAddress(addressId: string): Promise<Customer> {
   const current = AuthService.getCurrentUser();
+  
   if (!current) throw new Error('Неавторизован');
 
   const response = await apiRoot
@@ -156,4 +161,54 @@ export async function addAddress(address: {
   }
   AuthService.updateCurrentUser(response.body);
   return response.body;
+}
+export default async function removeAddress(addressId: string): Promise<Customer> {
+  const current = AuthService.getCurrentUser();
+  if (!current) throw new Error('Неавторизован');
+  
+  const response = await apiRoot
+    .customers()
+    .withId({ ID: current.id })
+    .post({
+      body: {
+        version: current.version,
+        actions: [
+          {
+            action: 'removeAddress',
+            addressId: addressId,
+          },
+        ],
+      },
+    })
+    .execute();
+  if (!response.body) {
+    throw new Error('Ошибка удаления адреса в CTP');
+  }
+  AuthService.updateCurrentUser(response.body);
+  return response.body;
+}
+export async function updateDefaultBillingAddress(addressId: string): Promise<Customer> {
+  const current = AuthService.getCurrentUser();
+  if (!current) throw new Error('Неавторизован');
+  const response = await apiRoot
+    .customers()
+    .withId({ ID: current.id })
+    .post({
+      body: {
+        version: current.version,
+        actions: [
+          {
+            action: 'setDefaultBillingAddress',
+            addressId: addressId,
+          },
+        ],
+      },
+    })
+    .execute();
+  if (!response.body) {
+    throw new Error('Ошибка обновления адреса выставления счета в CTP');
+  }
+  AuthService.updateCurrentUser(response.body);
+  return response.body; 
+  
 }

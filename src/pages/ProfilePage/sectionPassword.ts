@@ -50,8 +50,9 @@ function createChangePasswordButton(wrapper: HTMLElement, inputs: { [key: string
   wrapper.appendChild(editButton);
   const V = AuthService.getCurrentUser()?.version || 0;
   editButton.addEventListener('click', async () => {
-    const newPwd = inputs['newPassword'].value.trim();
-    const oldPwd = inputs['oldPassword'].value.trim();
+    const newPwd = inputs['newPassword'].value;
+    const oldPwd = inputs['oldPassword'].value;
+    console.log('Смена пароля', { oldPwd, newPwd, version: V });
     if (!newPwd) {
       document.body.appendChild(renderModal('Введите новый пароль'));
       return;
