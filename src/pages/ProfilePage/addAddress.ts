@@ -37,7 +37,7 @@ export class AddAddressForm {
       const city = formData.get('city');
       const postalCode = formData.get('postalCode');
       const streetName = formData.get('streetName');
-      if (!(country && city && postalCode && streetName))throw new Error('Missing required form data');
+      if (!(country && city && postalCode && streetName)) throw new Error('Missing required form data');
       const validate = this.validatePostalCode(postalCode.toString());
       if (!validate || !this.validateCity(city.toString()) || !this.validateStreetName(streetName.toString())) {
         document.body.appendChild(
