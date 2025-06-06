@@ -5,6 +5,7 @@ import type { UserData } from './sectionProfile';
 
 export type customerData = Customer;
 
+
 export async function updateProfileInfo(data: Partial<UserData>): Promise<Customer> {
   const current = AuthService.getCurrentUser();
   if (!current) throw new Error('Неавторизован');
@@ -99,7 +100,7 @@ export async function updatePassword(
 }
 export async function updateDefaultShippingAddress(addressId: string): Promise<Customer> {
   const current = AuthService.getCurrentUser();
-  
+
   if (!current) throw new Error('Неавторизован');
 
   const response = await apiRoot
@@ -133,7 +134,7 @@ export async function addAddress(address: {
 }): Promise<Customer> {
   const current = AuthService.getCurrentUser();
   if (!current) throw new Error('Неавторизован');
-
+  console.log(current.version);
   const response = await apiRoot
     .customers()
     .withId({ ID: current.id })
@@ -165,7 +166,7 @@ export async function addAddress(address: {
 export default async function removeAddress(addressId: string): Promise<Customer> {
   const current = AuthService.getCurrentUser();
   if (!current) throw new Error('Неавторизован');
-  
+
   const response = await apiRoot
     .customers()
     .withId({ ID: current.id })
@@ -209,6 +210,5 @@ export async function updateDefaultBillingAddress(addressId: string): Promise<Cu
     throw new Error('Ошибка обновления адреса выставления счета в CTP');
   }
   AuthService.updateCurrentUser(response.body);
-  return response.body; 
-  
+  return response.body;
 }

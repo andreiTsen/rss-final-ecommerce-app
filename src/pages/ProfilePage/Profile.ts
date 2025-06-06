@@ -5,6 +5,7 @@ import createSidebar from './sidebar';
 import { renderProfileInfoSection, UserData } from './sectionProfile';
 import { renderAddressSection } from './sectionAdresses';
 import { renderChangePassword } from './sectionPassword';
+import { version } from 'os';
 
 export class ProfilePage {
   private container: HTMLElement;
@@ -43,6 +44,8 @@ export class ProfilePage {
 
   private renderSection(sectionId: string, user: UserData): void {
     const content = document.getElementById('profile-content');
+    this.user = AuthService.getCurrentUser();
+
     if (!content) return;
 
     content.innerHTML = '';

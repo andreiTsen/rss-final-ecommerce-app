@@ -68,7 +68,7 @@ export class EditProfileForm {
       let isValid = true;
 
       for (const field of fields) {
-        console.log(this.validateField(field.name));
+  
         if (!this.validateField(field.name)) {
           isValid = false;
         }
@@ -108,13 +108,28 @@ export class EditProfileForm {
       errorElement.textContent = 'Только буквы';
       return false;
     }
-    if (name === 'email' && !input.value.includes('@')) {
+    if (name === 'email' && !input.value.includes('@') ) {
       errorElement.textContent = 'Некорректный email';
       return false;
     }
-    if (name === 'dateOfBirth' && !input.value) {
-      errorElement.textContent = 'Укажите дату рождения';
-      return false;
+    
+    if (name === 'dateOfBirth') {
+      if (!input.value) {
+        errorElement.textContent = 'Укажите дату рождения';
+        return false;
+      }
+      const birthDate = new Date(input.value);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        // birthday not reached yet this year
+        age--;
+      }
+      if (age < 16 || age > 100) {
+        errorElement.textContent = 'Возраст должен быть от 16 до 100 лет';
+        return false;
+      }
     }
     errorElement.textContent = '';
     return true;

@@ -15,9 +15,6 @@ import { CatalogPage } from './pages/catalogPage/catalog';
 
 let appContainer: HTMLElement;
 export let navigation: Navigation;
-alert(
-  'Просьба проверить нашу работу в последний день кросс-чека) Или проверить всё, кроме страницы пользователя. Спасибо за понимание :)'
-);
 
 document.addEventListener('DOMContentLoaded', () => {
   const existingContainer = document.getElementById('app');

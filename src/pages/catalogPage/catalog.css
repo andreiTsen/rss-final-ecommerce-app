@@ -759,7 +759,9 @@
     flex-direction: column;
     gap: 6px;
   }
-
+  .header-and-filters-panel {
+    min-height: 500px;
+  }
   .details-btn,
   .add-to-cart-btn {
     width: 100%;

@@ -60,7 +60,7 @@ function createAddressParagraph(address: {
   paragraphs.push(createParagraph('Улица', address.streetName));
   paragraphs.push(createShippingParagraph(address.id));
   paragraphs.push(createBillingParagraph(address.id));
- 
+
   return paragraphs;
 }
 
@@ -129,7 +129,7 @@ function appendDeleteButton(
           addressesBlock.removeChild(addressWrapper);
         }
       }
-    } catch (error) {
+    } catch {
       alert('Ошибка при удалении адреса');
     }
   });
@@ -146,18 +146,27 @@ function setupShippingCheckboxListener(
     streetName?: string;
   }
 ): void {
-  const idShippingAddressId = AuthService.getCurrentUser()?.defaultShippingAddressId || '';
   const shippingCheckbox = addressWrapper.querySelector('.shipping-checkbox');
   if (shippingCheckbox instanceof HTMLInputElement) {
-    shippingCheckbox.addEventListener('change', () => {
+    shippingCheckbox.addEventListener('change', async () => {
       if (shippingCheckbox.checked) {
         const allCheckboxes = document.querySelectorAll('.shipping-checkbox');
-        void updateDefaultShippingAddress(address.id || '');
+        await updateDefaultShippingAddress(address.id || '');
         allCheckboxes.forEach((checkbox) => {
           if (checkbox !== shippingCheckbox && checkbox instanceof HTMLInputElement) {
             checkbox.checked = false;
           }
         });
+        const sectionA = document.querySelector('.address-section-wrapper');
+        if (sectionA) {
+          sectionA.innerHTML = '';
+          const currentUser = AuthService.getCurrentUser();
+          if (currentUser) {
+            const userData: UserData = currentUser; // Assuming currentUser matches UserData structure
+            const newSection = renderAddressSection(userData);
+            sectionA.appendChild(newSection);
+          }
+        }
       }
     });
   }
@@ -173,18 +182,28 @@ function setupBillingCheckboxListener(
     streetName?: string;
   }
 ): void {
-  const idBillingAddressId = AuthService.getCurrentUser()?.defaultBillingAddressId || '';
   const billingCheckbox = addressWrapper.querySelector('.billing-checkbox');
   if (billingCheckbox instanceof HTMLInputElement) {
-    billingCheckbox.addEventListener('change', () => {
+    billingCheckbox.addEventListener('change', async () => {
       if (billingCheckbox.checked) {
         const allCheckboxes = document.querySelectorAll('.billing-checkbox');
-        void updateDefaultBillingAddress(address.id || '');
+        await updateDefaultBillingAddress(address.id || '');
         allCheckboxes.forEach((checkbox) => {
           if (checkbox !== billingCheckbox && checkbox instanceof HTMLInputElement) {
             checkbox.checked = false;
           }
         });
+        // Refresh the address section to reflect changes
+        const sectionA = document.querySelector('.address-section-wrapper');
+        if (sectionA) {
+          sectionA.innerHTML = '';
+          const currentUser = AuthService.getCurrentUser();
+          if (currentUser) {
+            const userData: UserData = currentUser; // Assuming currentUser matches UserData structure
+            const newSection = renderAddressSection(userData);
+            sectionA.appendChild(newSection);
+          }
+        }
       }
     });
   }

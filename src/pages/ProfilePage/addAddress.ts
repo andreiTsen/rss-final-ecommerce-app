@@ -4,6 +4,7 @@ import { updateAddress, addAddress } from './UpateUser';
 import { renderModal } from './modal';
 import { renderAddressSection } from './sectionAdresses';
 import { AuthService } from '../../services/authService';
+import { version } from 'process';
 
 export const countries = [
   { value: '', text: 'Выберите страну' },
@@ -41,7 +42,7 @@ export class AddAddressForm {
       }
       const validate = this.validatePostalCode(postalCode.toString());
       if (!validate || !this.validateCity(city.toString()) || !this.validateStreetName(streetName.toString())) {
-        document.body.appendChild(renderModal('Некорректные данные. Пожалуйста, проверьте введенные данные.'));
+        document.body.appendChild(renderModal('Некорректные данные. Пожалуйста, проверьте введенные данные. Почтовый код должен состоять из 5 цифр.'));
         return;
       }
       const formDataObject = {
