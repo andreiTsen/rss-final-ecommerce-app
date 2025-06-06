@@ -68,7 +68,6 @@ export class EditProfileForm {
       let isValid = true;
 
       for (const field of fields) {
-  
         if (!this.validateField(field.name)) {
           isValid = false;
         }
@@ -108,11 +107,11 @@ export class EditProfileForm {
       errorElement.textContent = 'Только буквы';
       return false;
     }
-    if (name === 'email' && !input.value.includes('@') ) {
+    if (name === 'email' && !input.value.includes('@')) {
       errorElement.textContent = 'Некорректный email';
       return false;
     }
-    
+
     if (name === 'dateOfBirth') {
       if (!input.value) {
         errorElement.textContent = 'Укажите дату рождения';

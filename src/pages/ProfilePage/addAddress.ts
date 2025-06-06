@@ -37,12 +37,14 @@ export class AddAddressForm {
       const city = formData.get('city');
       const postalCode = formData.get('postalCode');
       const streetName = formData.get('streetName');
-      if (!(country && city && postalCode && streetName)) {
-        throw new Error('Missing required form data');
-      }
+      if (!(country && city && postalCode && streetName))throw new Error('Missing required form data');
       const validate = this.validatePostalCode(postalCode.toString());
       if (!validate || !this.validateCity(city.toString()) || !this.validateStreetName(streetName.toString())) {
-        document.body.appendChild(renderModal('Некорректные данные. Пожалуйста, проверьте введенные данные. Почтовый код должен состоять из 5 цифр.'));
+        document.body.appendChild(
+          renderModal(
+            'Некорректные данные. Пожалуйста, проверьте введенные данные. Почтовый код должен состоять из 5 цифр.'
+          )
+        );
         return;
       }
       const formDataObject = {
@@ -54,8 +56,7 @@ export class AddAddressForm {
       };
       try {
         const add = await addAddress(formDataObject);
-        const modal = renderModal('Адрес добавлен!', 'address');
-        document.body.appendChild(modal);
+        document.body.appendChild(renderModal('Адрес добавлен!', 'address'));
         renderAddressSection(add);
       } catch (error) {
         console.error('Ошибка при сохранении адреса:', error);

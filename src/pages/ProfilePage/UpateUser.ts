@@ -5,7 +5,6 @@ import type { UserData } from './sectionProfile';
 
 export type customerData = Customer;
 
-
 export async function updateProfileInfo(data: Partial<UserData>): Promise<Customer> {
   const current = AuthService.getCurrentUser();
   if (!current) throw new Error('Неавторизован');
