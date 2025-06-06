@@ -1,4 +1,3 @@
-import { AuthService } from '../../services/authService';
 import { navigateTo } from '../../main';
 import './profile.css';
 import createSidebar from './sidebar';
@@ -6,13 +5,14 @@ import { renderProfileInfoSection, UserData } from './sectionProfile';
 import { renderAddressSection } from './sectionAdresses';
 import { renderChangePassword } from './sectionPassword';
 import { version } from 'os';
+import { AuthorizationService } from '../../services/authentication';
 
 export class ProfilePage {
   private container: HTMLElement;
   private user: UserData | null;
   constructor(container: HTMLElement) {
     this.container = container;
-    this.user = AuthService.getCurrentUser();
+    this.user = AuthorizationService.getCurrentUser();
 
     if (!this.user) {
       navigateTo('/login');
@@ -44,7 +44,7 @@ export class ProfilePage {
 
   private renderSection(sectionId: string, user: UserData): void {
     const content = document.getElementById('profile-content');
-    this.user = AuthService.getCurrentUser();
+    this.user = AuthorizationService.getCurrentUser();
 
     if (!content) return;
 
