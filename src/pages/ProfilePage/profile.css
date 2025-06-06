@@ -1,0 +1,149 @@
+.sidebar {
+  width: 100%;
+  padding: 1rem;
+  background-color: #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  text-align: left;
+}
+.profile-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  background-color: #f1f1f1;
+  padding: 1rem 1rem 1rem 1rem;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-link {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+}
+
+.sidebar-link:hover {
+  background-color: #e0e0e0;
+}
+.profile-info-section {
+  display: flex;
+  flex-direction: column;
+}
+.profile-wrapper {
+  flex-grow: 1;
+  padding: 2rem;
+  max-width: 950px;
+}
+
+.profile-wrapper h2 {
+  font-family: Arial, Helvetica, sans-serif;
+  margin-bottom: 1rem;
+  color: #ffd700;
+  text-align: center;
+}
+.profile-wrapper p {
+  font-family: Arial, sans-serif;
+  margin-bottom: 1rem;
+  color: #333;
+}
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+  object-fit: cover;
+  margin-bottom: 15px;
+  align-self: center;
+}
+.sidebar-link:hover {
+  background-color: #ffd700;
+  color: #f4f4f4;
+}
+.sidebar-link.active {
+  background-color: #ffd700;
+  color: #f4f4f4;
+}
+.button-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.edit-profile-button,
+.save-button,
+.cancel-button,
+.edit-address-btn,
+.add-address-btn,
+.delete-address-btn {
+  background-color: #ffd700;
+  color: #333;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 10px;
+  justify-self: center;
+}
+.address-section-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0;
+  padding: 0;
+  border: none;
+}
+.delete-address-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin-top: 0;
+  padding: 5px;
+  background-color: unset;
+}
+.field-error {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+.addresses-block {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.single-address {
+  position: relative;
+  width: 250px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+@media screen and (max-width: 768px) {
+  .sidebar {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,189 @@
+svg {
+  stroke: none !important;
+  stroke-width: 0 !important;
+  outline: none !important;
+}
+
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.auth-form {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  margin: 0px auto;
+  width: 100%;
+  max-width: 600px;
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 30px;
+}
+
+.auth-form__title {
+  color: #4caf50;
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 1.8rem;
+}
+
+.auth-form__input-box {
+  width: 95%;
+  padding: 0.2rem 1.5rem;
+  position: relative;
+}
+
+.auth-form__input-login,
+.auth-form__input-password {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.auth-form__input-login,
+.auth-form__input-password {
+  margin-bottom: 5px;
+}
+
+.auth-form__button-box {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 0 3rem;
+}
+
+.auth--btn {
+  background-color: #ffd700;
+  color: #333;
+  border: none;
+  border-radius: 4px;
+  width: 70%;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.3s,
+    transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.auth--btn:hover {
+  background-color: #e6c300;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.auth--btn:active {
+  transform: translateY(0);
+}
+
+.auth-form__button-login {
+  margin-bottom: 15px;
+}
+
+.auth-form__info {
+  margin-bottom: 7px;
+}
+
+.auth-form__login-icon {
+  position: absolute;
+  background-image: url('././../../assets/icons/email-icon.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  outline: none;
+  width: 20px;
+  height: 20px;
+  top: 13px;
+  right: 35px;
+}
+
+.auth-form__password-icon {
+  position: absolute;
+  background-image: url('././../../assets/icons/lock.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  outline: none;
+  width: 20px;
+  height: 20px;
+  right: 35px;
+  top: 14px;
+  cursor: pointer;
+}
+
+.error-message {
+  display: block;
+  font-size: 0.85rem;
+  width: 100%;
+  padding: 5px 15px;
+  color: red;
+  width: 75%;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.no-valid {
+  opacity: 0.75;
+  cursor: auto;
+}
+
+.auth-form__page-title {
+  color: #ffd700;
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.auth-error {
+  margin-bottom: 7px;
+  width: 75%;
+  text-align: center;
+}
+
+@media screen and (max-width: 768px) {
+  .auth-form {
+    margin: 0;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .auth-form__input-box {
+    width: 95%;
+    padding: 0.2rem 1rem;
+    position: relative;
+  }
+}
+
+@media screen and (max-width: 550px) {
+  .auth-form {
+    padding: 0;
+  }
+  .box-input,
+  .password-box {
+    padding-right: 0;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .auth-form__login-icon {
+    right: 10px;
+  }
+  .auth-form__password-icon {
+    right: 10px;
+  }
+}
