@@ -15,6 +15,7 @@ export type UserData = {
   email?: string;
   dateOfBirth?: string;
   addresses?: Address[];
+  shippingAddress?: string;
 };
 
 export function renderProfileInfoSection(user: UserData): HTMLElement {

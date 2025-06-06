@@ -1,11 +1,5 @@
 import { apiRoot } from '../api';
-import {
-  ProductProjection,
-  Category,
-  ProductVariant,
-  ClientResponse,
-  ProductProjectionPagedQueryResponse,
-} from '@commercetools/platform-sdk';
+import { ProductProjection, Category, ProductVariant } from '@commercetools/platform-sdk';
 
 export type ProductData = {
   id: string;
@@ -93,27 +87,24 @@ export class ProductService {
     }
   }
 
-  public static async getProductsByCategory(
-    categoryId: string,
-    limit: number = 12,
-    filters?: ProductFilters
-  ): Promise<ProductData[]> {
-    const categoryFilters: ProductFilters = {
-      ...filters,
-      categoryId,
-    };
-
-    return this.getProducts(limit, categoryFilters);
-  }
-
   public static async getFilterOptions(): Promise<FilterOptions> {
     try {
-      const response = await this.fetchAllProductsForFilters();
+      const response = await apiRoot
+        .productProjections()
+        .get({
+          queryArgs: {
+            limit: 500,
+            staged: false,
+          },
+        })
+        .execute();
 
       const products = await this.processProductsFromResponse(response.body.results);
-      const filterOptions = this.extractFilterOptionsFromProducts(products);
 
-      return filterOptions;
+      return {
+        authors: this.extractUniqueAuthors(products),
+        priceRange: this.calculatePriceRange(products),
+      };
     } catch (error) {
       console.error('Ошибка полученія опцій фільтров:', error);
       return {
@@ -135,38 +126,87 @@ export class ProductService {
       queryArguments.where = whereConditions;
     }
 
-    if (filters?.searchText && filters.searchText.trim()) {
-      queryArguments['text.en-US'] = filters.searchText.trim();
+    const sortConditions = this.buildSortConditions(filters);
+    if (sortConditions.length > 0) {
+      queryArguments.sort = sortConditions;
     }
 
     return queryArguments;
   }
 
+  private static buildWhereConditions(filters?: ProductFilters): string[] {
+    if (!filters) return [];
+
+    const whereConditions: string[] = [];
+
+    if (filters.categoryId) {
+      whereConditions.push(`categories(id="${filters.categoryId}")`);
+    }
+
+    if (filters.hasDiscount) {
+      whereConditions.push('masterVariant(prices(discounted is defined))');
+    }
+
+    const priceConditions = this.buildPriceConditions(filters.priceRange);
+    if (priceConditions) {
+      whereConditions.push(priceConditions);
+    }
+
+    return whereConditions;
+  }
+
+  private static buildPriceConditions(priceRange?: { min?: number; max?: number }): string | null {
+    if (!priceRange) return null;
+
+    const { min, max } = priceRange;
+
+    if (min !== undefined && max !== undefined) {
+      const minCents = Math.round(min * 100);
+      const maxCents = Math.round(max * 100);
+      return `masterVariant(prices(value(centAmount >= ${minCents} and centAmount <= ${maxCents})))`;
+    }
+
+    if (min !== undefined) {
+      const minCents = Math.round(min * 100);
+      return `masterVariant(prices(value(centAmount >= ${minCents})))`;
+    }
+
+    if (max !== undefined) {
+      const maxCents = Math.round(max * 100);
+      return `masterVariant(prices(value(centAmount <= ${maxCents})))`;
+    }
+
+    return null;
+  }
+
+  private static buildSortConditions(filters?: ProductFilters): string[] {
+    if (!filters?.sortBy || !this.isServerSort(filters.sortBy)) {
+      return [];
+    }
+
+    return this.buildSortQueries(filters.sortBy);
+  }
+
+  private static isServerSort(sortBy: SortOption): boolean {
+    return sortBy === 'name-asc' || sortBy === 'name-desc';
+  }
+
+  private static buildSortQueries(sortBy: SortOption): string[] {
+    switch (sortBy) {
+      case 'name-asc':
+        return ['name.en-US asc'];
+      case 'name-desc':
+        return ['name.en-US desc'];
+      case 'price-asc':
+      case 'price-desc':
+        return [];
+      default:
+        return ['createdAt desc'];
+    }
+  }
+
   private static async processProductsFromResponse(products: ProductProjection[]): Promise<ProductData[]> {
     return Promise.all(products.map((product) => this.mapProductToData(product)));
-  }
-
-  private static async fetchAllProductsForFilters(): Promise<ClientResponse<ProductProjectionPagedQueryResponse>> {
-    return apiRoot
-      .productProjections()
-      .get({
-        queryArgs: {
-          limit: 500,
-          staged: false,
-          expand: ['categories[*]'],
-        },
-      })
-      .execute();
-  }
-
-  private static extractFilterOptionsFromProducts(products: ProductData[]): FilterOptions {
-    const authors = this.extractUniqueAuthors(products);
-    const priceRange = this.calculatePriceRange(products);
-
-    return {
-      authors,
-      priceRange,
-    };
   }
 
   private static extractUniqueAuthors(products: ProductData[]): string[] {
@@ -193,113 +233,53 @@ export class ProductService {
     return priceRange;
   }
 
-  private static buildWhereConditions(filters?: ProductFilters): string[] {
-    if (!filters) {
-      return [];
-    }
-
-    const conditions: string[] = [];
-
-    if (filters.categoryId) {
-      conditions.push(`categories(id="${filters.categoryId}")`);
-    }
-
-    if (filters.hasDiscount) {
-      conditions.push('masterVariant(prices(discounted is defined))');
-    }
-
-    return conditions;
-  }
-
   private static applyClientSideFilters(products: ProductData[], filters?: ProductFilters): ProductData[] {
-    if (!filters) {
-      return products;
-    }
+    if (!filters) return products;
 
     let filteredProducts = [...products];
 
-    filteredProducts = this.applySearchFilter(filteredProducts, filters.searchText);
-    filteredProducts = this.applyPriceRangeFilter(filteredProducts, filters.priceRange);
-    filteredProducts = this.applyAuthorFilter(filteredProducts, filters.author);
-    filteredProducts = this.applySorting(filteredProducts, filters.sortBy);
+    if (filters.searchText) {
+      filteredProducts = this.applySearchFilter(filteredProducts, filters.searchText);
+    }
+
+    if (filters.author) {
+      filteredProducts = this.applyAuthorFilter(filteredProducts, filters.author);
+    }
+
+    if (filters.sortBy === 'price-asc' || filters.sortBy === 'price-desc') {
+      filteredProducts = this.applySorting(filteredProducts, filters.sortBy);
+    }
 
     return filteredProducts;
   }
 
-  private static applySorting(products: ProductData[], sortBy?: SortOption): ProductData[] {
-    if (!sortBy || sortBy === 'default') {
-      return products;
-    }
+  private static applySorting(products: ProductData[], sortBy: SortOption): ProductData[] {
+    const sorted = [...products];
 
-    const sortedProducts = [...products];
-
-    try {
-      switch (sortBy) {
-        case 'name-asc':
-          return sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
-        case 'name-desc':
-          return sortedProducts.sort((a, b) => b.name.localeCompare(a.name));
-        case 'price-asc':
-          return sortedProducts.sort((a, b) => {
-            const priceA = typeof a.price === 'number' ? a.price : 0;
-            const priceB = typeof b.price === 'number' ? b.price : 0;
-            return priceA - priceB;
-          });
-        case 'price-desc':
-          return sortedProducts.sort((a, b) => {
-            const priceA = typeof a.price === 'number' ? a.price : 0;
-            const priceB = typeof b.price === 'number' ? b.price : 0;
-            return priceB - priceA;
-          });
-        default:
-          return sortedProducts;
-      }
-    } catch (error) {
-      console.error('Ошібка при сортіровке:', error);
-      return products;
+    switch (sortBy) {
+      case 'price-asc':
+        return sorted.sort((a, b) => a.price - b.price);
+      case 'price-desc':
+        return sorted.sort((a, b) => b.price - a.price);
+      default:
+        return sorted;
     }
   }
 
-  private static applySearchFilter(products: ProductData[], searchText?: string): ProductData[] {
-    if (!searchText || !searchText.trim()) return products;
-
-    const searchTextLower = searchText.toLowerCase().trim();
-    const filtered = products.filter((product) => {
-      const nameMatch = product.name.toLowerCase().includes(searchTextLower);
-      const descriptionMatch = product.description && product.description.toLowerCase().includes(searchTextLower);
-      const authorMatch = product.author && product.author.toLowerCase().includes(searchTextLower);
-      const categoryMatch = product.category && product.category.toLowerCase().includes(searchTextLower);
-
+  private static applySearchFilter(products: ProductData[], searchText: string): ProductData[] {
+    const searchLower = searchText.toLowerCase().trim();
+    return products.filter((product) => {
+      const nameMatch = product.name.toLowerCase().includes(searchLower);
+      const descriptionMatch = product.description?.toLowerCase().includes(searchLower);
+      const authorMatch = product.author?.toLowerCase().includes(searchLower);
+      const categoryMatch = product.category?.toLowerCase().includes(searchLower);
       return nameMatch || descriptionMatch || authorMatch || categoryMatch;
     });
-
-    return filtered;
   }
 
-  private static applyPriceRangeFilter(
-    products: ProductData[],
-    priceRange?: { min?: number; max?: number }
-  ): ProductData[] {
-    if (!priceRange) return products;
-
-    const { min, max } = priceRange;
-    const filtered = products.filter((product) => {
-      if (min !== undefined && product.price < min) return false;
-      if (max !== undefined && product.price > max) return false;
-      return true;
-    });
-
-    return filtered;
-  }
-
-  private static applyAuthorFilter(products: ProductData[], author?: string): ProductData[] {
-    if (!author) return products;
-
-    const filtered = products.filter(
-      (product) => product.author && product.author.toLowerCase().includes(author.toLowerCase())
-    );
-
-    return filtered;
+  private static applyAuthorFilter(products: ProductData[], author: string): ProductData[] {
+    const authorLower = author.toLowerCase();
+    return products.filter((product) => product.author?.toLowerCase().includes(authorLower));
   }
 
   private static async mapProductToData(product: ProductProjection): Promise<ProductData> {

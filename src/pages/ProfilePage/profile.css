@@ -54,7 +54,7 @@
 .profile-wrapper {
   flex-grow: 1;
   padding: 2rem;
-  max-width: 500px;
+  max-width: 950px;
 }
 
 .profile-wrapper h2 {
@@ -92,7 +92,9 @@
 .edit-profile-button,
 .save-button,
 .cancel-button,
-.edit-address-btn {
+.edit-address-btn,
+.add-address-btn,
+.delete-address-btn {
   background-color: #ffd700;
   color: #333;
   border: none;
@@ -103,10 +105,42 @@
   margin-top: 10px;
   justify-self: center;
 }
-.adress-section-wrapper {
+.address-section-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   margin-top: 0;
   padding: 0;
   border: none;
+}
+.delete-address-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin-top: 0;
+  padding: 5px;
+  background-color: unset;
+}
+.field-error {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+.addresses-block {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.single-address {
+  position: relative;
+  width: 250px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 @media screen and (max-width: 768px) {
   .sidebar {

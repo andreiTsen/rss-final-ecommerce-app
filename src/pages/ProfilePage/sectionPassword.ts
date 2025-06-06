@@ -1,7 +1,7 @@
-import { updatePassword } from './UpateUser';
+import { updatePassword } from './UpdateUser';
 import validatePassword from '../loginPage/validatePassword';
 import { renderModal } from './modal';
-import { AuthService } from '../../services/authService';
+import { AuthorizationService } from '../../services/authentication';
 
 export function renderChangePassword(): HTMLElement {
   return createPasswordChangeForm();
@@ -48,10 +48,11 @@ function createChangePasswordButton(wrapper: HTMLElement, inputs: { [key: string
   editButton.textContent = 'Сменить пароль';
   editButton.classList.add('edit-address-btn');
   wrapper.appendChild(editButton);
-  const V = AuthService.getCurrentUser()?.version || 0;
+  const V = AuthorizationService.getCurrentUser()?.version || 0;
   editButton.addEventListener('click', async () => {
-    const newPwd = inputs['newPassword'].value.trim();
-    const oldPwd = inputs['oldPassword'].value.trim();
+    const newPwd = inputs['newPassword'].value;
+    const oldPwd = inputs['oldPassword'].value;
+    console.log('Смена пароля', { oldPwd, newPwd, version: V });
     if (!newPwd) {
       document.body.appendChild(renderModal('Введите новый пароль'));
       return;

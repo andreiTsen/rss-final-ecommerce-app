@@ -1618,6 +1618,7 @@ export class CatalogPage {
   private async clearAllFilters(): Promise<void> {
     this.currentFilters = {};
     this.currentSortOption = 'default';
+    this.categoryPath = [];
 
     window.history.pushState({}, '', window.location.pathname);
 

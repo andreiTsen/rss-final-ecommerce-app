@@ -1,7 +1,7 @@
 import './modal.css';
-import { AuthService } from '../../services/authService';
 import { renderProfileInfoSection } from './sectionProfile';
 import { renderAddressSection } from './sectionAdresses';
+import { AuthorizationService } from '../../services/authentication';
 
 export function renderModal(message: string, category?: string): HTMLElement {
   const modal = document.createElement('div');
@@ -17,7 +17,7 @@ export function renderModal(message: string, category?: string): HTMLElement {
   modalText.classList.add('modal-message');
   modalText.textContent = message;
 
-  const user = AuthService.getCurrentUser();
+  const user = AuthorizationService.getCurrentUser();
   const closeButton = document.createElement('button');
   closeButton.textContent = 'Закрыть';
   closeButton.classList.add('close-button');

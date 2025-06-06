@@ -90,87 +90,19 @@ export class CategoryService {
     try {
       const response = await apiRoot
         .productProjections()
-        .search()
         .get({
           queryArgs: {
             limit: 0,
             staged: false,
-            filter: [`categories.id:"${categoryId}"`],
+            where: [`categories(id="${categoryId}")`],
           },
         })
         .execute();
 
-      const count = response.body.total || 0;
-
-      return count;
+      return response.body.total || 0;
     } catch (error) {
       console.error(`Ошибка при счета ${categoryId}:`, error);
       return 0;
-    }
-  }
-
-  public static async getCategoriesWithProductCount(): Promise<CategoryData[]> {
-    try {
-      const categories = await this.getCategories();
-
-      const categoriesWithCount = await Promise.all(
-        categories.map(async (category) => {
-          const productCount = await this.getCategoryProductCount(category.id);
-          return {
-            ...category,
-            productCount,
-          };
-        })
-      );
-
-      return categoriesWithCount;
-    } catch (error) {
-      console.error('Ошібка полученія категорий с товаром:', error);
-      return [];
-    }
-  }
-
-  public static async searchCategories(searchText: string): Promise<CategoryData[]> {
-    try {
-      const response = await apiRoot
-        .categories()
-        .get({
-          queryArgs: {
-            limit: 50,
-            where: `name(en contains "${searchText}" or ru contains "${searchText}")`,
-            sort: 'name.en asc',
-          },
-        })
-        .execute();
-
-      const categories = response.body.results.map((category) => this.mapCategoryToData(category));
-
-      return categories;
-    } catch (error) {
-      console.error('Ошібка поіска:', error);
-      return [];
-    }
-  }
-
-  public static clearCache(): void {
-    this.categoryCache.clear();
-  }
-
-  public static async getCategoryHierarchy(): Promise<CategoryData[]> {
-    try {
-      const allCategories = await this.getCategories();
-
-      const sortedCategories = allCategories.sort((a, b) => {
-        if (!a.parentId && b.parentId) return -1;
-        if (a.parentId && !b.parentId) return 1;
-
-        return a.name.localeCompare(b.name);
-      });
-
-      return sortedCategories;
-    } catch (error) {
-      console.error('Ошібка категорій:', error);
-      return [];
     }
   }
 

@@ -1,8 +1,9 @@
 import type { Address } from './sectionProfile';
 import { renderButtonContainer } from './buttonContainer';
-import { addAddress, updateAddress } from './UpdateUser';
+import { updateAddress, addAddress } from './UpdateUser';
 import { renderModal } from './modal';
 import { renderAddressSection } from './sectionAdresses';
+import { version } from 'process';
 
 export const countries = [
   { value: '', text: 'Выберите страну' },
@@ -15,7 +16,7 @@ export const countries = [
   { value: 'UA', text: 'Украина' },
 ];
 
-export class EditAddressForm {
+export class AddAddressForm {
   private form: HTMLFormElement;
   private inputs: Partial<Record<keyof Address, HTMLInputElement>> = {};
 
@@ -35,12 +36,14 @@ export class EditAddressForm {
       const city = formData.get('city');
       const postalCode = formData.get('postalCode');
       const streetName = formData.get('streetName');
-      if (!(country && city && postalCode && streetName)) {
-        throw new Error('Missing required form data');
-      }
+      if (!(country && city && postalCode && streetName)) throw new Error('Missing required form data');
       const validate = this.validatePostalCode(postalCode.toString());
       if (!validate || !this.validateCity(city.toString()) || !this.validateStreetName(streetName.toString())) {
-        document.body.appendChild(renderModal('Некорректные данные. Пожалуйста, проверьте введенные данные.'));
+        document.body.appendChild(
+          renderModal(
+            'Некорректные данные. Пожалуйста, проверьте введенные данные. Почтовый код должен состоять из 5 цифр.'
+          )
+        );
         return;
       }
       const formDataObject = {
@@ -51,10 +54,9 @@ export class EditAddressForm {
         postalCode: postalCode.toString(),
       };
       try {
-        const update = await updateAddress(formDataObject);
-        const modal = renderModal('Адрес сохранён!', 'address');
-        document.body.appendChild(modal);
-        renderAddressSection(update);
+        const add = await addAddress(formDataObject);
+        document.body.appendChild(renderModal('Адрес добавлен!', 'address'));
+        renderAddressSection(add);
       } catch (error) {
         console.error('Ошибка при сохранении адреса:', error);
         renderModal('Ошибка при сохранении адреса. Попробуйте позже.');
@@ -76,10 +78,21 @@ export class EditAddressForm {
 
     return form;
   }
-
+  private validatePostalCode(postalCode: string): boolean {
+    const postalCodePattern = /^[0-9]{5}?$/;
+    return postalCodePattern.test(postalCode);
+  }
+  private validateCity(city: string): boolean {
+    const cityPattern = /^[a-zA-Zа-яА-Я\s]+$/;
+    return cityPattern.test(city);
+  }
+  private validateStreetName(streetName: string): boolean {
+    const streetNamePattern = /^[a-zA-Zа-яА-Я0-9\s]+$/;
+    return streetNamePattern.test(streetName);
+  }
   private appendTitle(form: HTMLFormElement): void {
     const title = document.createElement('h2');
-    title.textContent = 'Редактировать адрес';
+    title.textContent = 'Добавить адрес';
     form.appendChild(title);
   }
   private appendAddButton(form: HTMLFormElement): void {
@@ -128,18 +141,6 @@ export class EditAddressForm {
       }
       form.appendChild(document.createElement('br'));
     });
-  }
-  private validatePostalCode(postalCode: string): boolean {
-    const postalCodePattern = /^[0-9]{5}?$/;
-    return postalCodePattern.test(postalCode);
-  }
-  private validateCity(city: string): boolean {
-    const cityPattern = /^[a-zA-Zа-яА-Я\s]+$/;
-    return cityPattern.test(city);
-  }
-  private validateStreetName(streetName: string): boolean {
-    const streetNamePattern = /^[a-zA-Zа-яА-Я0-9\s]+$/;
-    return streetNamePattern.test(streetName);
   }
   private countrySelect(name: string): HTMLSelectElement {
     const select = document.createElement('select');

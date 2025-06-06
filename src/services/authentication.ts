@@ -78,6 +78,10 @@ export class AuthorizationService {
     return userData ? JSON.parse(userData) : null;
   }
 
+  public static updateCurrentUser(customer: Customer): void {
+    localStorage.setItem(this.USER_KEY, JSON.stringify(customer));
+  }
+
   private static saveAuthData(data: CustomerSignInResult, tokenData: TokenResponse): void {
     if (data.customer) {
       localStorage.setItem(this.USER_KEY, JSON.stringify(data.customer));

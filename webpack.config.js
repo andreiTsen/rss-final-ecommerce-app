@@ -47,7 +47,7 @@ const config = {
     new HtmlWebpackPlugin({
       template: './src/index.html',
       inject: 'body',
-      favicon: '',
+      favicon: './src/img/raccoon.png',
       templateParameters: {
         BASE_HREF: isProduction ? '/andreitsen-rss-final-ecommerce-app/' : '/',
       },

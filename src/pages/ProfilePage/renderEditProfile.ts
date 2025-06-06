@@ -1,9 +1,9 @@
 import { UserData } from './sectionProfile';
 import { renderButtonContainer } from './buttonContainer';
-import { updateProfileInfo } from './UpateUser';
+import { updateProfileInfo } from './UpdateUser';
 import { renderModal } from './modal';
-import { AuthService } from '../../services/authService';
 import { renderProfileInfoSection } from './sectionProfile';
+import { AuthorizationService } from '../../services/authentication';
 
 const fields: { name: keyof UserData; label: string; type?: string }[] = [
   { name: 'firstName', label: 'Имя', type: 'text' },
@@ -65,6 +65,16 @@ export class EditProfileForm {
   private setupFormSubmit(): void {
     this.form.addEventListener('submit', async (event) => {
       event.preventDefault();
+      let isValid = true;
+
+      for (const field of fields) {
+        if (!this.validateField(field.name)) {
+          isValid = false;
+        }
+      }
+      if (!isValid) {
+        return;
+      }
       const fd = new FormData(this.form);
       const payload: Partial<UserData> = {
         firstName: fd.get('firstName')?.toString(),
@@ -74,10 +84,9 @@ export class EditProfileForm {
       };
       try {
         const updated = await updateProfileInfo(payload);
-        renderModal('Профиль обновлён!');
         const modal = renderModal('Профиль обновлен успешно', 'profile');
         document.body.appendChild(modal);
-        AuthService.updateCurrentUser(updated);
+        AuthorizationService.updateCurrentUser(updated);
         renderProfileInfoSection(updated);
       } catch (error) {
         console.error('Ошибка при обновлении профиля:', error);
@@ -90,17 +99,36 @@ export class EditProfileForm {
     const input = this.elements[name]!;
     const errorElement = this.errors[name]!;
 
-    if ((name === 'firstName' || name === 'lastName') && input.value.trim().length < 2) {
+    if ((name === 'firstName' || name === 'lastName') && input.value.length < 2) {
       errorElement.textContent = 'Минимум 2 символа';
+      return false;
+    }
+    if ((name === 'firstName' || name === 'lastName') && !/^[a-zA-Zа-яА-ЯёЁ\s]+$/.test(input.value)) {
+      errorElement.textContent = 'Только буквы';
       return false;
     }
     if (name === 'email' && !input.value.includes('@')) {
       errorElement.textContent = 'Некорректный email';
       return false;
     }
-    if (name === 'dateOfBirth' && !input.value) {
-      errorElement.textContent = 'Укажите дату рождения';
-      return false;
+
+    if (name === 'dateOfBirth') {
+      if (!input.value) {
+        errorElement.textContent = 'Укажите дату рождения';
+        return false;
+      }
+      const birthDate = new Date(input.value);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        // birthday not reached yet this year
+        age--;
+      }
+      if (age < 16 || age > 100) {
+        errorElement.textContent = 'Возраст должен быть от 16 до 100 лет';
+        return false;
+      }
     }
     errorElement.textContent = '';
     return true;
