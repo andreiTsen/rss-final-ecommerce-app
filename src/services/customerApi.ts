@@ -1,4 +1,4 @@
-import { createApiBuilderFromCtpClient } from '@commercetools/platform-sdk';
+import { ByProjectKeyCartsReplicateRequestBuilder, createApiBuilderFromCtpClient } from '@commercetools/platform-sdk';
 import { ClientBuilder, type AuthMiddlewareOptions, type HttpMiddlewareOptions } from '@commercetools/sdk-client-v2';
 
 const customerAuthMiddlewareOptions: AuthMiddlewareOptions = {
@@ -12,8 +12,10 @@ const customerAuthMiddlewareOptions: AuthMiddlewareOptions = {
     `manage_customers:${process.env.CT_PROJECT_KEY}`,
     `view_published_products:${process.env.CT_PROJECT_KEY}`,
     `manage_my_profile:${process.env.CT_PROJECT_KEY}`,
+    `manage_my_orders:${process.env.CT_PROJECT_KEY}`,
     `view_orders:${process.env.CT_PROJECT_KEY}`,
     `view_categories:${process.env.CT_PROJECT_KEY}`,
+    `create_anonymous_token:${process.env.CT_PROJECT_KEY}`,
   ],
   fetch,
 };

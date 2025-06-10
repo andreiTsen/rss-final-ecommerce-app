@@ -3,6 +3,7 @@ import { Navigation, Pagination } from 'swiper/modules';
 import ElementCreator from '../../utils/ElementCreator';
 import './../../pages/productAboutPage/productAboutPage.css';
 import 'swiper/swiper-bundle.css';
+import { CartService } from '../../services/cart';
 
 export default class productAboutPage {
   private container: HTMLElement;

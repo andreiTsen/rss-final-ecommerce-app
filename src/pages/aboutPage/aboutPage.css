@@ -1,0 +1,134 @@
+.about-container {
+  display: flex;
+  max-width: 1440px;
+  flex-direction: column;
+  margin: 0 auto;
+  gap: 3rem;
+}
+
+.about-title {
+  color: #4caf50;
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 0 auto;
+  margin-bottom: 25px;
+}
+
+.about-dev__container {
+  display: flex;
+  justify-content: flex-start;
+  background-color: #ffffff;
+  border-radius: 20px;
+  gap: 1.5rem;
+  border: 2px solid #4caf50;
+  padding: 0px 35px 0px 0px;
+}
+
+.about-img__container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.about-img {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 20px;
+  width: 355px;
+  border-style: none;
+}
+
+.dev-1 {
+  background-image: url('./../../assets/img/dev-andrei.jpg');
+  height: 445px;
+}
+
+.dev-2 {
+  background-image: url('./../../assets/img/dev-arkhip.jpg');
+  height: 500px;
+}
+
+.dev-3 {
+  background-image: url('./../../assets/img/image.png');
+  height: 500px;
+}
+
+.about-dev__name-box {
+  display: flex;
+}
+
+.about-dev__name {
+  font-size: 1.5rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.7rem;
+}
+
+.about-dev__role {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.about-dev__info {
+  font-size: 1rem;
+  margin-bottom: 0.7rem;
+  text-align: justify;
+}
+
+.about-dev__contribution {
+  text-align: justify;
+}
+
+.about-dev__common--info {
+  text-align: center;
+  font-size: 1.25rem;
+  color: #eece1c;
+  font-weight: 600;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+}
+
+.footer-logo {
+  background-image: url('./../../assets/icons/rs-icon.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 200px;
+  height: 100px;
+  margin-bottom: 15px;
+}
+
+.about-intro {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.container_developer {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+@media screen and (max-width: 800px) {
+  .about-dev__container {
+    flex-direction: column;
+    padding: 10px;
+  }
+  .about-dev__info-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .about-dev__contribution {
+    font-size: 0.9rem;
+  }
+  .about-dev__common--info {
+    font-size: 1rem;
+  }
+}

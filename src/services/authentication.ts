@@ -2,6 +2,7 @@ import { Customer, CustomerSignInResult, Product, ProductProjection } from '@com
 import { apiRoot } from '../api';
 import createErrorMessage from '../pages/loginPage/errorMessage';
 import { customerApiRoot } from './customerApi';
+import { CartService } from './cart';
 
 type TokenResponse = {
   access_token: string;
@@ -47,6 +48,8 @@ export class AuthorizationService {
       }
       const tokenData: TokenResponse = await token.json();
       this.saveAuthData(response.body, tokenData);
+      const cart = CartService.getActiveCart();
+      console.log(cart);
       return true;
     } catch (error) {
       console.error('Ошибка при входе:', error);

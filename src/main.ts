@@ -11,6 +11,8 @@ import { customerApiRoot } from './services/customerApi';
 import './assets/style.css';
 import { ProfilePage } from './pages/ProfilePage/Profile';
 import { CatalogPage } from './pages/catalogPage/catalog';
+import { CartService } from './services/cart';
+import AboutPage from './pages/aboutPage/aboutPage';
 // const appRoot = document.body;
 
 let appContainer: HTMLElement;
@@ -42,44 +44,76 @@ function setupRouting(): void {
   window.addEventListener('popstate', handleRouting);
 }
 
+// function handleRouting(): void {
+//   const path = window.location.pathname;
+//   const isAuthenticated = AuthorizationService.isAuthenticated();
+//   appContainer.innerHTML = '';
+//   switch (path) {
+//     case '/':
+//     case '/store':
+//       new CatalogPage(appContainer);
+//       break;
+//     case '/registration':
+//       if (!isAuthenticated) {
+//         new RegistrationPage(appContainer);
+//       } else {
+//         navigateTo('/store');
+//       }
+//       break;
+//     case '/login':
+//       if (!isAuthenticated) {
+//         new loginPage(appContainer);
+//       } else {
+//         navigateTo('/store');
+//       }
+//       break;
+//     case '/product-about': {
+//       void handleProductAbout(appContainer);
+//       break;
+//     }
+//     case '/profile':
+//       if (isAuthenticated) {
+//         new ProfilePage(appContainer);
+//       } else {
+//         navigateTo('/login');
+//       }
+//       break;
+//     case '/about-us': {
+//       new AboutPage(appContainer);
+//       break;
+//     }
+//     default:
+//       renderPlaceholderPage('Oшибка 404. Страница не найдена', isAuthenticated);
+//       break;
+//   }
+//   navigation.setActiveLink(path);
+// }
+
 function handleRouting(): void {
   const path = window.location.pathname;
   const isAuthenticated = AuthorizationService.isAuthenticated();
   appContainer.innerHTML = '';
-  switch (path) {
-    case '/':
-    case '/store':
-      new CatalogPage(appContainer);
-      break;
-    case '/registration':
-      if (!isAuthenticated) {
-        new RegistrationPage(appContainer);
-      } else {
-        navigateTo('/store');
-      }
-      break;
-    case '/login':
-      if (!isAuthenticated) {
-        new loginPage(appContainer);
-      } else {
-        navigateTo('/store');
-      }
-      break;
-    case '/product-about': {
-      void handleProductAbout(appContainer);
-      break;
-    }
-    case '/profile':
-      if (isAuthenticated) {
-        new ProfilePage(appContainer);
-      } else {
-        navigateTo('/login');
-      }
-      break;
-    default:
-      renderPlaceholderPage('Oшибка 404. Страница не найдена', isAuthenticated);
-      break;
+
+  const routes = {
+    '/': (): CatalogPage => new CatalogPage(appContainer),
+    '/store': (): CatalogPage => new CatalogPage(appContainer),
+    '/registration': (): void | RegistrationPage =>
+      !isAuthenticated ? new RegistrationPage(appContainer) : navigateTo('/store'),
+    '/login': (): void | loginPage => (!isAuthenticated ? new loginPage(appContainer) : navigateTo('/store')),
+    '/product-about': (): void => void handleProductAbout(appContainer),
+    '/profile': (): ProfilePage | void => (isAuthenticated ? new ProfilePage(appContainer) : navigateTo('/login')),
+    '/about-us': (): AboutPage => new AboutPage(appContainer),
+    default: (): void => renderPlaceholderPage('Oшибка 404. Страница не найдена', isAuthenticated),
+  } as const;
+
+  type RouteKey = keyof typeof routes;
+
+  function isRouteKey(path: string): path is RouteKey {
+    return path in routes;
   }
+
+  const handler = isRouteKey(path) ? routes[path] : routes.default;
+  handler();
   navigation.setActiveLink(path);
 }
 

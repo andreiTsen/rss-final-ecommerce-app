@@ -25,6 +25,10 @@ export const authMiddlewareOptions: AuthMiddlewareOptions = {
     `manage_my_profile:${process.env.CT_PROJECT_KEY}`,
     `manage_project:${process.env.CT_PROJECT_KEY}`,
     `create_anonymous_token:${process.env.CT_PROJECT_KEY}`,
+    `manage_my_orders:${process.env.CT_PROJECT_KEY}`,
+    `manage_my_shopping_lists:${process.env.CT_PROJECT_KEY}`,
+    `manage_my_quote_requests:${process.env.CT_PROJECT_KEY}`,
+    `introspect_oauth_tokens:${process.env.CT_PROJECT_KEY}`,
   ],
   fetch,
 };

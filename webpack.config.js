@@ -12,7 +12,7 @@ const config = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'index.js',
-    publicPath: '/rss-final-ecommerce-app/',
+    publicPath: '/',
     clean: true,
   },
   resolve: {
@@ -47,7 +47,7 @@ const config = {
     new HtmlWebpackPlugin({
       template: './src/index.html',
       inject: 'body',
-      favicon: './src/img/raccoon.png',
+      favicon: './src/assets/img/raccoon.png',
       templateParameters: {
         BASE_HREF: isProduction ? '/andreitsen-rss-final-ecommerce-app/' : '/',
       },
