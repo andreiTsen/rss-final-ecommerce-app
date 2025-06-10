@@ -1,9 +1,10 @@
-import { ApiRoot, ByProjectKeyRequestBuilder, createApiBuilderFromCtpClient } from '@commercetools/platform-sdk';
+import { ByProjectKeyRequestBuilder, createApiBuilderFromCtpClient } from '@commercetools/platform-sdk';
 import {
   ClientBuilder,
   type PasswordAuthMiddlewareOptions,
   type HttpMiddlewareOptions,
   AuthMiddlewareOptions,
+  type AnonymousAuthMiddlewareOptions,
 } from '@commercetools/sdk-client-v2';
 
 const customerHttpMiddlewareOptions: HttpMiddlewareOptions = {
@@ -41,6 +42,32 @@ export function getCustomerApiRootWithPassword(email: string, password: string):
     .build();
 
   return createApiBuilderFromCtpClient(customerClient).withProjectKey({
+    projectKey: process.env.CT_PROJECT_KEY || '',
+  });
+}
+
+export function getAnonymousApiRoot(): ByProjectKeyRequestBuilder {
+  const anonymousAuthOptions: AnonymousAuthMiddlewareOptions = {
+    host: process.env.CT_AUTH_URL || '',
+    projectKey: process.env.CT_PROJECT_KEY || '',
+    credentials: {
+      clientId: process.env.CT_CLIENT_ID || '',
+      clientSecret: process.env.CT_CLIENT_SECRET || '',
+    },
+    scopes: [
+      `manage_my_orders:${process.env.CT_PROJECT_KEY}`,
+      `view_published_products:${process.env.CT_PROJECT_KEY}`,
+      `view_categories:${process.env.CT_PROJECT_KEY}`,
+    ],
+    fetch,
+  };
+
+  const anonymousClient = new ClientBuilder()
+    .withAnonymousSessionFlow(anonymousAuthOptions)
+    .withHttpMiddleware(customerHttpMiddlewareOptions)
+    .build();
+
+  return createApiBuilderFromCtpClient(anonymousClient).withProjectKey({
     projectKey: process.env.CT_PROJECT_KEY || '',
   });
 }

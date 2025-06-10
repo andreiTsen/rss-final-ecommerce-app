@@ -1,7 +1,6 @@
 import {
   Cart,
   LineItem,
-  CartDraft,
   MyCartDraft,
   Product,
   MyCartUpdateAction,
@@ -9,6 +8,7 @@ import {
 } from '@commercetools/platform-sdk';
 import { apiRoot } from '../api';
 import { AuthorizationService } from './authentication';
+import { getCustomerApiRootWithPassword, getAnonymousApiRoot } from './customerApi';
 
 export type CartData = {
   id: string;
@@ -35,6 +35,8 @@ export class CartService {
   private static defaultTaxCategoryId: string | null = null;
   private static cartUpdateCallbacks: Array<(cart: CartData) => void> = [];
   private static isInitializing: boolean = false;
+  private static userApiClient: ByProjectKeyRequestBuilder | null = null;
+  private static anonymousApiClient: ByProjectKeyRequestBuilder | null = null;
 
   public static onCartUpdate(callback: (cart: CartData) => void): void {
     this.cartUpdateCallbacks.push(callback);
@@ -78,22 +80,39 @@ export class CartService {
 
   public static async addProductToCart(productId: string, quantity: number = 1): Promise<CartData> {
     try {
-      const isAuthenticated = AuthorizationService.isAuthenticated();
-      let updatedCart: CartData;
+      const cart = await this.getOrCreateCart();
+      const apiClient = this.getCartApiClient();
 
-      if (isAuthenticated) {
-        await this.ensureProductHasTaxCategory(productId);
-        updatedCart = await this.addToUserCart(productId, quantity);
-      } else {
-        updatedCart = await this.addToAnonymousCart(productId, quantity);
-      }
+      const updateAction: MyCartUpdateAction = {
+        action: 'addLineItem',
+        productId,
+        quantity,
+      };
 
+      const response = await apiClient
+        .me()
+        .carts()
+        .withId({ ID: cart.id })
+        .post({
+          body: {
+            version: cart.version,
+            actions: [updateAction],
+          },
+        })
+        .execute();
+
+      const updatedCart = this.mapCartToData(response.body);
       this.currentCart = updatedCart;
       this.notifyCartUpdate(updatedCart);
 
       return updatedCart;
-    } catch (error) {
-      console.error('Ошибка добавления товара', error);
+    } catch (error: unknown) {
+      console.error('Ошибка добавления в корзину:', error);
+
+      if (this.isCommerceToolsError(error)) {
+        console.error('Детали:', error.body);
+      }
+
       throw error;
     }
   }
@@ -101,10 +120,26 @@ export class CartService {
   public static async removeProductFromCart(lineItemId: string): Promise<CartData> {
     try {
       const cart = await this.getOrCreateCart();
-      const isAuthenticated = AuthorizationService.isAuthenticated();
+      const apiClient = this.getCartApiClient();
 
-      const updatedCart = await this.executeRemoveLineItem(cart, lineItemId, isAuthenticated);
+      const updateAction: MyCartUpdateAction = {
+        action: 'removeLineItem',
+        lineItemId,
+      };
 
+      const response = await apiClient
+        .me()
+        .carts()
+        .withId({ ID: cart.id })
+        .post({
+          body: {
+            version: cart.version,
+            actions: [updateAction],
+          },
+        })
+        .execute();
+
+      const updatedCart = this.mapCartToData(response.body);
       this.currentCart = updatedCart;
       this.notifyCartUpdate(updatedCart);
       return updatedCart;
@@ -117,15 +152,32 @@ export class CartService {
   public static async updateProductQuantity(lineItemId: string, quantity: number): Promise<CartData> {
     try {
       const cart = await this.getOrCreateCart();
-      const isAuthenticated = AuthorizationService.isAuthenticated();
+      const apiClient = this.getCartApiClient();
 
-      const updatedCart = await this.executeQuantityUpdate(cart, lineItemId, quantity, isAuthenticated);
+      const updateAction: MyCartUpdateAction = {
+        action: 'changeLineItemQuantity',
+        lineItemId,
+        quantity,
+      };
 
+      const response = await apiClient
+        .me()
+        .carts()
+        .withId({ ID: cart.id })
+        .post({
+          body: {
+            version: cart.version,
+            actions: [updateAction],
+          },
+        })
+        .execute();
+
+      const updatedCart = this.mapCartToData(response.body);
       this.currentCart = updatedCart;
       this.notifyCartUpdate(updatedCart);
       return updatedCart;
     } catch (error) {
-      console.error('Ошибка измененія товара:', error);
+      console.error('Ошибка изменения кол-ва товара:', error);
       throw error;
     }
   }
@@ -138,9 +190,25 @@ export class CartService {
         return cart;
       }
 
-      const isAuthenticated = AuthorizationService.isAuthenticated();
-      const updatedCart = await this.executeClearCart(cart, isAuthenticated);
+      const apiClient = this.getCartApiClient();
+      const actions: MyCartUpdateAction[] = cart.lineItems.map((item) => ({
+        action: 'removeLineItem',
+        lineItemId: item.id,
+      }));
 
+      const response = await apiClient
+        .me()
+        .carts()
+        .withId({ ID: cart.id })
+        .post({
+          body: {
+            version: cart.version,
+            actions,
+          },
+        })
+        .execute();
+
+      const updatedCart = this.mapCartToData(response.body);
       this.currentCart = updatedCart;
       this.notifyCartUpdate(updatedCart);
       return updatedCart;
@@ -173,11 +241,63 @@ export class CartService {
   public static clearCartCache(): void {
     this.currentCart = null;
     this.defaultTaxCategoryId = null;
+    this.userApiClient = null;
+    this.anonymousApiClient = null;
     this.resetCallbacks();
   }
 
   public static getCurrentCart(): CartData | null {
     return this.currentCart;
+  }
+
+  private static isCommerceToolsError(
+    error: unknown
+  ): error is { body: unknown; statusCode?: number; message?: string } {
+    return typeof error === 'object' && error !== null && 'body' in error;
+  }
+
+  private static getCartApiClient(): ByProjectKeyRequestBuilder {
+    const isAuthenticated = AuthorizationService.isAuthenticated();
+
+    if (isAuthenticated) {
+      if (!this.userApiClient) {
+        const userData = this.getUserCredentials();
+        if (userData) {
+          this.userApiClient = getCustomerApiRootWithPassword(userData.email, userData.password);
+        } else {
+          throw new Error('Не найдены учетные данные авторизованного пользователя');
+        }
+      }
+      return this.userApiClient;
+    } else {
+      if (!this.anonymousApiClient) {
+        this.anonymousApiClient = getAnonymousApiRoot();
+      }
+      return this.anonymousApiClient;
+    }
+  }
+
+  private static getUserCredentials(): { email: string; password: string } | null {
+    try {
+      const currentUser = AuthorizationService.getCurrentUser();
+      if (currentUser && currentUser.email && currentUser.password) {
+        return { email: currentUser.email, password: currentUser.password };
+      }
+
+      const savedCredentials = localStorage.getItem('userCredentials');
+      if (savedCredentials) {
+        const credentials = JSON.parse(savedCredentials);
+        if (credentials.email && credentials.password) {
+          return credentials;
+        }
+      }
+
+      console.warn('Нет данных юзера');
+      return null;
+    } catch (error) {
+      console.error('Ошібка данных юзера:', error);
+      return null;
+    }
   }
 
   private static async waitForInitialization(): Promise<void> {
@@ -191,96 +311,41 @@ export class CartService {
   private static async initializeCart(): Promise<CartData> {
     const isAuthenticated = AuthorizationService.isAuthenticated();
 
-    if (isAuthenticated) {
-      return await this.getOrCreateUserCart();
-    } else {
-      return await this.getOrCreateAnonymousCart();
+    try {
+      const apiClient = this.getCartApiClient();
+
+      const response = await apiClient.me().activeCart().get().execute();
+      const cart = this.mapCartToData(response.body);
+      this.currentCart = cart;
+      this.notifyCartUpdate(cart);
+      return cart;
+    } catch (mergeError: unknown) {
+      console.error('Ошибка объединения корзин:', mergeError);
+      localStorage.removeItem('anonymousCartId');
+      return await this.createNewCart(isAuthenticated);
     }
   }
 
-  private static async executeRemoveLineItem(
-    cart: CartData,
-    lineItemId: string,
-    isAuthenticated: boolean
-  ): Promise<CartData> {
-    const action: MyCartUpdateAction = {
-      action: 'removeLineItem',
-      lineItemId,
+  private static async createNewCart(isAuthenticated: boolean): Promise<CartData> {
+    const apiClient = this.getCartApiClient();
+
+    const cartDraft: MyCartDraft = {
+      currency: 'EUR',
+      country: 'DE',
+      taxMode: 'Disabled',
     };
 
-    if (isAuthenticated) {
-      return await this.executeUserCartAction(cart, [action]);
-    } else {
-      return await this.executeAnonymousCartAction(cart, [action]);
-    }
-  }
+    const response = await apiClient.me().carts().post({ body: cartDraft }).execute();
 
-  private static async executeQuantityUpdate(
-    cart: CartData,
-    lineItemId: string,
-    quantity: number,
-    isAuthenticated: boolean
-  ): Promise<CartData> {
-    const action: MyCartUpdateAction = {
-      action: 'changeLineItemQuantity',
-      lineItemId,
-      quantity,
-    };
+    const cart = this.mapCartToData(response.body);
+    this.currentCart = cart;
 
-    if (isAuthenticated) {
-      return await this.executeUserCartAction(cart, [action]);
-    } else {
-      return await this.executeAnonymousCartAction(cart, [action]);
-    }
-  }
-
-  private static async executeClearCart(cart: CartData, isAuthenticated: boolean): Promise<CartData> {
-    const actions: MyCartUpdateAction[] = cart.lineItems.map((item) => ({
-      action: 'removeLineItem',
-      lineItemId: item.id,
-    }));
-
-    if (isAuthenticated) {
-      return await this.executeUserCartAction(cart, actions);
-    } else {
-      return await this.executeAnonymousCartAction(cart, actions);
-    }
-  }
-
-  private static async executeUserCartAction(cart: CartData, actions: MyCartUpdateAction[]): Promise<CartData> {
-    const userApiClient = AuthorizationService.getUserApiClient();
-    if (!userApiClient) {
-      throw new Error('Не смоглі получить API клиент пользователя');
+    if (!isAuthenticated) {
+      localStorage.setItem('anonymousCartId', cart.id);
     }
 
-    const response = await userApiClient
-      .me()
-      .carts()
-      .withId({ ID: cart.id })
-      .post({
-        body: {
-          version: cart.version,
-          actions,
-        },
-      })
-      .execute();
-
-    return this.mapCartToData(response.body);
-  }
-
-  private static async executeAnonymousCartAction(cart: CartData, actions: MyCartUpdateAction[]): Promise<CartData> {
-    const response = await apiRoot
-      .carts()
-      .withId({ ID: cart.id })
-      .post({
-        body: {
-          version: cart.version,
-          actions,
-        },
-      })
-      .execute();
-
-    return this.mapCartToData(response.body);
+    this.notifyCartUpdate(cart);
+    return cart;
   }
 
   private static async performCartMerge(
@@ -375,7 +440,7 @@ export class CartService {
       try {
         callback(cart);
       } catch (error) {
-        console.error(`Ошибка callback ${index + 1}:`, error);
+        console.error(`Ошібка callback ${index + 1}:`, error);
       }
     });
 
@@ -427,7 +492,7 @@ export class CartService {
 
       return null;
     } catch (error) {
-      console.error('Ошибка налоговой категории:', error);
+      console.error('Ошибка налоговов:', error);
       return null;
     }
   }
@@ -516,141 +581,6 @@ export class CartService {
         },
       })
       .execute();
-  }
-
-  private static async getOrCreateUserCart(): Promise<CartData> {
-    const userApiClient = AuthorizationService.getUserApiClient();
-    if (!userApiClient) {
-      throw new Error('Ошибка полученія API клиента пользователя');
-    }
-
-    try {
-      const response = await userApiClient.me().activeCart().get().execute();
-      const cart = this.mapCartToData(response.body);
-      this.currentCart = cart;
-      this.notifyCartUpdate(cart);
-      return cart;
-    } catch {
-      return await this.createUserCart();
-    }
-  }
-
-  private static async createUserCart(): Promise<CartData> {
-    const userApiClient = AuthorizationService.getUserApiClient();
-    if (!userApiClient) {
-      throw new Error('Ошібка полученія API клиента пользователя');
-    }
-
-    const cartDraft: MyCartDraft = {
-      currency: 'EUR',
-      country: 'DE',
-      taxMode: 'Platform',
-    };
-
-    const response = await userApiClient
-      .me()
-      .carts()
-      .post({
-        body: cartDraft,
-      })
-      .execute();
-
-    const cart = this.mapCartToData(response.body);
-    this.currentCart = cart;
-    this.notifyCartUpdate(cart);
-    return cart;
-  }
-
-  private static async getOrCreateAnonymousCart(): Promise<CartData> {
-    const anonymousCartId = localStorage.getItem('anonymousCartId');
-
-    if (anonymousCartId) {
-      try {
-        const response = await apiRoot.carts().withId({ ID: anonymousCartId }).get().execute();
-
-        const cart = this.mapCartToData(response.body);
-        this.currentCart = cart;
-        this.notifyCartUpdate(cart);
-        return cart;
-      } catch {
-        localStorage.removeItem('anonymousCartId');
-      }
-    }
-
-    return await this.createAnonymousCart();
-  }
-
-  private static async createAnonymousCart(): Promise<CartData> {
-    const cartDraft: CartDraft = {
-      currency: 'EUR',
-      country: 'DE',
-      taxMode: 'Disabled',
-    };
-
-    const response = await apiRoot
-      .carts()
-      .post({
-        body: cartDraft,
-      })
-      .execute();
-
-    const cart = this.mapCartToData(response.body);
-    this.currentCart = cart;
-
-    localStorage.setItem('anonymousCartId', cart.id);
-    this.notifyCartUpdate(cart);
-    return cart;
-  }
-
-  private static async addToUserCart(productId: string, quantity: number): Promise<CartData> {
-    const cart = await this.getOrCreateCart();
-    const userApiClient = AuthorizationService.getUserApiClient();
-    if (!userApiClient) {
-      throw new Error('Оўібка полученія API клиентпа пользователя');
-    }
-
-    const response = await userApiClient
-      .me()
-      .carts()
-      .withId({ ID: cart.id })
-      .post({
-        body: {
-          version: cart.version,
-          actions: [
-            {
-              action: 'addLineItem',
-              productId,
-              quantity,
-            },
-          ],
-        },
-      })
-      .execute();
-
-    return this.mapCartToData(response.body);
-  }
-
-  private static async addToAnonymousCart(productId: string, quantity: number): Promise<CartData> {
-    const cart = await this.getOrCreateCart();
-
-    const response = await apiRoot
-      .carts()
-      .withId({ ID: cart.id })
-      .post({
-        body: {
-          version: cart.version,
-          actions: [
-            {
-              action: 'addLineItem',
-              productId,
-              quantity,
-            },
-          ],
-        },
-      })
-      .execute();
-
-    return this.mapCartToData(response.body);
   }
 
   private static mapCartToData(cart: Cart): CartData {
