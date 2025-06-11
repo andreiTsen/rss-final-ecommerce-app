@@ -11,6 +11,7 @@ import { customerApiRoot } from './services/customerApi';
 import './assets/style.css';
 import { ProfilePage } from './pages/ProfilePage/Profile';
 import { CatalogPage } from './pages/catalogPage/catalog';
+import { ShoppingCartPage } from './pages/shoppingCartPage/shoppingCartPage';
 
 import { CartService } from './services/cartService';
 
@@ -149,20 +150,13 @@ export async function handleUserAuthChange(): Promise<void> {
 }
 
 function renderCartPage(): void {
-  const cartContainer = document.createElement('div');
-  cartContainer.className = 'cart-page-container';
-
-  const title = document.createElement('h1');
-  title.textContent = 'Корзина';
-  title.className = 'cart-page-title';
-
-  const message = document.createElement('p');
-  message.textContent = 'Страница корзины в разработке';
-  message.className = 'cart-page-message';
-
-  cartContainer.appendChild(title);
-  cartContainer.appendChild(message);
-  appContainer.appendChild(cartContainer);
+  const isAuthenticated = AuthorizationService.isAuthenticated();
+  if (isAuthenticated) {
+    new ShoppingCartPage();
+  } else {
+    renderPlaceholderPage('Для доступа к корзине необходимо войти в учетную запись', isAuthenticated);
+  }
+  
 }
 
 function createPlaceholderContainer(pageName: string): HTMLDivElement {

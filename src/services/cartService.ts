@@ -52,6 +52,7 @@ export class CartService {
 
   public static resetCallbacks(): void {
     this.cartUpdateCallbacks = [];
+    console.log('Сброс колбеков корзины');
   }
 
   public static async getOrCreateCart(): Promise<CartData> {
@@ -66,18 +67,19 @@ export class CartService {
           return this.currentCart;
         }
       }
-
+      console.log('Инициализация корзины...', this.currentCart);
       this.isInitializing = true;
       const cart = await this.initializeCart();
       this.isInitializing = false;
       return cart;
     } catch (error) {
       this.isInitializing = false;
-      console.error('Ошибка создаіия корзины:', error);
+      console.error('Ошибка создания корзины:', error);
       throw error;
     }
   }
 
+  // Здесь происходит отправка на сервер продукта и добавление в корзину
   public static async addProductToCart(productId: string, quantity: number = 1): Promise<CartData> {
     try {
       const cart = await this.getOrCreateCart();
@@ -104,6 +106,7 @@ export class CartService {
       const updatedCart = this.mapCartToData(response.body);
       this.currentCart = updatedCart;
       this.notifyCartUpdate(updatedCart);
+      console.log('Корзина обновлена после добавления товара:', updatedCart);
 
       return updatedCart;
     } catch (error: unknown) {
