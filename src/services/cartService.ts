@@ -8,7 +8,7 @@ import {
 } from '@commercetools/platform-sdk';
 import { apiRoot } from '../api';
 import { AuthorizationService } from './authentication';
-import { getCustomerApiRootWithPassword, getAnonymousApiRoot } from './customerApi';
+import { getCustomerApiRootWithPassword } from './customerApi';
 
 export type CartData = {
   id: string;
@@ -81,7 +81,7 @@ export class CartService {
   public static async addProductToCart(productId: string, quantity: number = 1): Promise<CartData> {
     try {
       const cart = await this.getOrCreateCart();
-      const apiClient = this.getCartApiClient();
+      const isAuthenticated = AuthorizationService.isAuthenticated();
 
       const updateAction: MyCartUpdateAction = {
         action: 'addLineItem',
@@ -89,31 +89,14 @@ export class CartService {
         quantity,
       };
 
-      const response = await apiClient
-        .me()
-        .carts()
-        .withId({ ID: cart.id })
-        .post({
-          body: {
-            version: cart.version,
-            actions: [updateAction],
-          },
-        })
-        .execute();
-
+      const response = await this.executeCartUpdate(cart, updateAction, isAuthenticated);
       const updatedCart = this.mapCartToData(response.body);
       this.currentCart = updatedCart;
       this.notifyCartUpdate(updatedCart);
 
       return updatedCart;
     } catch (error: unknown) {
-      console.error('Ошибка добавления в корзину:', error);
-
-      if (this.isCommerceToolsError(error)) {
-        console.error('Детали:', error.body);
-      }
-
-      throw error;
+      return await this.handleAddToCartError(error, productId, quantity);
     }
   }
 
@@ -144,7 +127,7 @@ export class CartService {
       this.notifyCartUpdate(updatedCart);
       return updatedCart;
     } catch (error) {
-      console.error('Ошибка удаления товара', error);
+      console.error('Ошібка удаления товара', error);
       throw error;
     }
   }
@@ -256,6 +239,54 @@ export class CartService {
     return typeof error === 'object' && error !== null && 'body' in error;
   }
 
+  private static async executeCartUpdate(
+    cart: CartData,
+    updateAction: MyCartUpdateAction,
+    isAuthenticated: boolean
+  ): Promise<{ body: Cart }> {
+    if (isAuthenticated) {
+      const apiClient = this.getCartApiClient();
+      return await apiClient
+        .me()
+        .carts()
+        .withId({ ID: cart.id })
+        .post({
+          body: {
+            version: cart.version,
+            actions: [updateAction],
+          },
+        })
+        .execute();
+    } else {
+      return await apiRoot
+        .carts()
+        .withId({ ID: cart.id })
+        .post({
+          body: {
+            version: cart.version,
+            actions: [updateAction],
+          },
+        })
+        .execute();
+    }
+  }
+
+  private static async handleAddToCartError(error: unknown, productId: string, quantity: number): Promise<CartData> {
+    console.error('Ошибка добавления в корзину:', error);
+
+    if (this.isCommerceToolsError(error)) {
+      console.error('Детали:', error.body);
+
+      if (error.statusCode === 409) {
+        console.warn('Конфлікт версий корзины, обновленіе...');
+        this.currentCart = null;
+        return await this.addProductToCart(productId, quantity);
+      }
+    }
+
+    throw error;
+  }
+
   private static getCartApiClient(): ByProjectKeyRequestBuilder {
     const isAuthenticated = AuthorizationService.isAuthenticated();
 
@@ -270,10 +301,7 @@ export class CartService {
       }
       return this.userApiClient;
     } else {
-      if (!this.anonymousApiClient) {
-        this.anonymousApiClient = getAnonymousApiRoot();
-      }
-      return this.anonymousApiClient;
+      return apiRoot;
     }
   }
 
@@ -312,40 +340,74 @@ export class CartService {
     const isAuthenticated = AuthorizationService.isAuthenticated();
 
     try {
-      const apiClient = this.getCartApiClient();
+      if (isAuthenticated) {
+        const apiClient = this.getCartApiClient();
+        const response = await apiClient.me().activeCart().get().execute();
+        const cart = this.mapCartToData(response.body);
+        this.currentCart = cart;
+        this.notifyCartUpdate(cart);
+        return cart;
+      } else {
+        const anonymousCartId = localStorage.getItem('anonymousCartId');
 
-      const response = await apiClient.me().activeCart().get().execute();
-      const cart = this.mapCartToData(response.body);
-      this.currentCart = cart;
-      this.notifyCartUpdate(cart);
-      return cart;
-    } catch (mergeError: unknown) {
-      console.error('Ошибка объединения корзин:', mergeError);
-      localStorage.removeItem('anonymousCartId');
+        if (anonymousCartId) {
+          try {
+            const response = await apiRoot.carts().withId({ ID: anonymousCartId }).get().execute();
+            const cart = this.mapCartToData(response.body);
+            this.currentCart = cart;
+            this.notifyCartUpdate(cart);
+            return cart;
+          } catch (error) {
+            console.warn('Анонимная корзины нет, создаем новую', error);
+            localStorage.removeItem('anonymousCartId');
+          }
+        }
+
+        return await this.createNewCart(false);
+      }
+    } catch (error) {
+      console.warn('Нет активной корзины, создаем новую', error);
       return await this.createNewCart(isAuthenticated);
     }
   }
 
   private static async createNewCart(isAuthenticated: boolean): Promise<CartData> {
-    const apiClient = this.getCartApiClient();
+    try {
+      if (isAuthenticated) {
+        const apiClient = this.getCartApiClient();
+        const cartDraft: MyCartDraft = {
+          currency: 'EUR',
+          country: 'DE',
+          taxMode: 'Disabled',
+        };
 
-    const cartDraft: MyCartDraft = {
-      currency: 'EUR',
-      country: 'DE',
-      taxMode: 'Disabled',
-    };
+        const response = await apiClient.me().carts().post({ body: cartDraft }).execute();
+        const cart = this.mapCartToData(response.body);
+        this.currentCart = cart;
+        this.notifyCartUpdate(cart);
+        return cart;
+      } else {
+        const response = await apiRoot
+          .carts()
+          .post({
+            body: {
+              currency: 'EUR',
+              country: 'DE',
+              taxMode: 'Disabled',
+            },
+          })
+          .execute();
 
-    const response = await apiClient.me().carts().post({ body: cartDraft }).execute();
-
-    const cart = this.mapCartToData(response.body);
-    this.currentCart = cart;
-
-    if (!isAuthenticated) {
-      localStorage.setItem('anonymousCartId', cart.id);
+        const cart = this.mapCartToData(response.body);
+        this.currentCart = cart;
+        localStorage.setItem('anonymousCartId', cart.id);
+        this.notifyCartUpdate(cart);
+        return cart;
+      }
+    } catch (error) {
+      console.error('Ошибка создания корзины:', error);
+      throw error;
     }
-
-    this.notifyCartUpdate(cart);
-    return cart;
   }
 
   private static async performCartMerge(
