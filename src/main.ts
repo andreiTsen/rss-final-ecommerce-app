@@ -15,7 +15,6 @@ import { ShoppingCartPage } from './pages/shoppingCartPage/shoppingCartPage';
 
 import { CartService } from './services/cartService';
 
-
 let appContainer: HTMLElement;
 export let navigation: Navigation;
 
@@ -156,7 +155,6 @@ function renderCartPage(): void {
   } else {
     renderPlaceholderPage('Для доступа к корзине необходимо войти в учетную запись', isAuthenticated);
   }
-  
 }
 
 function createPlaceholderContainer(pageName: string): HTMLDivElement {

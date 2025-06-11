@@ -83,7 +83,6 @@ export class Navigation {
 
       nav.appendChild(loginLink);
       nav.appendChild(registerLink);
-
     }
 
     this.root.appendChild(nav);
