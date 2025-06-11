@@ -31,14 +31,15 @@ export default class AboutPage {
 
   public createDevContainer(): HTMLElement {
     const container = document.createElement('div');
-    container.classList.add('container_developer')
+    container.classList.add('container_developer');
     const development1 = this.createDeveloper(
       'dev-1',
       'https://github.com/andreiTsen',
       ' Team-Lead and developer',
       ` lorem`,
       ` Занимался координацией деятельности команды, распределял задачи между членами команды, организовывал созвоны, помогал в решении различных проблем на этапе разработки, активно учавствовал в разработке сайта. Были разработаны страницы: регистрация пользователей, каталог товаров. Занимался интеграцией ecommerce, организацией trello дашборда, настройкой репозитория.`,
-      'Andrei Tseniuta'
+      'Andrei Tseniuta',
+      'andreiTsen'
     );
     const development2 = this.createDeveloper(
       'dev-2',
@@ -46,7 +47,8 @@ export default class AboutPage {
       ' Developer',
       `lorem lorem lorem`,
       ` Активно учавствовал в процессе разработки сайта. Занимался настройкой репозитория, разработкой страницы профиля пользователя, корзины, навигации.`,
-      'Andrei Arkhipenka'
+      'Andrei Arkhipenka',
+      'Arkhipenka'
     );
     const development3 = this.createDeveloper(
       'dev-3',
@@ -54,7 +56,8 @@ export default class AboutPage {
       ' Developer',
       ` С детства всегда привлекали компьютеры и техника, после окончания школы пришло время определяться с дальнейшим путём развития - выбрал обучение в колледже на программиста. В процессе обучения в колледже очень сильно разочаровался в качестве обучения и знаний, начал учиться самостоятельно, выбрав направление веб-разработки. В настоящий момент продолжаю обучение в данном направлении, так как вижу для себя перспективу в нём.`,
       ` Активно учавствовал в процессе разработки сайта, были разработаны - страница входа, подробная страница продукта, страница с информацией о разработчиках. Занимался настройкой проекта.`,
-      'Alexander Kalyupanov'
+      'Alexander Kalyupanov',
+      'alexanderkalyupanov'
     );
     container.append(development1, development2, development3);
     return container;
@@ -66,12 +69,13 @@ export default class AboutPage {
     role: string,
     info: string,
     text: string,
-    name: string
+    name: string,
+    git: string
   ): HTMLElement {
     const containerDeveloper = this.createContainerDeveloper();
     const imgDeveloper = this.createImgDeveloper(classname);
     const containerInfoDeveloper = this.createInfoDeveloperContainer();
-    const nameDeveloper = this.createNameBox(name, href);
+    const nameDeveloper = this.createNameBox(name, href, git);
     const roleDeveloper = this.createRoleDeveloper(role);
     const aboutInfoDeveloper = this.createAboutDeveloper(info);
     const contributionDeveloper = this.createContributionDeveloper(text);
@@ -129,7 +133,7 @@ export default class AboutPage {
     return container.getElement();
   }
 
-  public createNameBox(name: string, href: string): HTMLElement {
+  public createNameBox(name: string, href: string, text: string): HTMLElement {
     const containerName = new ElementCreator({
       tagName: 'div',
       classNames: ['about-dev__name-box'],
@@ -146,14 +150,20 @@ export default class AboutPage {
     const link = new ElementCreator({
       tagName: 'a',
       classNames: ['about-dev__link'],
-      attribute: [`href=${href}`],
+      attribute: [`href=${href}`, 'target=_blank'],
     });
     const img = new ElementCreator({
-      tagName: 'img',
+      tagName: 'div',
       classNames: ['about-dev__link-img'],
     });
+    const span = new ElementCreator({
+      tagName: 'span',
+      classNames: ['about-dev__link-name'],
+      textContent: text,
+    });
     linkBox.addInnerElement(link);
-    linkBox.addInnerElement(img);
+    link.addInnerElement(img);
+    link.addInnerElement(span);
     containerName.addInnerElement(nameDeveloper);
     containerName.addInnerElement(linkBox);
     return containerName.getElement();
