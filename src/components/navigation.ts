@@ -72,6 +72,7 @@ export class Navigation {
 
     if (AuthorizationService.isAuthenticated()) {
       const profileLink = this.createLink('👤 Профиль', '/profile');
+
       const logoutButton = this.createLogoutButton();
 
       nav.appendChild(profileLink);
@@ -82,6 +83,7 @@ export class Navigation {
 
       nav.appendChild(loginLink);
       nav.appendChild(registerLink);
+
     }
 
     this.root.appendChild(nav);

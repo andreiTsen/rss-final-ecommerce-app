@@ -11,7 +11,9 @@ import { customerApiRoot } from './services/customerApi';
 import './assets/style.css';
 import { ProfilePage } from './pages/ProfilePage/Profile';
 import { CatalogPage } from './pages/catalogPage/catalog';
+
 import { CartService } from './services/cartService';
+
 
 let appContainer: HTMLElement;
 export let navigation: Navigation;
