@@ -1,4 +1,4 @@
-import { AuthService } from '../../services/authService';
+import { AuthorizationService } from '../../services/authentication';
 import { navigateTo, navigation } from '../../main';
 
 export default function createSidebar(onNavigate: (sectionId: string) => void): HTMLElement {
@@ -18,7 +18,7 @@ export default function createSidebar(onNavigate: (sectionId: string) => void): 
     link.className = 'sidebar-link';
     link.addEventListener('click', () => {
       if (id === 'logout') {
-        AuthService.logout();
+        AuthorizationService.logout();
         navigation.render();
         navigateTo('/');
         return;

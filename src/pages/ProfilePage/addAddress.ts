@@ -1,9 +1,8 @@
 import type { Address } from './sectionProfile';
 import { renderButtonContainer } from './buttonContainer';
-import { updateAddress, addAddress } from './UpateUser';
+import { updateAddress, addAddress } from './UpdateUser';
 import { renderModal } from './modal';
 import { renderAddressSection } from './sectionAdresses';
-import { AuthService } from '../../services/authService';
 import { version } from 'process';
 
 export const countries = [

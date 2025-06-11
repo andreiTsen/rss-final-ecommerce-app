@@ -1,9 +1,9 @@
 import { UserData } from './sectionProfile';
 import { renderButtonContainer } from './buttonContainer';
-import { updateProfileInfo } from './UpateUser';
+import { updateProfileInfo } from './UpdateUser';
 import { renderModal } from './modal';
-import { AuthService } from '../../services/authService';
 import { renderProfileInfoSection } from './sectionProfile';
+import { AuthorizationService } from '../../services/authentication';
 
 const fields: { name: keyof UserData; label: string; type?: string }[] = [
   { name: 'firstName', label: 'Имя', type: 'text' },
@@ -86,7 +86,7 @@ export class EditProfileForm {
         const updated = await updateProfileInfo(payload);
         const modal = renderModal('Профиль обновлен успешно', 'profile');
         document.body.appendChild(modal);
-        AuthService.updateCurrentUser(updated);
+        AuthorizationService.updateCurrentUser(updated);
         renderProfileInfoSection(updated);
       } catch (error) {
         console.error('Ошибка при обновлении профиля:', error);
