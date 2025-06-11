@@ -42,7 +42,8 @@ export class Navigation {
 
     if (AuthorizationService.isAuthenticated()) {
       const profileLink = this.createLink('👤 Профиль', '/profile');
-      nav.appendChild(profileLink);
+      const shoppingCartLink = this.createLink('🛒 Корзина', '/cart');
+      nav.append(shoppingCartLink, profileLink);
     }
 
     this.root.appendChild(nav);

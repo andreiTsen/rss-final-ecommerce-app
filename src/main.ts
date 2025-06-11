@@ -11,6 +11,7 @@ import { customerApiRoot } from './services/customerApi';
 import './assets/style.css';
 import { ProfilePage } from './pages/ProfilePage/Profile';
 import { CatalogPage } from './pages/catalogPage/catalog';
+import { ShoppingCartPage } from './pages/shoppingCartPage/shoppingCartPage';
 // const appRoot = document.body;
 
 let appContainer: HTMLElement;
