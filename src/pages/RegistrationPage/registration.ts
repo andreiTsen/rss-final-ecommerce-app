@@ -1,5 +1,6 @@
 import { apiRoot } from '../../api';
 import { AuthService } from '../../services/authService';
+import { AuthorizationService } from '../../services/authentication';
 import { CustomerDraft } from '@commercetools/platform-sdk';
 import { navigateTo, navigation } from '../../main';
 
@@ -1009,7 +1010,7 @@ export class RegistrationPage {
   }
 
   private static redirectAfterRegistration(): void {
-    if (AuthService.isAuthenticated()) {
+    if (AuthorizationService.isAuthenticated()) {
       setTimeout(() => {
         window.history.pushState({}, '', '/store');
         window.dispatchEvent(new PopStateEvent('popstate'));

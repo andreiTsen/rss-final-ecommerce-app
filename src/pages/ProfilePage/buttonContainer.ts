@@ -1,10 +1,10 @@
-import { AuthService } from '../../services/authService';
+import { AuthorizationService } from '../../services/authentication';
 import { renderAddressSection } from './sectionAdresses';
 import { renderProfileInfoSection, UserData } from './sectionProfile';
 
 function clearAndRenderContent(content: HTMLElement, renderSection: (user: UserData) => HTMLElement): void {
   content.innerHTML = '';
-  const user = AuthService.getCurrentUser();
+  const user = AuthorizationService.getCurrentUser();
   if (user) {
     const profileSection = renderSection(user);
     content.appendChild(profileSection);

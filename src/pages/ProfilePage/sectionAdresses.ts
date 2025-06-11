@@ -1,9 +1,9 @@
 import { UserData } from './sectionProfile';
 import { EditAddressForm, countries } from './renderEditAdresses';
-import { AuthService } from '../../services/authService';
-import { updateDefaultShippingAddress, updateDefaultBillingAddress } from './UpateUser';
+import { updateDefaultShippingAddress, updateDefaultBillingAddress } from './UpdateUser';
 import { AddAddressForm } from './addAddress';
-import removeAddress from './UpateUser';
+import removeAddress from './UpdateUser';
+import { AuthorizationService } from '../../services/authentication';
 
 function createParagraph(label: string, value?: string): HTMLParagraphElement {
   const p = document.createElement('p');
@@ -28,7 +28,7 @@ function createShippingParagraph(addressId?: string): HTMLParagraphElement {
   const shippingCheckbox = document.createElement('input');
   shippingCheckbox.classList.add('shipping-checkbox');
   shippingCheckbox.type = 'checkbox';
-  const idShippingAddressId = AuthService.getCurrentUser()?.defaultShippingAddressId || '';
+  const idShippingAddressId = AuthorizationService.getCurrentUser()?.defaultShippingAddressId || '';
   shippingCheckbox.checked = addressId === idShippingAddressId;
   p.appendChild(shippingCheckbox);
   return p;
@@ -40,7 +40,7 @@ function createBillingParagraph(addressId?: string): HTMLParagraphElement {
   const billingCheckbox = document.createElement('input');
   billingCheckbox.classList.add('billing-checkbox');
   billingCheckbox.type = 'checkbox';
-  const idBillingAddressId = AuthService.getCurrentUser()?.defaultBillingAddressId || '';
+  const idBillingAddressId = AuthorizationService.getCurrentUser()?.defaultBillingAddressId || '';
   billingCheckbox.checked = addressId === idBillingAddressId;
   p.appendChild(billingCheckbox);
   return p;
@@ -160,7 +160,7 @@ function setupShippingCheckboxListener(
         const sectionA = document.querySelector('.address-section-wrapper');
         if (sectionA) {
           sectionA.innerHTML = '';
-          const currentUser = AuthService.getCurrentUser();
+          const currentUser = AuthorizationService.getCurrentUser();
           if (currentUser) {
             const userData: UserData = currentUser; // Assuming currentUser matches UserData structure
             const newSection = renderAddressSection(userData);
@@ -197,7 +197,7 @@ function setupBillingCheckboxListener(
         const sectionA = document.querySelector('.address-section-wrapper');
         if (sectionA) {
           sectionA.innerHTML = '';
-          const currentUser = AuthService.getCurrentUser();
+          const currentUser = AuthorizationService.getCurrentUser();
           if (currentUser) {
             const userData: UserData = currentUser; // Assuming currentUser matches UserData structure
             const newSection = renderAddressSection(userData);

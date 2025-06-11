@@ -1,9 +1,8 @@
 import type { Address } from './sectionProfile';
 import { renderButtonContainer } from './buttonContainer';
-import { addAddress, updateAddress } from './UpateUser';
+import { addAddress, updateAddress } from './UpdateUser';
 import { renderModal } from './modal';
 import { renderAddressSection } from './sectionAdresses';
-import { AuthService } from '../../services/authService';
 
 export const countries = [
   { value: '', text: 'Выберите страну' },
