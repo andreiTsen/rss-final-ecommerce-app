@@ -1,6 +1,7 @@
 import './catalog.css';
 import { ProductService, ProductData, ProductFilters, FilterOptions, SortOption } from '../../services/productService';
 import { CategoryService, CategoryData } from '../../services/categoryService';
+import { CartService } from '../../services/cartService';
 import { navigateTo } from '../../main';
 
 export class CatalogPage {
@@ -1393,7 +1394,7 @@ export class CatalogPage {
     addToCartButton.className = 'add-to-cart-btn';
     addToCartButton.textContent = 'В корзіну';
     addToCartButton.addEventListener('click', (event) => {
-      this.addToCart(product, event);
+      void this.addToCart(product, event);
     });
     return addToCartButton;
   }
@@ -1694,18 +1695,37 @@ export class CatalogPage {
     }
   }
 
-  private addToCart(product: ProductData, event: Event): void {
-    console.log('Добавленіе в корзіну:', product);
-    if (event.target instanceof HTMLButtonElement) {
-      const button = event.target;
-      const originalText = button.textContent;
-      button.textContent = 'Добавлено!';
-      button.disabled = true;
+  private async addToCart(product: ProductData, event: Event): Promise<void> {
+    try {
+      console.log('Добавленіе в корзину:', product);
 
-      setTimeout(() => {
-        button.textContent = originalText;
+      if (event.target instanceof HTMLButtonElement) {
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = 'Добавляем...';
+        button.disabled = true;
+
+        await CartService.addProductToCart(product.id, 1);
+
+        button.textContent = 'Добавлено!';
+
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.disabled = false;
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Ошибка добавления товара в корзину:', error);
+
+      if (event.target instanceof HTMLButtonElement) {
+        const button = event.target;
+        button.textContent = 'Ошибка';
         button.disabled = false;
-      }, 1500);
+
+        setTimeout(() => {
+          button.textContent = 'В корзіну';
+        }, 2000);
+      }
     }
   }
 

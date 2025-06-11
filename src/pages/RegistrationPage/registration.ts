@@ -1010,17 +1010,19 @@ export class RegistrationPage {
   }
 
   private static redirectAfterRegistration(): void {
-    if (AuthorizationService.isAuthenticated()) {
-      setTimeout(() => {
-        window.history.pushState({}, '', '/store');
-        window.dispatchEvent(new PopStateEvent('popstate'));
-      }, 2000);
-    } else {
-      setTimeout(() => {
-        window.history.pushState({}, '', '/login');
-        window.dispatchEvent(new PopStateEvent('popstate'));
-      }, 3000);
-    }
+    setTimeout(() => {
+      const isAuthenticated = AuthorizationService.isAuthenticated();
+
+      if (isAuthenticated) {
+        if (navigation) {
+          void navigation.handleAuthChange();
+        }
+
+        navigateTo('/store');
+      } else {
+        navigateTo('/login');
+      }
+    }, 2000);
   }
 
   private static createMessageElement(type: 'success' | 'error', message: string): HTMLDivElement {
@@ -1488,74 +1490,27 @@ export class RegistrationPage {
         })
         .execute();
 
-      console.log('Пользователь зарегистрирован:', response);
-      return RegistrationPage.handleSuccessfulRegistration(userData);
+      console.log('Пользователь зарегистрірован:', response);
+
+      const loginSuccess = await AuthService.login(userData.email, userData.password);
+
+      if (loginSuccess) {
+        if (navigation) {
+          navigation.forceUpdate();
+        }
+
+        return {
+          success: true,
+          message: 'Регистрация завершена! Добро пожаловать!',
+        };
+      } else {
+        return {
+          success: true,
+          message: 'Регистрация завершена! Войдите в систему.',
+        };
+      }
     } catch (error: unknown) {
       return RegistrationPage.handleRegistrationError(error);
-    }
-  }
-
-  private static async handleSuccessfulRegistration(
-    userData: UserData
-  ): Promise<{ success: boolean; message: string }> {
-    const successMessage = this.createSuccessMessage(userData);
-
-    const loginSuccess = await AuthService.login(userData.email, userData.password);
-    navigation.render();
-
-    return this.createRegistrationResult(successMessage, loginSuccess);
-  }
-
-  private static createSuccessMessage(userData: UserData): string {
-    let successMessage = 'Регистрация завершена!';
-
-    if (userData.useSameAddress) {
-      successMessage += this.createSingleAddressMessage(userData.addresses);
-    } else {
-      successMessage += this.createMultipleAddressesMessage(userData.addresses);
-    }
-
-    return successMessage;
-  }
-
-  private static createSingleAddressMessage(addresses: UserAddress[]): string {
-    const defaultAddress = addresses.find((addr) => addr.isDefault);
-    if (defaultAddress) {
-      return ' Ваш адрес сохранен как адрес по умолчанию для доставки и выставления счета.';
-    } else {
-      return ' Ваш адрес сохранен для доставки и выставления счета.';
-    }
-  }
-
-  private static createMultipleAddressesMessage(addresses: UserAddress[]): string {
-    const defaultShippingAddress = addresses.find((addr) => addr.type === 'shipping' && addr.isDefault);
-    const defaultBillingAddress = addresses.find((addr) => addr.type === 'billing' && addr.isDefault);
-
-    if (defaultShippingAddress && defaultBillingAddress) {
-      return ' Ваши адреса сохранены как адреса по умолчанию для доставки и выставления счета.';
-    } else if (defaultShippingAddress) {
-      return ' Ваш адрес доставки сохранен как адрес по умолчанию.';
-    } else if (defaultBillingAddress) {
-      return ' Ваш адрес выставления счета сохранен как адрес по умолчанию.';
-    } else {
-      return ' Ваши адреса доставки и выставления сохранены.';
-    }
-  }
-
-  private static createRegistrationResult(
-    successMessage: string,
-    loginSuccess: boolean
-  ): { success: boolean; message: string } {
-    if (loginSuccess) {
-      return {
-        success: true,
-        message: `${successMessage} Входим в систему...`,
-      };
-    } else {
-      return {
-        success: true,
-        message: `${successMessage} Войдите в систему.`,
-      };
     }
   }
 

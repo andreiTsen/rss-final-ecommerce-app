@@ -12,7 +12,6 @@ const config = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'index.js',
-    publicPath: '/rss-final-ecommerce-app/',
     clean: true,
   },
   resolve: {
