@@ -1,7 +1,15 @@
 import './catalog.css';
-import { ProductService, ProductData, ProductFilters, FilterOptions, SortOption } from '../../services/productService';
+import {
+  ProductService,
+  ProductData,
+  ProductFilters,
+  FilterOptions,
+  SortOption,
+  ProductsResult,
+} from '../../services/productService';
 import { CategoryService, CategoryData } from '../../services/categoryService';
 import { CartService } from '../../services/cartService';
+import { Pagination, PaginationState } from '../../components/pagination';
 import { navigateTo } from '../../main';
 
 export class CatalogPage {
@@ -16,6 +24,15 @@ export class CatalogPage {
   private currentFilters: ProductFilters = {};
   private currentSortOption: SortOption = 'default';
   private searchTimeout: NodeJS.Timeout | null = null;
+  private pagination?: Pagination;
+  private paginationState: PaginationState = {
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 6,
+    hasNext: false,
+    hasPrev: false,
+  };
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -31,15 +48,21 @@ export class CatalogPage {
 
   private async loadData(): Promise<void> {
     try {
-      const [categories, products, filterOptions] = await Promise.all([
+      const [categories, productsResult, filterOptions] = await Promise.all([
         CategoryService.getCategories(),
-        ProductService.getProducts(12, this.currentFilters),
+        ProductService.getProductsPaginated(
+          this.paginationState.currentPage,
+          this.paginationState.itemsPerPage,
+          this.currentFilters
+        ),
         ProductService.getFilterOptions(),
       ]);
 
       this.categories = categories;
-      this.products = products;
+      this.products = productsResult.items;
       this.filterOptions = filterOptions;
+
+      this.updatePaginationState(productsResult);
 
       if (this.currentFilters.categoryId) {
         this.categoryPath = await CategoryService.getCategoryPath(this.currentFilters.categoryId);
@@ -50,6 +73,27 @@ export class CatalogPage {
       console.error('Ошібка загрузкі каталога:', error);
       this.showErrorMessage();
     }
+  }
+
+  private updatePaginationState(result: ProductsResult): void {
+    const totalPages = Math.ceil(result.total / result.limit);
+
+    this.paginationState = {
+      currentPage: Math.floor(result.offset / result.limit) + 1,
+      totalPages,
+      totalItems: result.total,
+      itemsPerPage: result.limit,
+      hasNext: result.hasMore,
+      hasPrev: result.offset > 0,
+    };
+  }
+
+  private async onPageChange(page: number): Promise<void> {
+    if (page === this.paginationState.currentPage) return;
+
+    this.paginationState.currentPage = page;
+    this.updateURL();
+    await this.applyFilters();
   }
 
   private render(): void {
@@ -103,6 +147,17 @@ export class CatalogPage {
     this.initializeCategoryFromURL(urlParameters);
     this.initializeFiltersFromURL(urlParameters);
     this.initializeSortFromURL(urlParameters);
+    this.initializePageFromURL(urlParameters);
+  }
+
+  private initializePageFromURL(urlParameters: URLSearchParams): void {
+    const pageParameter = urlParameters.get('page');
+    if (pageParameter) {
+      const page = parseInt(pageParameter, 10);
+      if (page > 0) {
+        this.paginationState.currentPage = page;
+      }
+    }
   }
 
   private initializeCategoryFromURL(urlParameters: URLSearchParams): void {
@@ -157,9 +212,23 @@ export class CatalogPage {
     this.addCategoryToURL(parameters);
     this.addFiltersToURL(parameters);
     this.addSortToURL(parameters);
+    this.addPageToURL(parameters);
 
     const newURL = parameters.toString() ? `${url.pathname}?${parameters.toString()}` : url.pathname;
-    window.history.pushState({ filters: this.currentFilters }, '', newURL);
+    window.history.pushState(
+      {
+        filters: this.currentFilters,
+        page: this.paginationState.currentPage,
+      },
+      '',
+      newURL
+    );
+  }
+
+  private addPageToURL(parameters: URLSearchParams): void {
+    if (this.paginationState.currentPage > 1) {
+      parameters.set('page', this.paginationState.currentPage.toString());
+    }
   }
 
   private addCategoryToURL(parameters: URLSearchParams): void {
@@ -1081,7 +1150,21 @@ export class CatalogPage {
     const productsGrid = this.createProductsGrid();
     mainContent.appendChild(productsGrid);
 
+    const paginationWrapper = this.createPaginationWrapper();
+    mainContent.appendChild(paginationWrapper);
+
     return mainContent;
+  }
+
+  private createPaginationWrapper(): HTMLElement {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'pagination-wrapper';
+
+    if (this.paginationState.totalPages > 1) {
+      this.pagination = new Pagination(wrapper, this.paginationState, (page: number) => void this.onPageChange(page));
+    }
+
+    return wrapper;
   }
 
   private createResultsInfo(): HTMLElement {
@@ -1484,17 +1567,41 @@ export class CatalogPage {
     try {
       this.showProductsLoading();
 
-      const products = await ProductService.getProducts(12, this.currentFilters);
+      const productsResult = await ProductService.getProductsPaginated(
+        this.paginationState.currentPage,
+        this.paginationState.itemsPerPage,
+        this.currentFilters
+      );
 
-      this.products = products;
+      this.products = productsResult.items;
+      this.updatePaginationState(productsResult);
 
       this.updateProductsGrid();
       this.updateResultsInfo();
       this.updateActiveFiltersSection();
       this.updateBreadcrumbs();
+      this.updatePagination();
     } catch (error) {
-      console.error('Ошібка фильтров:', error);
+      console.error('Ошибка фільтров:', error);
       this.showProductsError();
+    }
+  }
+
+  private updatePagination(): void {
+    const wrapper = document.querySelector('.pagination-wrapper');
+    if (!(wrapper instanceof HTMLElement)) return;
+
+    if (this.paginationState.totalPages > 1) {
+      if (this.pagination) {
+        this.pagination.updateState(this.paginationState);
+      } else {
+        this.pagination = new Pagination(wrapper, this.paginationState, (page: number) => void this.onPageChange(page));
+      }
+    } else {
+      while (wrapper.firstChild) {
+        wrapper.removeChild(wrapper.firstChild);
+      }
+      this.pagination = undefined;
     }
   }
 
@@ -1620,21 +1727,29 @@ export class CatalogPage {
     this.currentFilters = {};
     this.currentSortOption = 'default';
     this.categoryPath = [];
+    this.paginationState.currentPage = 1;
 
     window.history.pushState({}, '', window.location.pathname);
 
     try {
       this.showProductsLoading();
 
-      this.products = await ProductService.getProducts(12);
+      const productsResult = await ProductService.getProductsPaginated(
+        this.paginationState.currentPage,
+        this.paginationState.itemsPerPage
+      );
+
+      this.products = productsResult.items;
+      this.updatePaginationState(productsResult);
 
       this.updateProductsGrid();
       this.updateResultsInfo();
       this.updateActiveFiltersSection();
       this.updateSidebarFilters();
       this.updateBreadcrumbs();
+      this.updatePagination();
     } catch (error) {
-      console.error('Ошибка сброса фильтров:', error);
+      console.error('Ошибка сброса фільтров:', error);
       this.showProductsError();
     }
   }
@@ -1697,8 +1812,6 @@ export class CatalogPage {
 
   private async addToCart(product: ProductData, event: Event): Promise<void> {
     try {
-      console.log('Добавленіе в корзину:', product);
-
       if (event.target instanceof HTMLButtonElement) {
         const button = event.target;
         const originalText = button.textContent;
@@ -1715,7 +1828,7 @@ export class CatalogPage {
         }, 1500);
       }
     } catch (error) {
-      console.error('Ошибка добавления товара в корзину:', error);
+      console.error('Ошибка добавленія товара в корзину:', error);
 
       if (event.target instanceof HTMLButtonElement) {
         const button = event.target;

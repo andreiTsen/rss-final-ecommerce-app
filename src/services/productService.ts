@@ -41,6 +41,7 @@ export type FilterOptions = {
 
 type QueryArguments = {
   limit: number;
+  offset?: number;
   staged: boolean;
   expand: string[];
   where?: string[];
@@ -59,6 +60,14 @@ type PriceInfo = {
 type ProductAttributes = {
   author?: string;
   raw: Record<string, unknown>;
+};
+
+export type ProductsResult = {
+  items: ProductData[];
+  total: number;
+  offset: number;
+  limit: number;
+  hasMore: boolean;
 };
 
 export class ProductService {
@@ -114,9 +123,51 @@ export class ProductService {
     }
   }
 
-  private static buildQueryArguments(limit: number, filters?: ProductFilters): QueryArguments {
+  public static async getProductsPaginated(
+    page: number = 1,
+    limit: number = 6,
+    filters?: ProductFilters
+  ): Promise<ProductsResult> {
+    try {
+      const offset = (page - 1) * limit;
+      const queryArguments = this.buildQueryArguments(limit, filters, offset);
+
+      const response = await apiRoot
+        .productProjections()
+        .get({
+          queryArgs: queryArguments,
+        })
+        .execute();
+
+      const products = await this.processProductsFromResponse(response.body.results);
+      const filteredProducts = this.applyClientSideFilters(products, filters);
+
+      const total = response.body.total || 0;
+      const hasMore = offset + limit < total;
+
+      return {
+        items: filteredProducts,
+        total,
+        offset,
+        limit,
+        hasMore,
+      };
+    } catch (error) {
+      console.error('Ошібка пагінаціі:', error);
+      return {
+        items: [],
+        total: 0,
+        offset: 0,
+        limit,
+        hasMore: false,
+      };
+    }
+  }
+
+  private static buildQueryArguments(limit: number, filters?: ProductFilters, offset: number = 0): QueryArguments {
     const queryArguments: QueryArguments = {
       limit,
+      offset,
       staged: false,
       expand: ['categories[*]'],
     };
