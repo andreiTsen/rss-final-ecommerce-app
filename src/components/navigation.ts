@@ -35,10 +35,12 @@ export class Navigation {
     const homeLink = this.createLink('Каталог', '/store');
     const loginLink = this.createLink('Вход', '/login');
     const registerLink = this.createLink('Регистрация', '/registration');
+    const aboutLink = this.createLink('О разработчиках', '/about-us');
 
     nav.appendChild(homeLink);
     nav.appendChild(loginLink);
     nav.appendChild(registerLink);
+    nav.appendChild(aboutLink);
 
     if (AuthorizationService.isAuthenticated()) {
       const profileLink = this.createLink('👤 Профиль', '/profile');
