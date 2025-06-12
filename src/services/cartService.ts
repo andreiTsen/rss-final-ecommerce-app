@@ -309,27 +309,27 @@ export class CartService {
     }
   }
 
-private static async initializeCart(): Promise<CartData> {
-  const isAuthenticated = AuthorizationService.isAuthenticated();
+  private static async initializeCart(): Promise<CartData> {
+    const isAuthenticated = AuthorizationService.isAuthenticated();
 
-  try {
-    const apiClient = this.getCartApiClient();
+    try {
+      const apiClient = this.getCartApiClient();
 
-    if (isAuthenticated) {
-      const response = await apiClient.me().activeCart().get().execute();
-      const cart = this.mapCartToData(response.body);
-      this.currentCart = cart;
-      this.notifyCartUpdate(cart);
-      return cart;
-    } else {
-      return await this.createNewCart(false);
+      if (isAuthenticated) {
+        const response = await apiClient.me().activeCart().get().execute();
+        const cart = this.mapCartToData(response.body);
+        this.currentCart = cart;
+        this.notifyCartUpdate(cart);
+        return cart;
+      } else {
+        return await this.createNewCart(false);
+      }
+    } catch (mergeError: unknown) {
+      console.error('Ошибка объединения корзин:', mergeError);
+      localStorage.removeItem('anonymousCartId');
+      return await this.createNewCart(isAuthenticated);
     }
-  } catch (mergeError: unknown) {
-    console.error('Ошибка объединения корзин:', mergeError);
-    localStorage.removeItem('anonymousCartId');
-    return await this.createNewCart(isAuthenticated);
   }
-}
 
   private static async createNewCart(isAuthenticated: boolean): Promise<CartData> {
     const apiClient = this.getCartApiClient();
