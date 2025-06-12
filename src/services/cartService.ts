@@ -8,7 +8,7 @@ import {
 } from '@commercetools/platform-sdk';
 import { apiRoot } from '../api';
 import { AuthorizationService } from './authentication';
-import { getCustomerApiRootWithPassword } from './customerApi';
+import { getCustomerApiRootWithPassword, getAnonymousApiRoot } from './customerApi';
 
 export type CartData = {
   id: string;
@@ -52,7 +52,6 @@ export class CartService {
 
   public static resetCallbacks(): void {
     this.cartUpdateCallbacks = [];
-    console.log('Сброс колбеков корзины');
   }
 
   public static async getOrCreateCart(): Promise<CartData> {
@@ -67,23 +66,22 @@ export class CartService {
           return this.currentCart;
         }
       }
-      console.log('Инициализация корзины...', this.currentCart);
+
       this.isInitializing = true;
       const cart = await this.initializeCart();
       this.isInitializing = false;
       return cart;
     } catch (error) {
       this.isInitializing = false;
-      console.error('Ошибка создания корзины:', error);
+      console.error('Ошибка создаіия корзины:', error);
       throw error;
     }
   }
 
-  // Здесь происходит отправка на сервер продукта и добавление в корзину
   public static async addProductToCart(productId: string, quantity: number = 1): Promise<CartData> {
     try {
       const cart = await this.getOrCreateCart();
-      const isAuthenticated = AuthorizationService.isAuthenticated();
+      const apiClient = this.getCartApiClient();
 
       const updateAction: MyCartUpdateAction = {
         action: 'addLineItem',
@@ -91,15 +89,31 @@ export class CartService {
         quantity,
       };
 
-      const response = await this.executeCartUpdate(cart, updateAction, isAuthenticated);
+      const response = await apiClient
+        .me()
+        .carts()
+        .withId({ ID: cart.id })
+        .post({
+          body: {
+            version: cart.version,
+            actions: [updateAction],
+          },
+        })
+        .execute();
+
       const updatedCart = this.mapCartToData(response.body);
       this.currentCart = updatedCart;
       this.notifyCartUpdate(updatedCart);
-      console.log('Корзина обновлена после добавления товара:', updatedCart);
 
       return updatedCart;
     } catch (error: unknown) {
-      return await this.handleAddToCartError(error, productId, quantity);
+      console.error('Ошибка добавления в корзину:', error);
+
+      if (this.isCommerceToolsError(error)) {
+        console.error('Детали:', error.body);
+      }
+
+      throw error;
     }
   }
 
@@ -130,7 +144,7 @@ export class CartService {
       this.notifyCartUpdate(updatedCart);
       return updatedCart;
     } catch (error) {
-      console.error('Ошібка удаления товара', error);
+      console.error('Ошибка удаления товара', error);
       throw error;
     }
   }
@@ -161,6 +175,7 @@ export class CartService {
       const updatedCart = this.mapCartToData(response.body);
       this.currentCart = updatedCart;
       this.notifyCartUpdate(updatedCart);
+      console.log('Корзина обновлена:', updatedCart);
       return updatedCart;
     } catch (error) {
       console.error('Ошибка изменения кол-ва товара:', error);
@@ -242,54 +257,6 @@ export class CartService {
     return typeof error === 'object' && error !== null && 'body' in error;
   }
 
-  private static async executeCartUpdate(
-    cart: CartData,
-    updateAction: MyCartUpdateAction,
-    isAuthenticated: boolean
-  ): Promise<{ body: Cart }> {
-    if (isAuthenticated) {
-      const apiClient = this.getCartApiClient();
-      return await apiClient
-        .me()
-        .carts()
-        .withId({ ID: cart.id })
-        .post({
-          body: {
-            version: cart.version,
-            actions: [updateAction],
-          },
-        })
-        .execute();
-    } else {
-      return await apiRoot
-        .carts()
-        .withId({ ID: cart.id })
-        .post({
-          body: {
-            version: cart.version,
-            actions: [updateAction],
-          },
-        })
-        .execute();
-    }
-  }
-
-  private static async handleAddToCartError(error: unknown, productId: string, quantity: number): Promise<CartData> {
-    console.error('Ошибка добавления в корзину:', error);
-
-    if (this.isCommerceToolsError(error)) {
-      console.error('Детали:', error.body);
-
-      if (error.statusCode === 409) {
-        console.warn('Конфлікт версий корзины, обновленіе...');
-        this.currentCart = null;
-        return await this.addProductToCart(productId, quantity);
-      }
-    }
-
-    throw error;
-  }
-
   private static getCartApiClient(): ByProjectKeyRequestBuilder {
     const isAuthenticated = AuthorizationService.isAuthenticated();
 
@@ -304,7 +271,10 @@ export class CartService {
       }
       return this.userApiClient;
     } else {
-      return apiRoot;
+      if (!this.anonymousApiClient) {
+        this.anonymousApiClient = getAnonymousApiRoot();
+      }
+      return this.anonymousApiClient;
     }
   }
 
@@ -339,78 +309,47 @@ export class CartService {
     }
   }
 
-  private static async initializeCart(): Promise<CartData> {
-    const isAuthenticated = AuthorizationService.isAuthenticated();
+private static async initializeCart(): Promise<CartData> {
+  const isAuthenticated = AuthorizationService.isAuthenticated();
 
-    try {
-      if (isAuthenticated) {
-        const apiClient = this.getCartApiClient();
-        const response = await apiClient.me().activeCart().get().execute();
-        const cart = this.mapCartToData(response.body);
-        this.currentCart = cart;
-        this.notifyCartUpdate(cart);
-        return cart;
-      } else {
-        const anonymousCartId = localStorage.getItem('anonymousCartId');
+  try {
+    const apiClient = this.getCartApiClient();
 
-        if (anonymousCartId) {
-          try {
-            const response = await apiRoot.carts().withId({ ID: anonymousCartId }).get().execute();
-            const cart = this.mapCartToData(response.body);
-            this.currentCart = cart;
-            this.notifyCartUpdate(cart);
-            return cart;
-          } catch (error) {
-            console.warn('Анонимная корзины нет, создаем новую', error);
-            localStorage.removeItem('anonymousCartId');
-          }
-        }
-
-        return await this.createNewCart(false);
-      }
-    } catch (error) {
-      console.warn('Нет активной корзины, создаем новую', error);
-      return await this.createNewCart(isAuthenticated);
+    if (isAuthenticated) {
+      const response = await apiClient.me().activeCart().get().execute();
+      const cart = this.mapCartToData(response.body);
+      this.currentCart = cart;
+      this.notifyCartUpdate(cart);
+      return cart;
+    } else {
+      return await this.createNewCart(false);
     }
+  } catch (mergeError: unknown) {
+    console.error('Ошибка объединения корзин:', mergeError);
+    localStorage.removeItem('anonymousCartId');
+    return await this.createNewCart(isAuthenticated);
   }
+}
 
   private static async createNewCart(isAuthenticated: boolean): Promise<CartData> {
-    try {
-      if (isAuthenticated) {
-        const apiClient = this.getCartApiClient();
-        const cartDraft: MyCartDraft = {
-          currency: 'EUR',
-          country: 'DE',
-          taxMode: 'Disabled',
-        };
+    const apiClient = this.getCartApiClient();
 
-        const response = await apiClient.me().carts().post({ body: cartDraft }).execute();
-        const cart = this.mapCartToData(response.body);
-        this.currentCart = cart;
-        this.notifyCartUpdate(cart);
-        return cart;
-      } else {
-        const response = await apiRoot
-          .carts()
-          .post({
-            body: {
-              currency: 'EUR',
-              country: 'DE',
-              taxMode: 'Disabled',
-            },
-          })
-          .execute();
+    const cartDraft: MyCartDraft = {
+      currency: 'EUR',
+      country: 'DE',
+    };
 
-        const cart = this.mapCartToData(response.body);
-        this.currentCart = cart;
-        localStorage.setItem('anonymousCartId', cart.id);
-        this.notifyCartUpdate(cart);
-        return cart;
-      }
-    } catch (error) {
-      console.error('Ошибка создания корзины:', error);
-      throw error;
+    const response = await apiClient.me().carts().post({ body: cartDraft }).execute();
+
+    const cart = this.mapCartToData(response.body);
+    this.currentCart = cart;
+
+    if (!isAuthenticated) {
+      localStorage.setItem('anonymousCartId', cart.id);
     }
+
+    this.notifyCartUpdate(cart);
+    return cart;
   }
 
   private static async performCartMerge(
