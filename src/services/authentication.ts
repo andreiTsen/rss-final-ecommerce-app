@@ -1,8 +1,15 @@
-import { Customer, CustomerSignInResult, Product, ProductProjection } from '@commercetools/platform-sdk';
+import {
+  ByProjectKeyRequestBuilder,
+  Customer,
+  CustomerSignInResult,
+  Product,
+  ProductProjection,
+} from '@commercetools/platform-sdk';
 import { apiRoot } from '../api';
 import createErrorMessage from '../pages/loginPage/errorMessage';
-import { customerApiRoot } from './customerApi';
-import { CartService } from './cart';
+import { getCustomerApiRootWithPassword } from './customerApi';
+import { CartService } from './../services/cartService';
+import { createUserApiClient } from './../services/userApiClient';
 
 type TokenResponse = {
   access_token: string;
@@ -14,94 +21,112 @@ type TokenResponse = {
 
 export class AuthorizationService {
   private static authErrorElement: HTMLElement | null = null;
-  private static readonly TOKEN_KEY = 'auth_token';
-  private static readonly TOKEN_EXPIRES = 'token_expires';
-  private static readonly REFRESH_KEY = 'refresh_token';
-  private static readonly USER_KEY = 'current_user';
+  private static readonly AUTH_TOKEN_KEY = 'authToken';
+  private static readonly USER_KEY = 'user';
+  private static readonly USER_CREDENTIALS_KEY = 'userCredentials';
+
   public static async login(email: string, password: string): Promise<boolean> {
     try {
-      this.removeAuthError();
-      const response = await apiRoot
-        .me()
-        .login()
-        .post({
-          body: {
-            email,
-            password,
-            activeCartSignInMode: 'MergeWithExistingCustomerCart',
-          },
-        })
-        .execute();
-      const authHeader = btoa(`${process.env.CT_CLIENT_ID}:${process.env.CT_CLIENT_SECRET}`);
-      const token = await fetch(
-        `${process.env.CT_AUTH_URL}oauth/${process.env.CT_PROJECT_KEY}/customers/token?grant_type=password&username=${email}&password=${password}&scope=manage_customers:${process.env.CT_PROJECT_KEY} view_published_products:${process.env.CT_PROJECT_KEY} manage_my_profile:${process.env.CT_PROJECT_KEY} view_orders:${process.env.CT_PROJECT_KEY}`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Basic ${authHeader}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-        }
-      );
-      if (!token.ok) {
-        throw new Error('Не удалось получить токен аутентификации');
+      const userApiRoot = createUserApiClient(email, password);
+      const response = await userApiRoot.me().get().execute();
+
+      if (response.body) {
+        const userData = {
+          id: response.body.id,
+          email: response.body.email,
+          firstName: response.body.firstName,
+          lastName: response.body.lastName,
+          version: response.body.version,
+        };
+
+        localStorage.setItem(this.AUTH_TOKEN_KEY, 'authenticated');
+        localStorage.setItem(this.USER_KEY, JSON.stringify(userData));
+        localStorage.setItem(this.USER_CREDENTIALS_KEY, JSON.stringify({ email, password }));
+
+        CartService.clearCartCache();
+        await CartService.mergeAnonymousCartOnLogin();
       }
-      const tokenData: TokenResponse = await token.json();
-      this.saveAuthData(response.body, tokenData);
-      const cart = CartService.getActiveCart();
-      console.log(cart);
       return true;
     } catch (error) {
-      console.error('Ошибка при входе:', error);
+      console.error('Ошибка входа:', error);
       this.handleAuthorizationError(error);
       return false;
     }
   }
 
   public static logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.AUTH_TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
-    localStorage.removeItem(this.REFRESH_KEY);
-    localStorage.removeItem(this.TOKEN_EXPIRES);
+    localStorage.removeItem(this.USER_CREDENTIALS_KEY);
+
+    CartService.clearCartCache();
   }
 
   public static isAuthenticated(): boolean {
-    return !!localStorage.getItem(this.TOKEN_KEY);
+    const authToken = localStorage.getItem(this.AUTH_TOKEN_KEY);
+    const user = localStorage.getItem(this.USER_KEY);
+
+    const isAuth = authToken === 'authenticated' && !!user;
+
+    return isAuth;
   }
 
   public static getToken(): string {
     if (!this.isAuthenticated()) {
-      throw new Error('User is not authenticated');
+      throw new Error('Ощібка аутентіфікаціі');
     }
-    return localStorage.getItem(this.TOKEN_KEY) || '';
+    return localStorage.getItem(this.AUTH_TOKEN_KEY) || '';
   }
 
   public static getCurrentUser(): Customer | null {
-    const userData = localStorage.getItem(this.USER_KEY);
-    return userData ? JSON.parse(userData) : null;
+    try {
+      const userData = localStorage.getItem(this.USER_KEY);
+      if (!userData) {
+        return null;
+      }
+
+      const user = JSON.parse(userData);
+      return user;
+    } catch (error) {
+      console.error('Ошибка полученія данных', error);
+      return null;
+    }
   }
 
   public static updateCurrentUser(customer: Customer): void {
     localStorage.setItem(this.USER_KEY, JSON.stringify(customer));
   }
 
-  private static saveAuthData(data: CustomerSignInResult, tokenData: TokenResponse): void {
-    if (data.customer) {
-      localStorage.setItem(this.USER_KEY, JSON.stringify(data.customer));
+  public static getUserApiClient(): ByProjectKeyRequestBuilder | null {
+    try {
+      const credentials = localStorage.getItem(this.USER_CREDENTIALS_KEY);
+      if (credentials) {
+        const { email, password } = JSON.parse(credentials);
+        return createUserApiClient(email, password);
+      }
+      return null;
+    } catch (error) {
+      console.error('Ошибка созданія апі кліента:', error);
+      return null;
     }
-    localStorage.setItem(this.TOKEN_KEY, tokenData.access_token);
-    localStorage.setItem(this.REFRESH_KEY, tokenData.refresh_token);
+  }
 
-    const expiresAt = new Date().getTime() + tokenData.expires_in * 1000;
-    localStorage.setItem(this.TOKEN_EXPIRES, expiresAt.toString());
+  public static checkAuthState(): boolean {
+    const authToken = localStorage.getItem(this.AUTH_TOKEN_KEY);
+    const user = localStorage.getItem(this.USER_KEY);
+    const credentials = localStorage.getItem(this.USER_CREDENTIALS_KEY);
+
+    return authToken === 'authenticated' && !!user && !!credentials;
   }
   private static handleAuthorizationError(error: unknown): void {
     let code;
-    if (typeof error === 'object' && error !== null && 'statusCode' in error) {
-      code = error.statusCode;
+    if (typeof error === 'object' && error !== null && 'body' in error) {
+      const body = error.body;
+      if (typeof body === 'object' && body !== null && 'statusCode' in body) {
+        code = body.statusCode;
+      }
     }
     let buttonLogin = document.querySelector('.auth-form__button-login');
-
     this.removeAuthError();
     let errorMessage;
     switch (code) {
@@ -120,6 +145,7 @@ export class AuthorizationService {
       this.authErrorElement = errorMessage;
     }
   }
+
   private static removeAuthError(): void {
     if (this.authErrorElement) {
       this.authErrorElement.remove();

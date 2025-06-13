@@ -5,6 +5,7 @@ import createErrorMessage from './errorMessage';
 import validateEmail from './validateEmail';
 import validatePassword from './validatePassword';
 import { navigateTo, navigation } from '../../main';
+import { CartService } from '../../services/cartService';
 
 export default class loginPage {
   private container: HTMLElement;

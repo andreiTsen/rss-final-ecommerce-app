@@ -11,7 +11,7 @@ import { customerApiRoot } from './services/customerApi';
 import './assets/style.css';
 import { ProfilePage } from './pages/ProfilePage/Profile';
 import { CatalogPage } from './pages/catalogPage/catalog';
-import { CartService } from './services/cart';
+import { CartService } from './services/cartService';
 import AboutPage from './pages/aboutPage/aboutPage';
 // const appRoot = document.body;
 
@@ -43,51 +43,6 @@ function setupRouting(): void {
   handleRouting();
   window.addEventListener('popstate', handleRouting);
 }
-
-// function handleRouting(): void {
-//   const path = window.location.pathname;
-//   const isAuthenticated = AuthorizationService.isAuthenticated();
-//   appContainer.innerHTML = '';
-//   switch (path) {
-//     case '/':
-//     case '/store':
-//       new CatalogPage(appContainer);
-//       break;
-//     case '/registration':
-//       if (!isAuthenticated) {
-//         new RegistrationPage(appContainer);
-//       } else {
-//         navigateTo('/store');
-//       }
-//       break;
-//     case '/login':
-//       if (!isAuthenticated) {
-//         new loginPage(appContainer);
-//       } else {
-//         navigateTo('/store');
-//       }
-//       break;
-//     case '/product-about': {
-//       void handleProductAbout(appContainer);
-//       break;
-//     }
-//     case '/profile':
-//       if (isAuthenticated) {
-//         new ProfilePage(appContainer);
-//       } else {
-//         navigateTo('/login');
-//       }
-//       break;
-//     case '/about-us': {
-//       new AboutPage(appContainer);
-//       break;
-//     }
-//     default:
-//       renderPlaceholderPage('Oшибка 404. Страница не найдена', isAuthenticated);
-//       break;
-//   }
-//   navigation.setActiveLink(path);
-// }
 
 function handleRouting(): void {
   const path = window.location.pathname;

@@ -29,6 +29,8 @@ export const authMiddlewareOptions: AuthMiddlewareOptions = {
     `manage_my_shopping_lists:${process.env.CT_PROJECT_KEY}`,
     `manage_my_quote_requests:${process.env.CT_PROJECT_KEY}`,
     `introspect_oauth_tokens:${process.env.CT_PROJECT_KEY}`,
+    `view_tax_categories:${process.env.CT_PROJECT_KEY}`,
+    `manage_tax_categories:${process.env.CT_PROJECT_KEY}`,
   ],
   fetch,
 };

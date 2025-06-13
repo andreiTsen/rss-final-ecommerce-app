@@ -313,7 +313,7 @@ export class ProductService {
     const attributes = variant.attributes || [];
     const attributeMap: Record<string, unknown> = {};
 
-    attributes.forEach((attribute) => {
+    attributes.forEach((attribute: string) => {
       if (attribute.name && attribute.value !== undefined) {
         attributeMap[attribute.name] = attribute.value;
       }

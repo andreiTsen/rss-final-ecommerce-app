@@ -1,10 +1,10 @@
 import { ProductProjection } from '@commercetools/platform-sdk';
-import { customerApiRoot } from './customerApi';
 import productAboutPage from '../pages/productAboutPage/productAboutPage';
+import { apiRoot } from '../api';
 
 export async function getProduct(key: string): Promise<ProductProjection | undefined> {
   try {
-    const api = await customerApiRoot.productProjections().withKey({ key }).get().execute();
+    const api = await apiRoot.productProjections().withKey({ key }).get().execute();
     return api.body;
   } catch (error) {
     console.error(error);
@@ -33,7 +33,8 @@ export async function handleProductAbout(appContainer: HTMLElement): Promise<voi
         }
         const img = product.masterVariant?.images?.map((img) => img.url) || [];
         const author = product.masterVariant?.attributes?.[0].value;
-        new productAboutPage(appContainer, title, info, price, img, category, author, discountedPrice, pages);
+        const productId = product.id;
+        new productAboutPage(appContainer, title, info, price, img, category, author, discountedPrice, pages, productId);
       } else {
         appContainer.textContent = 'Ошибка загрузки информации о продукте';
       }
@@ -45,7 +46,7 @@ export async function handleProductAbout(appContainer: HTMLElement): Promise<voi
 
 async function getCategoryNameById(id: string): Promise<string> {
   try {
-    const response = await customerApiRoot.categories().withId({ ID: id }).get().execute();
+    const response = await apiRoot.categories().withId({ ID: id }).get().execute();
     return response.body.name['en-US'];
   } catch (error) {
     console.error(error);
