@@ -138,7 +138,7 @@ export async function handleUserAuthChange(): Promise<void> {
 
     await navigation.handleAuthChange();
   } catch (error) {
-    console.error('Ошибка измененія аутентификации:', error);
+    console.error('Ошибка изменения аутентификации:', error);
     try {
       await navigation.handleAuthChange();
     } catch (navError) {
@@ -149,12 +149,7 @@ export async function handleUserAuthChange(): Promise<void> {
 }
 
 function renderCartPage(): void {
-  const isAuthenticated = AuthorizationService.isAuthenticated();
-  if (isAuthenticated) {
     new ShoppingCartPage();
-  } else {
-    renderPlaceholderPage('Для доступа к корзине необходимо войти в учетную запись', isAuthenticated);
-  }
 }
 
 function createPlaceholderContainer(pageName: string): HTMLDivElement {
