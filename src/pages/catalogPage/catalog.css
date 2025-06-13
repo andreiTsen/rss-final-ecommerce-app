@@ -812,6 +812,18 @@
   color: #666;
 }
 
+.add-to-cart-btn.in-cart {
+  background-color: #28a745;
+  color: white;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.add-to-cart-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 @media (max-width: 768px) {
   .products-grid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
