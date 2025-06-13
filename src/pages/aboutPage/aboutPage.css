@@ -21,7 +21,7 @@
   border-radius: 20px;
   gap: 1.5rem;
   border: 2px solid #4caf50;
-  padding: 0px 35px 0px 0px;
+  padding: 0px 35px 20px 0px;
 }
 
 .about-img__container {
@@ -165,7 +165,8 @@
 }
 
 @media screen and (max-width: 500px) {
-  .about-dev__contribution {
+  .about-dev__contribution,
+  .about-dev__info {
     font-size: 0.9rem;
   }
   .about-dev__common--info {
