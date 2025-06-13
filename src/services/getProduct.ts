@@ -15,31 +15,35 @@ export async function handleProductAbout(appContainer: HTMLElement): Promise<voi
   const parameters = new URLSearchParams(window.location.search);
   const key = parameters.get('key');
   try {
-    if (key) {
-      const product = await getProduct(key);
-      if (product) {
-        let category = '';
-        if (product.categories && product.categories.length > 0) {
-          category = await getCategoryNameById(product.categories[0].id);
-        }
-        const title = product.name?.['en-US'] || 'Без названия';
-        const info = product.masterVariant?.attributes?.[1].value || 'Нет описания';
-        const priceCent = product.masterVariant.prices?.[0]?.value?.centAmount ?? 0;
-        const pages = product.masterVariant?.attributes?.[2].value;
-        const price = (priceCent / 100).toFixed(2);
-        let discountedPrice: string = '';
-        if (product.masterVariant.prices?.[0].discounted?.value?.centAmount) {
-          discountedPrice = (product.masterVariant.prices?.[0].discounted?.value?.centAmount / 100).toFixed(2);
-        }
-        const img = product.masterVariant?.images?.map((img) => img.url) || [];
-        const author = product.masterVariant?.attributes?.[0].value;
-        const productId = product.id;
-        new productAboutPage(appContainer, title, info, price, img, category, author, discountedPrice, pages, productId);
-      } else {
-        appContainer.textContent = 'Ошибка загрузки информации о продукте';
-      }
+    if (!key) return;
+    const product = await getProduct(key);
+    if (!product) return;
+
+    let category = '';
+    if (product.categories?.length > 0) {
+      category = await getCategoryNameById(product.categories[0].id);
     }
+
+    const title = product.name?.['en-US'] || 'Без названия';
+    const priceCent = product.masterVariant.prices?.[0]?.value?.centAmount ?? 0;
+    const price = (priceCent / 100).toFixed(2);
+    const discountedCent = product.masterVariant.prices?.[0].discounted?.value?.centAmount;
+    const discountedPrice = discountedCent ? (discountedCent / 100).toFixed(2) : '';
+
+    new productAboutPage(
+      appContainer,
+      title,
+      product.masterVariant?.attributes?.[1].value || 'Нет описания',
+      price,
+      product.masterVariant?.images?.map((img) => img.url) || [],
+      category,
+      product.masterVariant?.attributes?.[0].value,
+      discountedPrice,
+      product.masterVariant?.attributes?.[2].value,
+      product.id
+    );
   } catch (error) {
+    appContainer.textContent = 'Ошибка загрузки информации о продукте';
     console.error(error);
   }
 }
