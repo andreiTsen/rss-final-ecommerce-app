@@ -52,7 +52,7 @@ export class ShoppingCartPage {
       console.log('Cart items:', this.cartItems);
 
       const response = await apiRoot.discountCodes().get().execute();
-      const activePromo = response.body.results.find(code => code.isActive);
+      const activePromo = response.body.results.find((code) => code.isActive);
       if (activePromo) {
         this.activePromoCode = {
           code: activePromo.code,
@@ -127,7 +127,7 @@ export class ShoppingCartPage {
   private async checkPromoCode(promoCode: string): Promise<PromoCode | null> {
     try {
       const response = await apiRoot.discountCodes().get().execute();
-      const foundPromo = response.body.results.find(code => code.code === promoCode);
+      const foundPromo = response.body.results.find((code) => code.code === promoCode);
       if (!foundPromo) return null;
 
       const promo: PromoCode = {
@@ -168,41 +168,71 @@ export class ShoppingCartPage {
   private async handlePromoButtonClick(promoCode: string): Promise<void> {
     const promoResult = await this.checkPromoCode(promoCode);
     if (!promoResult) {
-      document.body.appendChild(renderModal(`Промокод #${promoCode} не найден!`));
+      this.showPromoNotFoundModal(promoCode);
       return;
     }
     if (!promoResult.isActive) {
-      const response = await apiRoot.discountCodes()
-    .get({ queryArgs: { where: `code="${promoResult.code}"` } })
-    .execute();
-  const discount = response.body.results[0];
-  if (!discount) {
-    console.log('Промокод не найден!');
-    return;
+      const activated = await this.activatePromoCode(promoResult);
+      if (!activated) return;
+    }
+    if (!this.isPromoValid(promoResult)) {
+      this.showPromoInvalidModal(promoCode);
+      return;
+    }
+    this.applyPromoCode(promoResult, promoCode);
   }
-  await apiRoot.discountCodes().withId({ ID: discount.id }).post({
-    body: {
-      version: discount.version,
-      actions: [{
-        action: 'changeIsActive',
-        isActive: true
-      }]
+
+  private showPromoNotFoundModal(promoCode: string): void {
+    document.body.appendChild(renderModal(`Промокод #${promoCode} не найден!`));
+  }
+
+  private async activatePromoCode(promoResult: PromoCode): Promise<boolean> {
+    const response = await apiRoot
+      .discountCodes()
+      .get({ queryArgs: { where: `code="${promoResult.code}"` } })
+      .execute();
+    const discount = response.body.results[0];
+    if (!discount) {
+      console.log('Промокод не найден!');
+      return false;
     }
-  }).execute();
-  promoResult.isActive = true;
-  this.activePromoCode = promoResult;
-  this.render();
-    }
+    await apiRoot
+      .discountCodes()
+      .withId({ ID: discount.id })
+      .post({
+        body: {
+          version: discount.version,
+          actions: [
+            {
+              action: 'changeIsActive',
+              isActive: true,
+            },
+          ],
+        },
+      })
+      .execute();
+    promoResult.isActive = true;
+    this.activePromoCode = promoResult;
+    this.render();
+    return true;
+  }
+
+  private isPromoValid(promoResult: PromoCode): boolean {
     const now = new Date();
     const validFrom = promoResult.validFrom ? new Date(promoResult.validFrom) : null;
     const validUntil = promoResult.validUntil ? new Date(promoResult.validUntil) : null;
-    if ((validFrom && now < validFrom) || (validUntil && now > validUntil)) {
-      document.body.appendChild(renderModal(`Промокод #${promoCode} не валиден!`));
-      return;
-    }
+    return !((validFrom && now < validFrom) || (validUntil && now > validUntil));
+  }
 
+  private showPromoInvalidModal(promoCode: string): void {
+    document.body.appendChild(renderModal(`Промокод #${promoCode} не валиден!`));
+  }
+
+  private applyPromoCode(promoResult: PromoCode, promoCode: string): void {
     this.activePromoCode = promoResult;
-    document.body.appendChild(renderModal(`Промокод #${promoCode} успешно применен! Скидка: ${promoResult.discountPercentage}%`));
+    document.body.appendChild(
+      renderModal(`Промокод #${promoCode} успешно применен! Скидка: ${promoResult.discountPercentage}%`)
+    );
     this.render();
   }
 
@@ -239,31 +269,41 @@ export class ShoppingCartPage {
       removeButton.style.display = 'none';
     });
     removeButton.addEventListener('click', async () => {
-  if (this.activePromoCode) {
-    const response = await apiRoot.discountCodes()
-      .get({ queryArgs: { where: `code="${this.activePromoCode.code}"` } })
-      .execute();
-    const discount = response.body.results[0];
-    if (!discount) {
-      alert('Промокод не найден!');
-      return;
-    }
-    await apiRoot.discountCodes().withId({ ID: discount.id }).post({
-      body: {
-        version: discount.version,
-        actions: [{
-          action: 'changeIsActive',
-          isActive: false
-        }]
-      }
-    }).execute();
-    this.activePromoCode = null;
-    this.render();
-  }
-});
-
+      await this.handleRemovePromoClick();
+    });
 
     return removeButton;
+  }
+
+  private async handleRemovePromoClick(): Promise<void> {
+    if (this.activePromoCode) {
+      const response = await apiRoot
+        .discountCodes()
+        .get({ queryArgs: { where: `code="${this.activePromoCode.code}"` } })
+        .execute();
+      const discount = response.body.results[0];
+      if (!discount) {
+        alert('Промокод не найден!');
+        return;
+      }
+      await apiRoot
+        .discountCodes()
+        .withId({ ID: discount.id })
+        .post({
+          body: {
+            version: discount.version,
+            actions: [
+              {
+                action: 'changeIsActive',
+                isActive: false,
+              },
+            ],
+          },
+        })
+        .execute();
+      this.activePromoCode = null;
+      this.render();
+    }
   }
 
   private createClearCartButton(): HTMLElement {
