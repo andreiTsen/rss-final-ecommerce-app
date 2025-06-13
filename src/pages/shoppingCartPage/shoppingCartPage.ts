@@ -1,11 +1,22 @@
 import { CartService } from '../../services/cartService';
+import { apiRoot } from '../../api';
+import { renderModal } from '../ProfilePage/modal';
+
 import './carts.css';
 type CartItem = {
-  id: string; 
+  id: string;
   name: string;
   price: number;
   quantity: number;
-  imageUrl?: string; 
+  imageUrl?: string;
+};
+
+type PromoCode = {
+  code: string;
+  isActive: boolean;
+  validFrom?: string;
+  validUntil?: string;
+  discountPercentage: number;
 };
 
 export class ShoppingCartPage {
@@ -13,13 +24,18 @@ export class ShoppingCartPage {
   public cartItems: CartItem[] = [];
   public loading: boolean = true;
   public error: string | null = null;
+  private activePromoCode: PromoCode | null = null;
 
   constructor() {
     void this.fetchCartItems();
   }
 
   public get totalPrice(): number {
-    return this.cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    let total = this.cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    if (this.activePromoCode && this.activePromoCode.isActive) {
+      total = total * (1 - this.activePromoCode.discountPercentage / 100);
+    }
+    return total;
   }
 
   public async fetchCartItems(): Promise<void> {
@@ -27,13 +43,25 @@ export class ShoppingCartPage {
       const cart = await CartService.getOrCreateCart();
       console.log('Fetched cart:', cart);
       this.cartItems = cart.lineItems.map((item) => ({
-        id: item.id, 
+        id: item.id,
         name: item.name,
         price: item.price,
         quantity: item.quantity,
         imageUrl: item.imageUrl,
       }));
       console.log('Cart items:', this.cartItems);
+
+      const response = await apiRoot.discountCodes().get().execute();
+      const activePromo = response.body.results.find(code => code.isActive);
+      if (activePromo) {
+        this.activePromoCode = {
+          code: activePromo.code,
+          isActive: activePromo.isActive,
+          validFrom: activePromo.validFrom,
+          validUntil: activePromo.validUntil,
+          discountPercentage: activePromo.custom?.fields?.discountPercentage ?? 70,
+        };
+      }
     } catch (error) {
       this.error = error instanceof Error ? error.message : 'Unknown error';
     } finally {
@@ -41,7 +69,6 @@ export class ShoppingCartPage {
       this.render();
     }
   }
-
 
   public render(): void {
     const main = document.getElementById('app');
@@ -51,7 +78,6 @@ export class ShoppingCartPage {
     const container = this.createContainer();
 
     main.appendChild(container);
-    console.log('Rendering cart items...');
   }
 
   private createContainer(): HTMLElement {
@@ -66,14 +92,29 @@ export class ShoppingCartPage {
       container.appendChild(this.createErrorElement());
     } else if (this.cartItems.length === 0) {
       container.appendChild(this.createEmptyElement());
+      container.appendChild(this.createReturnToCatalogButton());
     } else {
       container.appendChild(this.createCartItemsList());
       container.appendChild(this.createTotalPriceElement());
       container.appendChild(this.createPromoSection());
+      if (this.activePromoCode) {
+        container.appendChild(this.createActivePromoCodeElement());
+      }
       container.appendChild(this.createClearCartButton());
     }
 
     return container;
+  }
+
+  private createReturnToCatalogButton(): HTMLElement {
+    const returnButton = document.createElement('button');
+    returnButton.textContent = 'Вернуться в каталог';
+    returnButton.classList.add('return-to-catalog-button');
+    returnButton.addEventListener('click', () => {
+      window.history.pushState({}, '', '/store');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    return returnButton;
   }
 
   private createTitleElement(): HTMLElement {
@@ -81,6 +122,26 @@ export class ShoppingCartPage {
     title.classList.add('title');
     title.textContent = 'Shopping Cart';
     return title;
+  }
+
+  private async checkPromoCode(promoCode: string): Promise<PromoCode | null> {
+    try {
+      const response = await apiRoot.discountCodes().get().execute();
+      const foundPromo = response.body.results.find(code => code.code === promoCode);
+      if (!foundPromo) return null;
+
+      const promo: PromoCode = {
+        code: foundPromo.code,
+        isActive: foundPromo.isActive,
+        validFrom: foundPromo.validFrom,
+        validUntil: foundPromo.validUntil,
+        discountPercentage: foundPromo.custom?.fields?.discountPercentage ?? 70,
+      };
+      return promo;
+    } catch (error) {
+      console.error('Error checking promo code:', error);
+      return null;
+    }
   }
 
   private createPromoSection(): HTMLElement {
@@ -96,16 +157,113 @@ export class ShoppingCartPage {
     const promoButton = document.createElement('button');
     promoButton.textContent = 'Зарегистрировать';
     promoButton.classList.add('promo-button');
-    promoButton.addEventListener('click', () => {
-      const promoCode = promoInput.value.trim();
-      if (promoCode) {
-        alert(`Промокод "${promoCode}" зарегистрирован!`);
-        promoInput.value = '';
-      }
+    promoButton.addEventListener('click', async () => {
+      await this.handlePromoButtonClick(promoInput.value.trim());
     });
     promoContainer.appendChild(promoButton);
 
     return promoContainer;
+  }
+
+  private async handlePromoButtonClick(promoCode: string): Promise<void> {
+    const promoResult = await this.checkPromoCode(promoCode);
+    if (!promoResult) {
+      document.body.appendChild(renderModal(`Промокод #${promoCode} не найден!`));
+      return;
+    }
+    if (!promoResult.isActive) {
+      const response = await apiRoot.discountCodes()
+    .get({ queryArgs: { where: `code="${promoResult.code}"` } })
+    .execute();
+  const discount = response.body.results[0];
+  if (!discount) {
+    console.log('Промокод не найден!');
+    return;
+  }
+  await apiRoot.discountCodes().withId({ ID: discount.id }).post({
+    body: {
+      version: discount.version,
+      actions: [{
+        action: 'changeIsActive',
+        isActive: true
+      }]
+    }
+  }).execute();
+  promoResult.isActive = true;
+  this.activePromoCode = promoResult;
+  this.render();
+    }
+    const now = new Date();
+    const validFrom = promoResult.validFrom ? new Date(promoResult.validFrom) : null;
+    const validUntil = promoResult.validUntil ? new Date(promoResult.validUntil) : null;
+    if ((validFrom && now < validFrom) || (validUntil && now > validUntil)) {
+      document.body.appendChild(renderModal(`Промокод #${promoCode} не валиден!`));
+      return;
+    }
+
+    this.activePromoCode = promoResult;
+    document.body.appendChild(renderModal(`Промокод #${promoCode} успешно применен! Скидка: ${promoResult.discountPercentage}%`));
+    this.render();
+  }
+
+  private createActivePromoCodeElement(): HTMLElement {
+    const activePromoElement = document.createElement('div');
+    activePromoElement.classList.add('active-promo-code');
+    if (this.activePromoCode) {
+      activePromoElement.appendChild(this.createPromoTextElement());
+      const removeButton = this.createRemovePromoButton(activePromoElement);
+      activePromoElement.appendChild(removeButton);
+    }
+    return activePromoElement;
+  }
+
+  private createPromoTextElement(): HTMLElement {
+    const promoText = document.createElement('span');
+    if (this.activePromoCode) {
+      promoText.textContent = `Активный промокод: ${this.activePromoCode.code} (Скидка: ${this.activePromoCode.discountPercentage}%)`;
+    }
+    return promoText;
+  }
+
+  private createRemovePromoButton(activePromoElement: HTMLElement): HTMLElement {
+    const removeButton = document.createElement('span');
+    removeButton.textContent = '✕';
+    removeButton.classList.add('remove-promo');
+    removeButton.style.cursor = 'pointer';
+    removeButton.style.marginLeft = '10px';
+    removeButton.style.display = 'none';
+    activePromoElement.addEventListener('mouseenter', () => {
+      removeButton.style.display = 'inline';
+    });
+    activePromoElement.addEventListener('mouseleave', () => {
+      removeButton.style.display = 'none';
+    });
+    removeButton.addEventListener('click', async () => {
+  if (this.activePromoCode) {
+    const response = await apiRoot.discountCodes()
+      .get({ queryArgs: { where: `code="${this.activePromoCode.code}"` } })
+      .execute();
+    const discount = response.body.results[0];
+    if (!discount) {
+      alert('Промокод не найден!');
+      return;
+    }
+    await apiRoot.discountCodes().withId({ ID: discount.id }).post({
+      body: {
+        version: discount.version,
+        actions: [{
+          action: 'changeIsActive',
+          isActive: false
+        }]
+      }
+    }).execute();
+    this.activePromoCode = null;
+    this.render();
+  }
+});
+
+
+    return removeButton;
   }
 
   private createClearCartButton(): HTMLElement {
@@ -114,11 +272,13 @@ export class ShoppingCartPage {
     clearButton.classList.add('clear-cart-button');
     clearButton.addEventListener('click', async () => {
       await CartService.clearCart();
+      this.activePromoCode = null;
       await this.fetchCartItems();
       this.render();
     });
     return clearButton;
   }
+
   private createLoadingElement(): HTMLElement {
     const loadingElement = document.createElement('p');
     loadingElement.textContent = 'Loading...';
@@ -156,23 +316,42 @@ export class ShoppingCartPage {
     labelElement.classList.add('cart-item-label');
     itemCard.appendChild(labelElement);
 
-    const quantityElement = this.createCartItemQuantityInput(item, labelElement);
+    const quantityElement = this.createCartItemQuantityInput(item);
     labelElement.appendChild(quantityElement);
 
-    const priceElement = document.createElement('p');
-    priceElement.classList.add('cart-item-price');
-    priceElement.textContent = `Цена: ${item.price.toFixed(2)}$`;
+    const priceElement = this.createCartItemPriceElement(item);
     itemCard.appendChild(priceElement);
 
-    const totalElement = document.createElement('p');
-    totalElement.classList.add('cart-item-total');
-    totalElement.textContent = `Стоимость: ${(item.price * item.quantity).toFixed(2)}$`;
+    const totalElement = this.createCartItemTotalElement(item);
     itemCard.appendChild(totalElement);
 
     const deleteButton = this.createCartItemDeleteButton(item);
     itemCard.appendChild(deleteButton);
 
     return itemCard;
+  }
+
+  private createCartItemPriceElement(item: CartItem): HTMLElement {
+    const priceElement = document.createElement('p');
+    priceElement.classList.add('cart-item-price');
+    priceElement.textContent = `Цена: ${item.price.toFixed(2)}₽`;
+    return priceElement;
+  }
+
+  private createCartItemTotalElement(item: CartItem): HTMLElement {
+    const totalElement = document.createElement('p');
+    totalElement.classList.add('cart-item-total');
+    const itemTotal = item.price * item.quantity;
+    if (this.activePromoCode && this.activePromoCode.isActive) {
+      const discountedTotal = itemTotal * (1 - this.activePromoCode.discountPercentage / 100);
+      const oldPriceSpan = document.createElement('span');
+      oldPriceSpan.textContent = `(${itemTotal.toFixed(2)}₽)`;
+      totalElement.textContent = `Стоимость: ${discountedTotal.toFixed(2)}₽ `;
+      totalElement.appendChild(oldPriceSpan);
+    } else {
+      totalElement.textContent = `Стоимость: ${itemTotal.toFixed(2)}₽`;
+    }
+    return totalElement;
   }
 
   private createCartItemImageElement(item: CartItem): HTMLImageElement | null {
@@ -184,7 +363,7 @@ export class ShoppingCartPage {
     return imageElement;
   }
 
-  private createCartItemQuantityInput(item: CartItem, labelElement: HTMLElement): HTMLInputElement {
+  private createCartItemQuantityInput(item: CartItem): HTMLInputElement {
     const quantityElement = document.createElement('input');
     quantityElement.type = 'number';
     quantityElement.min = '1';
@@ -230,7 +409,15 @@ export class ShoppingCartPage {
 
   private createTotalPriceElement(): HTMLElement {
     const totalPriceElement = document.createElement('h3');
-    totalPriceElement.textContent = `Общая стоимость: ${this.totalPrice.toFixed(2)}$`;
+    const originalPrice = this.cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    if (this.activePromoCode && this.activePromoCode.isActive) {
+      const oldPriceSpan = document.createElement('span');
+      oldPriceSpan.textContent = `(${originalPrice.toFixed(2)}₽)`;
+      totalPriceElement.textContent = `Общая стоимость: ${this.totalPrice.toFixed(2)}₽ `;
+      totalPriceElement.appendChild(oldPriceSpan);
+    } else {
+      totalPriceElement.textContent = `Общая стоимость: ${originalPrice.toFixed(2)}₽`;
+    }
     totalPriceElement.classList.add('total-price');
     return totalPriceElement;
   }

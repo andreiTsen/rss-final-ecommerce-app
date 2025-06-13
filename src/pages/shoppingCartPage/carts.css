@@ -70,7 +70,8 @@
   text-align: center;
   color: #4caf50;
 }
-.cart-item-delete-button, .clear-cart-button {
+.cart-item-delete-button,
+.clear-cart-button, .return-to-catalog-button {
   background-color: #e74c3c;
   color: #fff;
   border: none;
@@ -104,3 +105,9 @@
   text-align: center;
   color: #4caf50;
 }
+.total-price span, .cart-item-total span {
+  color: #808080;
+  text-decoration: line-through;
+  text-underline-offset: 5px;
+}
+

@@ -251,6 +251,38 @@ export class CartService {
     return this.currentCart;
   }
 
+  /** 
+   * Получить список всей корзины (все lineItems) текущего пользователя или анонимного пользователя.
+   * Возвращает CartData или null, если корзина не инициализирована.
+   */
+  public static async getFullCart(): Promise<CartData | null> {
+    try {
+      const apiClient = this.getCartApiClient();
+      const isAuthenticated = AuthorizationService.isAuthenticated();
+
+      if (isAuthenticated) {
+        const response = await apiClient.me().activeCart().get().execute();
+        const cart = this.mapCartToData(response.body);
+        this.currentCart = cart;
+        this.notifyCartUpdate(cart);
+        return cart;
+      } else {
+        const anonymousCartId = localStorage.getItem('anonymousCartId');
+        if (!anonymousCartId) {
+          return null;
+        }
+        const response = await apiRoot.carts().withId({ ID: anonymousCartId }).get().execute();
+        const cart = this.mapCartToData(response.body);
+        this.currentCart = cart;
+        this.notifyCartUpdate(cart);
+        return cart;
+      }
+    } catch (error) {
+      console.error('Ошибка получения полной корзины:', error);
+      return null;
+    }
+  }
+
   private static isCommerceToolsError(
     error: unknown
   ): error is { body: unknown; statusCode?: number; message?: string } {
