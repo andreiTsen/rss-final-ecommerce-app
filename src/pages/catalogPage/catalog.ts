@@ -44,6 +44,22 @@ export class CatalogPage {
     await this.loadData();
     this.render();
     this.setupPopstateHandler();
+
+    CartService.onCartUpdate(() => {
+      this.updateAllAddToCartButtons();
+    });
+  }
+
+  private updateAllAddToCartButtons(): void {
+    const buttons = document.querySelectorAll('.add-to-cart-btn');
+    buttons.forEach((button) => {
+      if (button instanceof HTMLButtonElement) {
+        const productId = button.dataset.productId;
+        if (productId) {
+          this.updateAddToCartButtonState(button, productId);
+        }
+      }
+    });
   }
 
   private async loadData(): Promise<void> {
@@ -1472,14 +1488,39 @@ export class CatalogPage {
     return detailsButton;
   }
 
+  private isProductInCart(productId: string): boolean {
+    const currentCart = CartService.getCurrentCart();
+    if (!currentCart) return false;
+
+    return currentCart.lineItems.some((item) => item.productId === productId);
+  }
+
   private createAddToCartButton(product: ProductData): HTMLElement {
     const addToCartButton = document.createElement('button');
     addToCartButton.className = 'add-to-cart-btn';
-    addToCartButton.textContent = 'В корзіну';
+    addToCartButton.dataset.productId = product.id;
+
+    this.updateAddToCartButtonState(addToCartButton, product.id);
+
     addToCartButton.addEventListener('click', (event) => {
       void this.addToCart(product, event);
     });
+
     return addToCartButton;
+  }
+
+  private updateAddToCartButtonState(button: HTMLButtonElement, productId: string): void {
+    const isInCart = this.isProductInCart(productId);
+
+    if (isInCart) {
+      button.textContent = 'В корзине';
+      button.disabled = true;
+      button.classList.add('in-cart');
+    } else {
+      button.textContent = 'В корзину';
+      button.disabled = false;
+      button.classList.remove('in-cart');
+    }
   }
 
   private async updateCategoryFilter(categoryId: string | undefined): Promise<void> {
@@ -1814,29 +1855,28 @@ export class CatalogPage {
     try {
       if (event.target instanceof HTMLButtonElement) {
         const button = event.target;
-        const originalText = button.textContent;
+
+        if (this.isProductInCart(product.id)) {
+          return;
+        }
+
         button.textContent = 'Добавляем...';
         button.disabled = true;
 
         await CartService.addProductToCart(product.id, 1);
 
-        button.textContent = 'Добавлено!';
-
-        setTimeout(() => {
-          button.textContent = originalText;
-          button.disabled = false;
-        }, 1500);
+        button.textContent = 'В корзине';
+        button.classList.add('in-cart');
       }
     } catch (error) {
-      console.error('Ошибка добавленія товара в корзину:', error);
+      console.error('Ошибка добавления товара в корзину:', error);
 
       if (event.target instanceof HTMLButtonElement) {
         const button = event.target;
         button.textContent = 'Ошибка';
-        button.disabled = false;
 
         setTimeout(() => {
-          button.textContent = 'В корзіну';
+          this.updateAddToCartButtonState(button, product.id);
         }, 2000);
       }
     }
