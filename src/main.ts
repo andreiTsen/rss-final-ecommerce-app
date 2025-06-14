@@ -149,7 +149,7 @@ export async function handleUserAuthChange(): Promise<void> {
 }
 
 function renderCartPage(): void {
-    new ShoppingCartPage();
+  new ShoppingCartPage();
 }
 
 function createPlaceholderContainer(pageName: string): HTMLDivElement {

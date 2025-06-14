@@ -385,11 +385,11 @@ export class ShoppingCartPage {
     if (this.activePromoCode && this.activePromoCode.isActive) {
       const discountedTotal = itemTotal * (1 - this.activePromoCode.discountPercentage / 100);
       const oldPriceSpan = document.createElement('span');
-      oldPriceSpan.textContent = `(${itemTotal.toFixed(2)}₽)`;
-      totalElement.textContent = `Стоимость: ${discountedTotal.toFixed(2)}₽ `;
+      oldPriceSpan.textContent = `(${itemTotal.toFixed(2)}$)`;
+      totalElement.textContent = `Стоимость: ${discountedTotal.toFixed(2)}$ `;
       totalElement.appendChild(oldPriceSpan);
     } else {
-      totalElement.textContent = `Стоимость: ${itemTotal.toFixed(2)}₽`;
+      totalElement.textContent = `Стоимость: ${itemTotal.toFixed(2)}$`;
     }
     return totalElement;
   }
@@ -452,11 +452,11 @@ export class ShoppingCartPage {
     const originalPrice = this.cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
     if (this.activePromoCode && this.activePromoCode.isActive) {
       const oldPriceSpan = document.createElement('span');
-      oldPriceSpan.textContent = `(${originalPrice.toFixed(2)}₽)`;
-      totalPriceElement.textContent = `Общая стоимость: ${this.totalPrice.toFixed(2)}₽ `;
+      oldPriceSpan.textContent = `(${originalPrice.toFixed(2)}$)`;
+      totalPriceElement.textContent = `Общая стоимость: ${this.totalPrice.toFixed(2)}$ `;
       totalPriceElement.appendChild(oldPriceSpan);
     } else {
-      totalPriceElement.textContent = `Общая стоимость: ${originalPrice.toFixed(2)}₽`;
+      totalPriceElement.textContent = `Общая стоимость: ${originalPrice.toFixed(2)}$`;
     }
     totalPriceElement.classList.add('total-price');
     return totalPriceElement;
