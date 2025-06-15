@@ -11,6 +11,7 @@
   font-size: 1.5rem;
   font-weight: 500;
   margin: 0 auto;
+  margin-top: 15px;
   margin-bottom: 25px;
 }
 
@@ -21,7 +22,7 @@
   border-radius: 20px;
   gap: 1.5rem;
   border: 2px solid #4caf50;
-  padding: 0px 35px 20px 0px;
+  padding: 0px 35px 0px 0px;
 }
 
 .about-img__container {
@@ -41,17 +42,20 @@
 
 .dev-1 {
   background-image: url('./../../assets/img/dev-andrei.jpg');
-  height: 445px;
+  min-height: 450px;
+  height: 100%;
 }
 
 .dev-2 {
   background-image: url('./../../assets/img/dev-arkhip.jpg');
-  height: 500px;
+  min-height: 500px;
+  height: 100%;
 }
 
 .dev-3 {
   background-image: url('./../../assets/img/image.png');
-  height: 500px;
+  min-height: 500px;
+  height: 100%;
 }
 
 .about-dev__name-box {
@@ -135,6 +139,12 @@
   margin-left: 5px;
   width: 30px;
   height: 30px;
+}
+
+@media screen and (max-width: 1000px) {
+  .about-dev__info-box {
+    padding-bottom: 15px;
+  }
 }
 
 @media screen and (max-width: 800px) {

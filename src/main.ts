@@ -1,41 +1,49 @@
 import './pages/RegistrationPage/registration.css';
 import { RegistrationPage } from './pages/RegistrationPage/registration';
-import { AuthService } from './services/authService';
 import { Navigation } from './components/navigation';
 import loginPage from './pages/loginPage/loginPage';
 import { AuthorizationService } from './services/authentication';
 import productAboutPage from './pages/productAboutPage/productAboutPage';
 import { getProduct, handleProductAbout } from './services/getProduct';
 import './pages/productAboutPage/productAboutPage.css';
-import { customerApiRoot } from './services/customerApi';
 import './assets/style.css';
 import { ProfilePage } from './pages/ProfilePage/Profile';
 import { CatalogPage } from './pages/catalogPage/catalog';
-import { CartService } from './services/cartService';
 import AboutPage from './pages/aboutPage/aboutPage';
-// const appRoot = document.body;
+import hamburgerMenu from './components/hamburgerMenu.';
 
 let appContainer: HTMLElement;
 export let navigation: Navigation;
 
 document.addEventListener('DOMContentLoaded', () => {
-  const existingContainer = document.getElementById('app');
-  let navContainer = document.getElementById('nav');
-  if (!navContainer) {
-    navContainer = document.createElement('header');
-    navContainer.id = 'nav';
-    document.body.appendChild(navContainer);
-  }
-  navigation = new Navigation(navContainer);
+  const body = document.body;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'body-wrapper';
+  body.appendChild(wrapper);
 
+  const header = document.createElement('header');
+  header.classList.add('header');
+  wrapper.appendChild(header);
+
+  const title = document.createElement('span');
+  title.classList.add('nav-title');
+  title.textContent = 'Crazy Bookstore';
+  header.appendChild(title);
+
+  const nav = document.createElement('nav');
+  nav.id = 'nav';
+  header.appendChild(nav);
+  navigation = new Navigation(nav);
+  header.appendChild(Navigation.createBurgerMenu());
+  const existingContainer = document.getElementById('app');
   if (existingContainer instanceof HTMLElement) {
     appContainer = existingContainer;
   } else {
     appContainer = document.createElement('main');
     appContainer.id = 'app';
-    document.body.appendChild(appContainer);
+    wrapper.appendChild(appContainer);
   }
-
+  hamburgerMenu();
   setupRouting();
 });
 

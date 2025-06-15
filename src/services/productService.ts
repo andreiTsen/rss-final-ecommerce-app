@@ -1,5 +1,5 @@
 import { apiRoot } from '../api';
-import { ProductProjection, Category, ProductVariant } from '@commercetools/platform-sdk';
+import { ProductProjection, Category, ProductVariant, Attribute } from '@commercetools/platform-sdk';
 
 export type ProductData = {
   id: string;
@@ -313,7 +313,7 @@ export class ProductService {
     const attributes = variant.attributes || [];
     const attributeMap: Record<string, unknown> = {};
 
-    attributes.forEach((attribute: string) => {
+    attributes.forEach((attribute: Attribute) => {
       if (attribute.name && attribute.value !== undefined) {
         attributeMap[attribute.name] = attribute.value;
       }
