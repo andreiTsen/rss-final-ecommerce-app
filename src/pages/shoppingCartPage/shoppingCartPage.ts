@@ -191,7 +191,6 @@ export class ShoppingCartPage {
       .execute();
     const discount = response.body.results[0];
     if (!discount) {
-
       return false;
     }
     await apiRoot
