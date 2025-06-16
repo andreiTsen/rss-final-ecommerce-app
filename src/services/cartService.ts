@@ -251,7 +251,6 @@ export class CartService {
     return this.currentCart;
   }
 
-
   public static async getFullCart(): Promise<CartData | null> {
     try {
       const apiClient = this.getCartApiClient();
@@ -279,7 +278,7 @@ export class CartService {
       return null;
     }
   }
-  
+
   private static isCommerceToolsError(
     error: unknown
   ): error is { body: unknown; statusCode?: number; message?: string } {

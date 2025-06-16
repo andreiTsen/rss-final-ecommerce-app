@@ -15,6 +15,17 @@ export class Navigation {
     void this.initializeCartCounter();
   }
 
+  public static createBurgerMenu(): HTMLElement {
+    const iconContainer = document.createElement('div');
+    iconContainer.classList.add('hamburger__icon');
+    const line1 = document.createElement('span');
+    line1.classList.add('hamburger__icon--item', 'line1');
+    const line2 = document.createElement('span');
+    line2.classList.add('hamburger__icon--item', 'line2');
+    iconContainer.append(line1, line2);
+    return iconContainer;
+  }
+
   public resubscribeToCart(): void {
     CartService.resetCallbacks();
 
@@ -42,17 +53,6 @@ export class Navigation {
     }
   }
 
-  public static createBurgerMenu(): HTMLElement {
-    const iconContainer = document.createElement('div');
-    iconContainer.classList.add('hamburger__icon');
-    const line1 = document.createElement('span');
-    line1.classList.add('hamburger__icon--item', 'line1');
-    const line2 = document.createElement('span');
-    line2.classList.add('hamburger__icon--item', 'line2');
-    iconContainer.append(line1, line2);
-    return iconContainer;
-  }
-
   public setActiveLink(targetPath: string): void {
     const links = this.root.querySelectorAll('.nav-link');
     links.forEach((link) => {
@@ -72,44 +72,29 @@ export class Navigation {
   public render(): void {
     this.root.innerHTML = '';
     this.root.classList.add('navbar');
-
     const homeLink = this.createLink('Каталог', '/store');
-
     const loginLink = this.createLink('Вход', '/login');
     const registerLink = this.createLink('Регистрация', '/registration');
     const aboutLink = this.createLink('О разработчиках', '/about-us');
-
     this.root.appendChild(homeLink);
     this.root.appendChild(loginLink);
     this.root.appendChild(registerLink);
     this.root.appendChild(aboutLink);
-
     if (AuthorizationService.isAuthenticated()) {
       const profileLink = this.createLink('👤 Профиль', '/profile');
       this.root.appendChild(profileLink);
     }
     const cartLink = this.createLink('🛒 Корзина', '/cart', 'cart-link');
-
-    nav.appendChild(homeLink);
-    nav.appendChild(cartLink);
-
+    this.root.appendChild(cartLink);
     if (AuthorizationService.isAuthenticated()) {
       const profileLink = this.createLink('👤 Профиль', '/profile');
-
-      const logoutButton = this.createLogoutButton();
-
-      nav.appendChild(profileLink);
-      nav.appendChild(logoutButton);
+      this.root.appendChild(profileLink);
     } else {
       const loginLink = this.createLink('Вход', '/login');
       const registerLink = this.createLink('Регистрация', '/registration');
-
-      nav.appendChild(loginLink);
-      nav.appendChild(registerLink);
+      this.root.appendChild(loginLink);
+      this.root.appendChild(registerLink);
     }
-
-    this.root.appendChild(nav);
-
     setTimeout((): void => {
       if (this.isInitialized) {
         void this.updateCartCounter();
@@ -168,24 +153,6 @@ export class Navigation {
     } else {
       console.warn('Элемент cart-link не найден в DOM');
     }
-  }
-
-  private createLogoutButton(): HTMLButtonElement {
-    const logoutButton = document.createElement('button');
-    logoutButton.textContent = 'Выйти';
-    logoutButton.className = 'nav-link logout-btn';
-
-    logoutButton.addEventListener('click', async (): Promise<void> => {
-      AuthorizationService.logout();
-
-      const { handleUserAuthChange } = await import('../main');
-      await handleUserAuthChange();
-
-      const { navigateTo } = await import('../main');
-      navigateTo('/store');
-    });
-
-    return logoutButton;
   }
 
   private createLink(name: string, path: string, id?: string): HTMLAnchorElement {

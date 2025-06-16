@@ -14,7 +14,6 @@ import hamburgerMenu from './components/hamburgerMenu.';
 import { ShoppingCartPage } from './pages/shoppingCartPage/shoppingCartPage';
 import { CartService } from './services/cartService';
 
-
 let appContainer: HTMLElement;
 export let navigation: Navigation;
 
@@ -69,7 +68,6 @@ function handleRouting(): void {
   const isAuthenticated = AuthorizationService.isAuthenticated();
   appContainer.innerHTML = '';
 
-
   const routes = {
     '/': (): CatalogPage => new CatalogPage(appContainer),
     '/store': (): CatalogPage => new CatalogPage(appContainer),
@@ -92,7 +90,6 @@ function handleRouting(): void {
   handler();
   navigation.setActiveLink(path);
 }
-
 
 export function navigateTo(path: string): void {
   window.history.pushState({}, '', path);

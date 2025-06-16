@@ -1,17 +1,11 @@
-
 import { apiRoot } from '../api';
 import createErrorMessage from '../pages/loginPage/errorMessage';
 import { getCustomerApiRootWithPassword } from './customerApi';
 import { CartService } from './../services/cartService';
 import { createUserApiClient } from './../services/userApiClient';
 import { Customer, ByProjectKeyRequestBuilder } from '@commercetools/platform-sdk';
-import { createUserApiClient } from './authApiClient';
-import { CartService } from './cartService';
-
-
-
 export class AuthorizationService {
-   private static authErrorElement: HTMLElement | null = null;
+  private static authErrorElement: HTMLElement | null = null;
   private static readonly AUTH_TOKEN_KEY = 'authToken';
   private static readonly USER_KEY = 'user';
   private static readonly USER_CREDENTIALS_KEY = 'userCredentials';
@@ -142,13 +136,5 @@ export class AuthorizationService {
       this.authErrorElement.remove();
       this.authErrorElement = null;
     }
-  }
-
-  public static checkAuthState(): boolean {
-    const authToken = localStorage.getItem(this.AUTH_TOKEN_KEY);
-    const user = localStorage.getItem(this.USER_KEY);
-    const credentials = localStorage.getItem(this.USER_CREDENTIALS_KEY);
-
-    return authToken === 'authenticated' && !!user && !!credentials;
   }
 }
