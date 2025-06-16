@@ -115,6 +115,8 @@ export class CatalogPage {
   private render(): void {
     this.container.textContent = '';
 
+    const promotionalBanner = this.createPromotionalBanner();
+
     const catalogContainer = document.createElement('div');
     catalogContainer.className = 'catalog-container';
 
@@ -134,9 +136,14 @@ export class CatalogPage {
     catalogContent.appendChild(mainContent);
 
     catalogContainer.appendChild(catalogContent);
-    this.container.appendChild(catalogContainer);
+    this.container.append(promotionalBanner, catalogContainer);
   }
-
+  private createPromotionalBanner(): HTMLElement {
+    const banner = document.createElement('div');
+    banner.className = 'promotional-banner';
+    banner.innerHTML = `Промо акция! Промокод на скидку 70% - SUMMER2025`;
+    return banner;
+  }
   private createHeaderAndFiltersPanel(): HTMLElement {
     const panel = document.createElement('div');
     panel.className = 'header-and-filters-panel';
@@ -328,7 +335,7 @@ export class CatalogPage {
       this.updateURL();
       await this.applyFilters();
     } catch (error) {
-      console.error('Ошібка при сбросе":', error);
+      console.error('Ошибка при сбросе":', error);
     }
   }
 
@@ -410,7 +417,7 @@ export class CatalogPage {
     const sortOptions = [
       { value: 'default', label: 'По умолчанию' },
       { value: 'name-asc', label: 'По алфавиту' },
-      { value: 'name-desc', label: 'Протів алфавита' },
+      { value: 'name-desc', label: 'Против алфавита' },
       { value: 'price-asc', label: 'Цена: по возрастанию' },
       { value: 'price-desc', label: 'Цена: по убыванию' },
     ];
@@ -445,10 +452,10 @@ export class CatalogPage {
   private addSortFilterTag(container: HTMLElement): void {
     if (this.currentSortOption && this.currentSortOption !== 'default') {
       const sortLabels: Record<string, string> = {
-        'name-asc': 'По алфавіту',
-        'name-desc': 'Протів алфавіта',
-        'price-asc': 'Цена: по возрастанію',
-        'price-desc': 'Цена: по убыванію',
+        'name-asc': 'По алфавиту',
+        'name-desc': 'Против алфавита',
+        'price-asc': 'Цена: по возрастанию',
+        'price-desc': 'Цена: по убыванию',
       };
 
       const label = sortLabels[this.currentSortOption];
