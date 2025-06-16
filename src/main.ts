@@ -11,12 +11,12 @@ import { customerApiRoot } from './services/customerApi';
 import './assets/style.css';
 import { ProfilePage } from './pages/ProfilePage/Profile';
 import { CatalogPage } from './pages/catalogPage/catalog';
-// const appRoot = document.body;
+import { CartService } from './services/cartService';
 
 let appContainer: HTMLElement;
 export let navigation: Navigation;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const existingContainer = document.getElementById('app');
   let navContainer = document.getElementById('nav');
   if (!navContainer) {
@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     navContainer.id = 'nav';
     document.body.appendChild(navContainer);
   }
+
   navigation = new Navigation(navContainer);
 
   if (existingContainer instanceof HTMLElement) {
@@ -35,6 +36,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   setupRouting();
+
+  setTimeout(async () => {
+    try {
+      await navigation.forceInitializeCart();
+    } catch (error) {
+      console.error('Ошибка доп инициализаціі корзіны:', error);
+    }
+  }, 200);
 });
 
 function setupRouting(): void {
@@ -46,46 +55,112 @@ function handleRouting(): void {
   const path = window.location.pathname;
   const isAuthenticated = AuthorizationService.isAuthenticated();
   appContainer.innerHTML = '';
+
+  renderPageByPath(path, isAuthenticated);
+  navigation.setActiveLink(path);
+}
+
+function renderPageByPath(path: string, isAuthenticated: boolean): void {
   switch (path) {
     case '/':
     case '/store':
-      new CatalogPage(appContainer);
+      renderCatalogPage();
       break;
     case '/registration':
-      if (!isAuthenticated) {
-        new RegistrationPage(appContainer);
-      } else {
-        navigateTo('/store');
-      }
+      renderRegistrationPage(isAuthenticated);
       break;
     case '/login':
-      if (!isAuthenticated) {
-        new loginPage(appContainer);
-      } else {
-        navigateTo('/store');
-      }
+      renderLoginPage(isAuthenticated);
       break;
-    case '/product-about': {
-      void handleProductAbout(appContainer);
+    case '/product-about':
+      renderProductAboutPage();
       break;
-    }
     case '/profile':
-      if (isAuthenticated) {
-        new ProfilePage(appContainer);
-      } else {
-        navigateTo('/login');
-      }
+      renderProfilePage(isAuthenticated);
+      break;
+    case '/cart':
+      renderCartPage();
       break;
     default:
-      renderPlaceholderPage('Oшибка 404. Страница не найдена', isAuthenticated);
+      renderPlaceholderPage('Ошибка 404. Страница не найдена', isAuthenticated);
       break;
   }
-  navigation.setActiveLink(path);
+}
+
+function renderCatalogPage(): void {
+  new CatalogPage(appContainer);
+}
+
+function renderRegistrationPage(isAuthenticated: boolean): void {
+  if (!isAuthenticated) {
+    new RegistrationPage(appContainer);
+  } else {
+    navigateTo('/store');
+  }
+}
+
+function renderLoginPage(isAuthenticated: boolean): void {
+  if (!isAuthenticated) {
+    new loginPage(appContainer);
+  } else {
+    navigateTo('/store');
+  }
+}
+
+function renderProductAboutPage(): void {
+  void handleProductAbout(appContainer);
+}
+
+function renderProfilePage(isAuthenticated: boolean): void {
+  if (isAuthenticated) {
+    new ProfilePage(appContainer);
+  } else {
+    navigateTo('/login');
+  }
 }
 
 export function navigateTo(path: string): void {
   window.history.pushState({}, '', path);
   handleRouting();
+}
+
+export async function handleUserAuthChange(): Promise<void> {
+  try {
+    const isAuthenticated = AuthorizationService.isAuthenticated();
+
+    if (isAuthenticated) {
+      await CartService.mergeAnonymousCartOnLogin();
+    } else {
+      CartService.clearCartCache();
+    }
+
+    await navigation.handleAuthChange();
+  } catch (error) {
+    console.error('Ошибка измененія аутентификации:', error);
+    try {
+      await navigation.handleAuthChange();
+    } catch (navError) {
+      console.error('Ошибка обновления навигации:', navError);
+      navigation.render();
+    }
+  }
+}
+
+function renderCartPage(): void {
+  const cartContainer = document.createElement('div');
+  cartContainer.className = 'cart-page-container';
+
+  const title = document.createElement('h1');
+  title.textContent = 'Корзина';
+  title.className = 'cart-page-title';
+
+  const message = document.createElement('p');
+  message.textContent = 'Страница корзины в разработке';
+  message.className = 'cart-page-message';
+
+  cartContainer.appendChild(title);
+  cartContainer.appendChild(message);
+  appContainer.appendChild(cartContainer);
 }
 
 function createPlaceholderContainer(pageName: string): HTMLDivElement {
@@ -111,9 +186,9 @@ function createAuthenticatedContent(container: HTMLDivElement, pageName: string)
   const logoutButton = document.createElement('button');
   logoutButton.className = 'logout-button';
   logoutButton.textContent = 'Выйти из учетной записи';
-  logoutButton.addEventListener('click', () => {
+  logoutButton.addEventListener('click', async () => {
     AuthorizationService.logout();
-    navigation.render();
+    await handleUserAuthChange();
     navigateTo('/login');
   });
 
