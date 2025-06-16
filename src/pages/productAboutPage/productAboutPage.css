@@ -211,6 +211,28 @@
   background-color: #34cc39;
 }
 
+.custom-toast {
+  position: fixed;
+  top: 5rem;
+  right: 2rem;
+  background: #4caf50;
+  color: #fff;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  font-size: 1.1rem;
+  opacity: 1;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+}
+
+.custom-toast--hide {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
 @media screen and (max-width: 1024px) {
   .info-container {
     align-items: flex-start;

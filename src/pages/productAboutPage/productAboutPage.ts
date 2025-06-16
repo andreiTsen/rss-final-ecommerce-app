@@ -134,6 +134,19 @@ export default class productAboutPage {
     return { addButton, removeButton };
   }
 
+  public showNotice(message: string): void {
+    const notice = new ElementCreator({
+      tagName: 'div',
+      classNames: ['custom-toast'],
+      textContent: message,
+    });
+    document.body.appendChild(notice.getElement());
+    setTimeout(() => {
+      notice.getElement().classList.add('custom-toast--hide');
+      setTimeout(() => notice.getElement().remove(), 300);
+    }, 2000);
+  }
+
   public createButtons(productId: string): HTMLElement {
     const container = document.createElement('div');
     container.classList.add('about-page_cart-btns');
@@ -153,6 +166,7 @@ export default class productAboutPage {
       addButton.disabled = true;
       try {
         await CartService.addProductToCart(productId, 1);
+        this.showNotice('Товар успешно добавлен в корзину!');
       } catch {
         addButton.disabled = false;
         alert('Ошибка при добавлении в корзину');
@@ -164,6 +178,7 @@ export default class productAboutPage {
         const cart = await CartService.getOrCreateCart();
         const item = cart.lineItems.find((i: CartLineItem) => i.productId === productId);
         if (item) await CartService.removeProductFromCart(item.id);
+        this.showNotice('Товар удалён из корзины!');
       } catch {
         removeButton.disabled = false;
         alert('Ошибка при удалении из корзины');
