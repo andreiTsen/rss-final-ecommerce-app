@@ -80,10 +80,6 @@ export class Navigation {
     this.root.appendChild(loginLink);
     this.root.appendChild(registerLink);
     this.root.appendChild(aboutLink);
-    if (AuthorizationService.isAuthenticated()) {
-      const profileLink = this.createLink('👤 Профиль', '/profile');
-      this.root.appendChild(profileLink);
-    }
     const cartLink = this.createLink('🛒 Корзина', '/cart', 'cart-link');
     this.root.appendChild(cartLink);
     if (AuthorizationService.isAuthenticated()) {

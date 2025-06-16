@@ -77,6 +77,7 @@ function handleRouting(): void {
     '/product-about': (): void => void handleProductAbout(appContainer),
     '/profile': (): ProfilePage | void => (isAuthenticated ? new ProfilePage(appContainer) : navigateTo('/login')),
     '/about-us': (): AboutPage => new AboutPage(appContainer),
+    '/cart': (): ShoppingCartPage => new ShoppingCartPage(),
     default: (): void => renderPlaceholderPage('Oшибка 404. Страница не найдена', isAuthenticated),
   } as const;
 

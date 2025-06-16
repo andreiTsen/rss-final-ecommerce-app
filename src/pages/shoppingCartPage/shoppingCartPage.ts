@@ -41,7 +41,6 @@ export class ShoppingCartPage {
   public async fetchCartItems(): Promise<void> {
     try {
       const cart = await CartService.getOrCreateCart();
-      console.log('Fetched cart:', cart);
       this.cartItems = cart.lineItems.map((item) => ({
         id: item.id,
         name: item.name,
@@ -49,7 +48,6 @@ export class ShoppingCartPage {
         quantity: item.quantity,
         imageUrl: item.imageUrl,
       }));
-      console.log('Cart items:', this.cartItems);
 
       const response = await apiRoot.discountCodes().get().execute();
       const activePromo = response.body.results.find((code) => code.isActive);
@@ -193,7 +191,7 @@ export class ShoppingCartPage {
       .execute();
     const discount = response.body.results[0];
     if (!discount) {
-      console.log('Промокод не найден!');
+
       return false;
     }
     await apiRoot
