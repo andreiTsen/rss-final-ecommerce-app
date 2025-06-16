@@ -85,12 +85,13 @@ export class Navigation {
     if (AuthorizationService.isAuthenticated()) {
       const profileLink = this.createLink('👤 Профиль', '/profile');
       this.root.appendChild(profileLink);
-    } else {
-      const loginLink = this.createLink('Вход', '/login');
-      const registerLink = this.createLink('Регистрация', '/registration');
-      this.root.appendChild(loginLink);
-      this.root.appendChild(registerLink);
     }
+    // } else {
+    //   const loginLink = this.createLink('Вход', '/login');
+    //   const registerLink = this.createLink('Регистрация', '/registration');
+    //   this.root.appendChild(loginLink);
+    //   this.root.appendChild(registerLink);
+    // }
     setTimeout((): void => {
       if (this.isInitialized) {
         void this.updateCartCounter();

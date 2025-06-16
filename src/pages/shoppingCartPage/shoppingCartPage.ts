@@ -371,7 +371,7 @@ export class ShoppingCartPage {
   private createCartItemPriceElement(item: CartItem): HTMLElement {
     const priceElement = document.createElement('p');
     priceElement.classList.add('cart-item-price');
-    priceElement.textContent = `Цена: ${item.price.toFixed(2)}₽`;
+    priceElement.textContent = `Цена: ${item.price.toFixed(2)}$`;
     return priceElement;
   }
 

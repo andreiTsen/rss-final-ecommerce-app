@@ -176,7 +176,6 @@ export default class loginPage {
     const passwordInput = new ElementCreator({
       tagName: 'input',
       classNames: ['auth-form__input-password'],
-      callback: (): void => console.log('Ввод в инпут пароля'),
       attribute: ['placeholder=Password', 'type=password', 'autocomplete=off'],
     });
     const passwordInputIcon = new ElementCreator({
