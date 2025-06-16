@@ -3,12 +3,15 @@ import { apiRoot } from '../../api';
 import { renderModal } from '../ProfilePage/modal';
 
 import './carts.css';
+import { disconnect } from 'process';
 type CartItem = {
   id: string;
   name: string;
   price: number;
+  totalPrice: number;
   quantity: number;
   imageUrl?: string;
+  discountedPrice?: number;
 };
 
 type PromoCode = {
@@ -31,7 +34,7 @@ export class ShoppingCartPage {
   }
 
   public get totalPrice(): number {
-    let total = this.cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    let total = this.cartItems.reduce((total, item) => total + item.totalPrice * item.quantity, 0);
     if (this.activePromoCode && this.activePromoCode.isActive) {
       total = total * (1 - this.activePromoCode.discountPercentage / 100);
     }
@@ -41,10 +44,12 @@ export class ShoppingCartPage {
   public async fetchCartItems(): Promise<void> {
     try {
       const cart = await CartService.getOrCreateCart();
+      console.log('Cart:', cart);
       this.cartItems = cart.lineItems.map((item) => ({
         id: item.id,
         name: item.name,
         price: item.price,
+        totalPrice: item.totalPrice,
         quantity: item.quantity,
         imageUrl: item.imageUrl,
       }));
@@ -378,12 +383,27 @@ export class ShoppingCartPage {
   private createCartItemTotalElement(item: CartItem): HTMLElement {
     const totalElement = document.createElement('p');
     totalElement.classList.add('cart-item-total');
-    const itemTotal = item.price * item.quantity;
-    if (this.activePromoCode && this.activePromoCode.isActive) {
-      const discountedTotal = itemTotal * (1 - this.activePromoCode.discountPercentage / 100);
+    
+    const totalPriceOne = item.totalPrice / item.quantity;
+
+    let itemTotal = item.price * item.quantity;
+    
+  
+
+    
+    if (this.activePromoCode?.isActive) {
+      const discountedTotal = itemTotal * (1 - (this.activePromoCode?.discountPercentage ?? 0) / 100);
       const oldPriceSpan = document.createElement('span');
       oldPriceSpan.textContent = `(${itemTotal.toFixed(2)}$)`;
       totalElement.textContent = `Стоимость: ${discountedTotal.toFixed(2)}$ `;
+      totalElement.appendChild(oldPriceSpan);
+    } else if (totalPriceOne !== item.price) {
+      itemTotal = totalPriceOne * item.quantity;
+      const oldPriceTotal = item.price * item.quantity;
+      item.totalPrice = itemTotal;
+      const oldPriceSpan = document.createElement('span');
+      oldPriceSpan.textContent = `(${oldPriceTotal.toFixed(2)}$)`;
+      totalElement.textContent = `Стоимость: ${item.totalPrice.toFixed(2)}$ `;
       totalElement.appendChild(oldPriceSpan);
     } else {
       totalElement.textContent = `Стоимость: ${itemTotal.toFixed(2)}$`;
@@ -446,10 +466,13 @@ export class ShoppingCartPage {
 
   private createTotalPriceElement(): HTMLElement {
     const totalPriceElement = document.createElement('h3');
+   
     const originalPrice = this.cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    const originalPriceWithoutDiscount = this.cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    console.log('originalPriceWithoutDiscount:', originalPriceWithoutDiscount);
     if (this.activePromoCode && this.activePromoCode.isActive) {
       const oldPriceSpan = document.createElement('span');
-      oldPriceSpan.textContent = `(${originalPrice.toFixed(2)}$)`;
+      oldPriceSpan.textContent = `(${originalPriceWithoutDiscount.toFixed(2)}$)`;
       totalPriceElement.textContent = `Общая стоимость: ${this.totalPrice.toFixed(2)}$ `;
       totalPriceElement.appendChild(oldPriceSpan);
     } else {
