@@ -251,10 +251,7 @@ export class CartService {
     return this.currentCart;
   }
 
-  /**
-   * Получить список всей корзины (все lineItems) текущего пользователя или анонимного пользователя.
-   * Возвращает CartData или null, если корзина не инициализирована.
-   */
+
   public static async getFullCart(): Promise<CartData | null> {
     try {
       const apiClient = this.getCartApiClient();
@@ -282,7 +279,7 @@ export class CartService {
       return null;
     }
   }
-
+  
   private static isCommerceToolsError(
     error: unknown
   ): error is { body: unknown; statusCode?: number; message?: string } {

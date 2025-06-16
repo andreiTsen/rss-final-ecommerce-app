@@ -1,8 +1,17 @@
+
+import { apiRoot } from '../api';
+import createErrorMessage from '../pages/loginPage/errorMessage';
+import { getCustomerApiRootWithPassword } from './customerApi';
+import { CartService } from './../services/cartService';
+import { createUserApiClient } from './../services/userApiClient';
 import { Customer, ByProjectKeyRequestBuilder } from '@commercetools/platform-sdk';
 import { createUserApiClient } from './authApiClient';
 import { CartService } from './cartService';
 
+
+
 export class AuthorizationService {
+   private static authErrorElement: HTMLElement | null = null;
   private static readonly AUTH_TOKEN_KEY = 'authToken';
   private static readonly USER_KEY = 'user';
   private static readonly USER_CREDENTIALS_KEY = 'userCredentials';
@@ -27,13 +36,11 @@ export class AuthorizationService {
 
         CartService.clearCartCache();
         await CartService.mergeAnonymousCartOnLogin();
-
-        return true;
       }
-
-      return false;
+      return true;
     } catch (error) {
       console.error('Ошибка входа:', error);
+      this.handleAuthorizationError(error);
       return false;
     }
   }
@@ -92,6 +99,48 @@ export class AuthorizationService {
     } catch (error) {
       console.error('Ошибка созданія апі кліента:', error);
       return null;
+    }
+  }
+
+  public static checkAuthState(): boolean {
+    const authToken = localStorage.getItem(this.AUTH_TOKEN_KEY);
+    const user = localStorage.getItem(this.USER_KEY);
+    const credentials = localStorage.getItem(this.USER_CREDENTIALS_KEY);
+    return authToken === 'authenticated' && !!user && !!credentials;
+  }
+
+  private static handleAuthorizationError(error: unknown): void {
+    let code;
+    if (typeof error === 'object' && error !== null && 'body' in error) {
+      const body = error.body;
+      if (typeof body === 'object' && body !== null && 'statusCode' in body) {
+        code = body.statusCode;
+      }
+    }
+    let buttonLogin = document.querySelector('.auth-form__button-login');
+    this.removeAuthError();
+    let errorMessage;
+    switch (code) {
+      case 400:
+        errorMessage = createErrorMessage(
+          'Данная учётная запись не найдена. Проверьте введённые данные!',
+          'auth-error'
+        );
+        break;
+      case 500:
+        errorMessage = createErrorMessage('Сервер не доступен. Попробуйте позднее!', 'auth-error');
+        break;
+    }
+    if (errorMessage) {
+      buttonLogin?.before(errorMessage);
+      this.authErrorElement = errorMessage;
+    }
+  }
+
+  private static removeAuthError(): void {
+    if (this.authErrorElement) {
+      this.authErrorElement.remove();
+      this.authErrorElement = null;
     }
   }
 
