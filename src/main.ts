@@ -11,6 +11,9 @@ import { ProfilePage } from './pages/ProfilePage/Profile';
 import { CatalogPage } from './pages/catalogPage/catalog';
 import AboutPage from './pages/aboutPage/aboutPage';
 import hamburgerMenu from './components/hamburgerMenu.';
+import { ShoppingCartPage } from './pages/shoppingCartPage/shoppingCartPage';
+import { CartService } from './services/cartService';
+
 
 let appContainer: HTMLElement;
 export let navigation: Navigation;
@@ -36,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   navigation = new Navigation(nav);
   header.appendChild(Navigation.createBurgerMenu());
   const existingContainer = document.getElementById('app');
+
   if (existingContainer instanceof HTMLElement) {
     appContainer = existingContainer;
   } else {
@@ -45,6 +49,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   hamburgerMenu();
   setupRouting();
+
+  setTimeout(async () => {
+    try {
+      await navigation.forceInitializeCart();
+    } catch (error) {
+      console.error('Ошибка доп инициализаціі корзіны:', error);
+    }
+  }, 200);
 });
 
 function setupRouting(): void {
@@ -56,6 +68,7 @@ function handleRouting(): void {
   const path = window.location.pathname;
   const isAuthenticated = AuthorizationService.isAuthenticated();
   appContainer.innerHTML = '';
+
 
   const routes = {
     '/': (): CatalogPage => new CatalogPage(appContainer),
@@ -80,9 +93,36 @@ function handleRouting(): void {
   navigation.setActiveLink(path);
 }
 
+
 export function navigateTo(path: string): void {
   window.history.pushState({}, '', path);
   handleRouting();
+}
+
+export async function handleUserAuthChange(): Promise<void> {
+  try {
+    const isAuthenticated = AuthorizationService.isAuthenticated();
+
+    if (isAuthenticated) {
+      await CartService.mergeAnonymousCartOnLogin();
+    } else {
+      CartService.clearCartCache();
+    }
+
+    await navigation.handleAuthChange();
+  } catch (error) {
+    console.error('Ошибка изменения аутентификации:', error);
+    try {
+      await navigation.handleAuthChange();
+    } catch (navError) {
+      console.error('Ошибка обновления навигации:', navError);
+      navigation.render();
+    }
+  }
+}
+
+function renderCartPage(): void {
+  new ShoppingCartPage();
 }
 
 function createPlaceholderContainer(pageName: string): HTMLDivElement {
@@ -108,9 +148,9 @@ function createAuthenticatedContent(container: HTMLDivElement, pageName: string)
   const logoutButton = document.createElement('button');
   logoutButton.className = 'logout-button';
   logoutButton.textContent = 'Выйти из учетной записи';
-  logoutButton.addEventListener('click', () => {
+  logoutButton.addEventListener('click', async () => {
     AuthorizationService.logout();
-    navigation.render();
+    await handleUserAuthChange();
     navigateTo('/login');
   });
 

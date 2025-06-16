@@ -175,6 +175,7 @@ export class CartService {
       const updatedCart = this.mapCartToData(response.body);
       this.currentCart = updatedCart;
       this.notifyCartUpdate(updatedCart);
+      console.log('Корзина обновлена:', updatedCart);
       return updatedCart;
     } catch (error) {
       console.error('Ошибка изменения кол-ва товара:', error);
@@ -250,6 +251,35 @@ export class CartService {
     return this.currentCart;
   }
 
+
+  public static async getFullCart(): Promise<CartData | null> {
+    try {
+      const apiClient = this.getCartApiClient();
+      const isAuthenticated = AuthorizationService.isAuthenticated();
+
+      if (isAuthenticated) {
+        const response = await apiClient.me().activeCart().get().execute();
+        const cart = this.mapCartToData(response.body);
+        this.currentCart = cart;
+        this.notifyCartUpdate(cart);
+        return cart;
+      } else {
+        const anonymousCartId = localStorage.getItem('anonymousCartId');
+        if (!anonymousCartId) {
+          return null;
+        }
+        const response = await apiRoot.carts().withId({ ID: anonymousCartId }).get().execute();
+        const cart = this.mapCartToData(response.body);
+        this.currentCart = cart;
+        this.notifyCartUpdate(cart);
+        return cart;
+      }
+    } catch (error) {
+      console.error('Ошибка получения полной корзины:', error);
+      return null;
+    }
+  }
+  
   private static isCommerceToolsError(
     error: unknown
   ): error is { body: unknown; statusCode?: number; message?: string } {
