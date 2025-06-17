@@ -90,6 +90,14 @@
   font-weight: 600;
 }
 
+.empty-div {
+  background-image: url('./../../assets/img/beatles.jpg');
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  min-height: 500px;
+}
+
 .footer {
   display: flex;
   justify-content: center;

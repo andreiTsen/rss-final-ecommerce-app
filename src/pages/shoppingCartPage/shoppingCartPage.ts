@@ -383,14 +383,11 @@ export class ShoppingCartPage {
   private createCartItemTotalElement(item: CartItem): HTMLElement {
     const totalElement = document.createElement('p');
     totalElement.classList.add('cart-item-total');
-    
+
     const totalPriceOne = item.totalPrice / item.quantity;
 
     let itemTotal = item.price * item.quantity;
-    
-  
 
-    
     if (this.activePromoCode?.isActive) {
       const discountedTotal = itemTotal * (1 - (this.activePromoCode?.discountPercentage ?? 0) / 100);
       const oldPriceSpan = document.createElement('span');
@@ -466,7 +463,7 @@ export class ShoppingCartPage {
 
   private createTotalPriceElement(): HTMLElement {
     const totalPriceElement = document.createElement('h3');
-   
+
     const originalPrice = this.cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
     const originalPriceWithoutDiscount = this.cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
     console.log('originalPriceWithoutDiscount:', originalPriceWithoutDiscount);
