@@ -5,6 +5,7 @@ import createErrorMessage from './errorMessage';
 import validateEmail from './validateEmail';
 import validatePassword from './validatePassword';
 import { navigateTo, navigation } from '../../main';
+import { CartService } from '../../services/cartService';
 
 export default class loginPage {
   private container: HTMLElement;
@@ -175,7 +176,6 @@ export default class loginPage {
     const passwordInput = new ElementCreator({
       tagName: 'input',
       classNames: ['auth-form__input-password'],
-      callback: (): void => console.log('Ввод в инпут пароля'),
       attribute: ['placeholder=Password', 'type=password', 'autocomplete=off'],
     });
     const passwordInputIcon = new ElementCreator({

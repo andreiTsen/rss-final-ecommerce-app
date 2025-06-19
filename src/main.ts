@@ -1,40 +1,61 @@
 import './pages/RegistrationPage/registration.css';
 import { RegistrationPage } from './pages/RegistrationPage/registration';
-import { AuthService } from './services/authService';
 import { Navigation } from './components/navigation';
 import loginPage from './pages/loginPage/loginPage';
 import { AuthorizationService } from './services/authentication';
 import productAboutPage from './pages/productAboutPage/productAboutPage';
 import { getProduct, handleProductAbout } from './services/getProduct';
 import './pages/productAboutPage/productAboutPage.css';
-import { customerApiRoot } from './services/customerApi';
 import './assets/style.css';
 import { ProfilePage } from './pages/ProfilePage/Profile';
 import { CatalogPage } from './pages/catalogPage/catalog';
-// const appRoot = document.body;
+import AboutPage from './pages/aboutPage/aboutPage';
+import hamburgerMenu from './components/hamburgerMenu.';
+import { ShoppingCartPage } from './pages/shoppingCartPage/shoppingCartPage';
+import { CartService } from './services/cartService';
 
 let appContainer: HTMLElement;
 export let navigation: Navigation;
 
 document.addEventListener('DOMContentLoaded', () => {
+  const body = document.body;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'body-wrapper';
+  body.appendChild(wrapper);
+
+  const header = document.createElement('header');
+  header.classList.add('header');
+  wrapper.appendChild(header);
+
+  const title = document.createElement('span');
+  title.classList.add('nav-title');
+  title.textContent = 'Crazy Bookstore';
+  header.appendChild(title);
+
+  const nav = document.createElement('nav');
+  nav.id = 'nav';
+  header.appendChild(nav);
+  navigation = new Navigation(nav);
+  header.appendChild(Navigation.createBurgerMenu());
   const existingContainer = document.getElementById('app');
-  let navContainer = document.getElementById('nav');
-  if (!navContainer) {
-    navContainer = document.createElement('header');
-    navContainer.id = 'nav';
-    document.body.appendChild(navContainer);
-  }
-  navigation = new Navigation(navContainer);
 
   if (existingContainer instanceof HTMLElement) {
     appContainer = existingContainer;
   } else {
     appContainer = document.createElement('main');
     appContainer.id = 'app';
-    document.body.appendChild(appContainer);
+    wrapper.appendChild(appContainer);
   }
-
+  hamburgerMenu();
   setupRouting();
+
+  setTimeout(async () => {
+    try {
+      await navigation.forceInitializeCart();
+    } catch (error) {
+      console.error('Ошибка доп инициализаціі корзіны:', error);
+    }
+  }, 200);
 });
 
 function setupRouting(): void {
@@ -46,46 +67,60 @@ function handleRouting(): void {
   const path = window.location.pathname;
   const isAuthenticated = AuthorizationService.isAuthenticated();
   appContainer.innerHTML = '';
-  switch (path) {
-    case '/':
-    case '/store':
-      new CatalogPage(appContainer);
-      break;
-    case '/registration':
-      if (!isAuthenticated) {
-        new RegistrationPage(appContainer);
-      } else {
-        navigateTo('/store');
-      }
-      break;
-    case '/login':
-      if (!isAuthenticated) {
-        new loginPage(appContainer);
-      } else {
-        navigateTo('/store');
-      }
-      break;
-    case '/product-about': {
-      void handleProductAbout(appContainer);
-      break;
-    }
-    case '/profile':
-      if (isAuthenticated) {
-        new ProfilePage(appContainer);
-      } else {
-        navigateTo('/login');
-      }
-      break;
-    default:
-      renderPlaceholderPage('Oшибка 404. Страница не найдена', isAuthenticated);
-      break;
+
+  const routes = {
+    '/': (): CatalogPage => new CatalogPage(appContainer),
+    '/store': (): CatalogPage => new CatalogPage(appContainer),
+    '/registration': (): void | RegistrationPage =>
+      !isAuthenticated ? new RegistrationPage(appContainer) : navigateTo('/store'),
+    '/login': (): void | loginPage => (!isAuthenticated ? new loginPage(appContainer) : navigateTo('/store')),
+    '/product-about': (): void => void handleProductAbout(appContainer),
+    '/profile': (): ProfilePage | void => (isAuthenticated ? new ProfilePage(appContainer) : navigateTo('/login')),
+    '/about-us': (): AboutPage => new AboutPage(appContainer),
+    '/cart': (): ShoppingCartPage => new ShoppingCartPage(),
+    default: (): void => renderPlaceholderPage('Oшибка 404. Страница не найдена', isAuthenticated),
+  } as const;
+
+  type RouteKey = keyof typeof routes;
+
+  function isRouteKey(path: string): path is RouteKey {
+    return path in routes;
   }
+
+  const handler = isRouteKey(path) ? routes[path] : routes.default;
+  handler();
   navigation.setActiveLink(path);
 }
 
 export function navigateTo(path: string): void {
   window.history.pushState({}, '', path);
   handleRouting();
+}
+
+export async function handleUserAuthChange(): Promise<void> {
+  try {
+    const isAuthenticated = AuthorizationService.isAuthenticated();
+
+    if (isAuthenticated) {
+      await CartService.mergeAnonymousCartOnLogin();
+    } else {
+      CartService.clearCartCache();
+    }
+
+    await navigation.handleAuthChange();
+  } catch (error) {
+    console.error('Ошибка изменения аутентификации:', error);
+    try {
+      await navigation.handleAuthChange();
+    } catch (navError) {
+      console.error('Ошибка обновления навигации:', navError);
+      navigation.render();
+    }
+  }
+}
+
+function renderCartPage(): void {
+  new ShoppingCartPage();
 }
 
 function createPlaceholderContainer(pageName: string): HTMLDivElement {
@@ -111,9 +146,9 @@ function createAuthenticatedContent(container: HTMLDivElement, pageName: string)
   const logoutButton = document.createElement('button');
   logoutButton.className = 'logout-button';
   logoutButton.textContent = 'Выйти из учетной записи';
-  logoutButton.addEventListener('click', () => {
+  logoutButton.addEventListener('click', async () => {
     AuthorizationService.logout();
-    navigation.render();
+    await handleUserAuthChange();
     navigateTo('/login');
   });
 

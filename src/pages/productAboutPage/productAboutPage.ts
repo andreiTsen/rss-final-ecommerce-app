@@ -3,6 +3,7 @@ import { Navigation, Pagination } from 'swiper/modules';
 import ElementCreator from '../../utils/ElementCreator';
 import './../../pages/productAboutPage/productAboutPage.css';
 import 'swiper/swiper-bundle.css';
+import { CartData, CartLineItem, CartService } from './../../services/cartService';
 
 export default class productAboutPage {
   private container: HTMLElement;
@@ -15,11 +16,12 @@ export default class productAboutPage {
     category: string,
     author: string,
     discountedPrice: string,
-    pages: string
+    pages: string,
+    productId: string
   ) {
     this.container = container;
     this.container.appendChild(
-      this.createContainerPage(title, info, price, imgs, category, author, discountedPrice, pages)
+      this.createContainerPage(title, info, price, imgs, category, author, discountedPrice, pages, productId)
     );
   }
 
@@ -31,7 +33,8 @@ export default class productAboutPage {
     category: string,
     author: string,
     discountedPrice: string,
-    pages: string
+    pages: string,
+    productId: string
   ): HTMLElement {
     const container = new ElementCreator({
       tagName: 'div',
@@ -50,7 +53,7 @@ export default class productAboutPage {
     infoContainer.appendChild(this.createPages(pages));
     infoContainer.appendChild(this.createAboutInfoProducts(info));
     infoContainer.appendChild(this.createPriceProducts(price, discountedPrice));
-    infoContainer.appendChild(this.createBtnBuyProduct());
+    infoContainer.appendChild(this.createButtons(productId));
     container.addInnerElement(imgContainer);
     container.addInnerElement(infoContainer);
     return container.getElement();
@@ -111,13 +114,78 @@ export default class productAboutPage {
     return authorElement.getElement();
   }
 
-  public createBtnBuyProduct(): HTMLElement {
-    const buttonBuyProduct = new ElementCreator({
+  public createAddAndremoveButton(): { addButton: HTMLButtonElement; removeButton: HTMLButtonElement } {
+    const addButton = new ElementCreator({
       tagName: 'button',
       classNames: ['about-page_product-btn-buy'],
-      textContent: `Buy`,
+      textContent: 'Добавить в корзину',
+    }).getElement();
+    if (!(addButton instanceof HTMLButtonElement)) {
+      throw new Error('addButton is not HTMLButtonElement');
+    }
+    const removeButton = new ElementCreator({
+      tagName: 'button',
+      classNames: ['about-page_product-btn-remove'],
+      textContent: 'Удалить из корзины',
+    }).getElement();
+    if (!(removeButton instanceof HTMLButtonElement)) {
+      throw new Error('addButton is not HTMLButtonElement');
+    }
+    return { addButton, removeButton };
+  }
+
+  public showNotice(message: string): void {
+    const notice = new ElementCreator({
+      tagName: 'div',
+      classNames: ['custom-toast'],
+      textContent: message,
     });
-    return buttonBuyProduct.getElement();
+    document.body.appendChild(notice.getElement());
+    setTimeout(() => {
+      notice.getElement().classList.add('custom-toast--hide');
+      setTimeout(() => notice.getElement().remove(), 300);
+    }, 2000);
+  }
+
+  public createButtons(productId: string): HTMLElement {
+    const container = document.createElement('div');
+    container.classList.add('about-page_cart-btns');
+    const { addButton, removeButton } = this.createAddAndremoveButton();
+    addButton.style.display = '';
+    removeButton.style.display = 'none';
+    const update = (cart: CartData): void => {
+      const inCart = cart.lineItems.some((item: CartLineItem) => item.productId === productId);
+      addButton.disabled = inCart;
+      addButton.style.display = inCart ? 'none' : '';
+      removeButton.disabled = !inCart;
+      removeButton.style.display = inCart ? '' : 'none';
+    };
+    CartService.getOrCreateCart().then(update).catch(console.error);
+    CartService.onCartUpdate(update);
+    addButton.onclick = async (): Promise<void> => {
+      addButton.disabled = true;
+      try {
+        await CartService.addProductToCart(productId, 1);
+        this.showNotice('Товар успешно добавлен в корзину!');
+      } catch {
+        addButton.disabled = false;
+        alert('Ошибка при добавлении в корзину');
+      }
+    };
+    removeButton.onclick = async (): Promise<void> => {
+      removeButton.disabled = true;
+      try {
+        const cart = await CartService.getOrCreateCart();
+        const item = cart.lineItems.find((i: CartLineItem) => i.productId === productId);
+        if (item) await CartService.removeProductFromCart(item.id);
+        this.showNotice('Товар удалён из корзины!');
+      } catch {
+        removeButton.disabled = false;
+        alert('Ошибка при удалении из корзины');
+      }
+    };
+    container.append(addButton, removeButton);
+    return container;
   }
 
   public createPages(pages: string): HTMLElement {

@@ -1,0 +1,193 @@
+.about-container {
+  display: flex;
+  max-width: 1440px;
+  flex-direction: column;
+  margin: 0 auto;
+  gap: 3rem;
+}
+
+.about-title {
+  color: #4caf50;
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 0 auto;
+  margin-top: 15px;
+  margin-bottom: 25px;
+}
+
+.about-dev__container {
+  display: flex;
+  justify-content: flex-start;
+  background-color: #ffffff;
+  border-radius: 20px;
+  gap: 1.5rem;
+  border: 2px solid #4caf50;
+  padding: 0px 35px 0px 0px;
+}
+
+.about-img__container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.about-img {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 20px;
+  width: 355px;
+  border-style: none;
+}
+
+.dev-1 {
+  background-image: url('./../../assets/img/dev-andrei.jpg');
+  min-height: 450px;
+  height: 100%;
+}
+
+.dev-2 {
+  background-image: url('./../../assets/img/dev-arkhip.jpg');
+  min-height: 500px;
+  height: 100%;
+}
+
+.dev-3 {
+  background-image: url('./../../assets/img/image.png');
+  min-height: 500px;
+  height: 100%;
+}
+
+.about-dev__name-box {
+  display: flex;
+}
+
+.about-dev__name {
+  font-size: 1.5rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.7rem;
+}
+
+.about-dev__role {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.about-dev__info {
+  font-size: 1rem;
+  margin-bottom: 0.7rem;
+  text-align: justify;
+}
+
+.about-dev__contribution {
+  text-align: justify;
+}
+
+.about-dev__common--info {
+  text-align: center;
+  font-size: 1.25rem;
+  color: #eece1c;
+  font-weight: 600;
+}
+
+.empty-div {
+  background-image: url('./../../assets/img/beatles.jpg');
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  min-height: 500px;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+}
+
+.footer-logo {
+  background-image: url('./../../assets/icons/rs-icon.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 200px;
+  height: 100px;
+  margin-bottom: 15px;
+}
+
+.about-intro {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.container_developer {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.about-dev__link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  margin-top: 7px;
+}
+
+.about-dev__link-name {
+  color: black;
+  padding-top: 15px;
+  padding-left: 3px;
+}
+
+.about-dev__link-img {
+  background-image: url('./../../assets/icons/git.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  outline: none;
+  margin-top: 15px;
+  margin-left: 5px;
+  width: 30px;
+  height: 30px;
+}
+
+@media screen and (max-width: 1000px) {
+  .about-dev__info-box {
+    padding-bottom: 15px;
+  }
+}
+
+@media screen and (max-width: 800px) {
+  .about-dev__container {
+    flex-direction: column;
+    padding: 10px;
+  }
+  .about-dev__info-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .about-dev__name-box {
+    flex-direction: column;
+    margin: 0 auto;
+    padding: 0;
+    align-items: center;
+  }
+  .about-dev__name {
+    margin-bottom: 0;
+  }
+  .about-dev__link-img {
+    margin-top: 0;
+  }
+  .about-dev__link-name {
+    padding-top: 0;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .about-dev__contribution,
+  .about-dev__info {
+    font-size: 0.9rem;
+  }
+  .about-dev__common--info {
+    font-size: 1rem;
+  }
+}

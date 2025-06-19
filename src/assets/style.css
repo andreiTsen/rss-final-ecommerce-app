@@ -10,9 +10,16 @@
 
 body {
   background-color: #f9f9f9;
+  padding: 0 10px;
 }
 
 button,
 a {
   cursor: pointer;
+}
+
+.body-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
 }

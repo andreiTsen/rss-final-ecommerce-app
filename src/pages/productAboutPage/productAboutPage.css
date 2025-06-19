@@ -75,13 +75,14 @@
 
 .about-page_product-btn-buy {
   margin-top: 1rem;
-  min-width: 7rem;
-  max-width: 10rem;
-  padding: 0.5rem;
+  min-width: 12rem;
+  max-width: 14rem;
+  padding: 0.7rem;
   background-color: #ffd700;
   outline: none;
   cursor: pointer;
   border: none;
+  transition: background-color 0.3s ease;
 }
 
 .swiper {
@@ -183,6 +184,53 @@
   color: #4caf50;
   font-weight: bold;
   font-size: 1.5rem;
+}
+
+.about-page_product-btn-remove {
+  background-color: #4caf50;
+  margin-top: 1rem;
+  min-width: 9rem;
+  max-width: 14rem;
+  padding: 0.7rem;
+  outline: none;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.about-page_product-btn-buy:hover,
+.about-page_product-btn-remove:hover {
+  color: #fff;
+}
+
+.about-page_product-btn-buy:hover {
+  background-color: #dbbe1b;
+}
+
+.about-page_product-btn-remove:hover {
+  background-color: #34cc39;
+}
+
+.custom-toast {
+  position: fixed;
+  top: 5rem;
+  right: 2rem;
+  background: #4caf50;
+  color: #fff;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  font-size: 1.1rem;
+  opacity: 1;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+}
+
+.custom-toast--hide {
+  opacity: 0;
+  transform: translateY(30px);
 }
 
 @media screen and (max-width: 1024px) {
